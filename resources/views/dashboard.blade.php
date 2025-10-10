@@ -433,7 +433,7 @@
                 cardHtml += `
                     <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 flex justify-between">
                         <span class="text-xs text-gray-500 dark:text-gray-400">
-                            Diperiksa: ${device.last_checked}
+                            Diperiksa: ${device.last_checked_at}
                         </span>
                     </div>
                 </div>
