@@ -1,61 +1,188 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistem Monitoring Konektivitas Internet
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem monitoring jaringan berbasis web untuk memantau kesehatan dan performa perangkat jaringan secara real-time.
 
-## About Laravel
+## 🚀 Fitur Utama
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Pemantauan Perangkat Real-Time:** Memeriksa status konektivitas perangkat melalui ping dan pengecekan port secara berkala
+- **Peringatan Otomatis:** Mengirimkan notifikasi di dalam aplikasi ketika sebuah perangkat terdeteksi down atau memiliki latensi tinggi
+- **Visualisasi & Pelaporan Data:** Menampilkan grafik interaktif dan menghasilkan laporan performa dalam format PDF
+- **Manajemen Perangkat:** CRUD untuk data perangkat jaringan dengan struktur hirarkis
+- **Pencatatan Riwayat:** Menyimpan semua catatan status dan histori waktu respons setiap perangkat
+- **Struktur Hirarkis:** Mengelola perangkat dalam tingkatan: Utama > Sub-Utama > Perangkat Terhubung
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🛠️ Teknologi yang Digunakan
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Backend:** Laravel 12 (PHP 8.2)
+- **Frontend:** Tailwind CSS 4.0, Alpine.js
+- **Database:** MySQL / MariaDB
+- **Monitoring Script:** Python
+- **Autentikasi:** Laravel Breeze + Spatie Laravel Permission
 
-## Learning Laravel
+## 📁 Struktur Direktori
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```
+├── app/                    # Core Laravel application
+│   ├── Console/           # Artisan commands
+│   ├── Http/              # Controllers and middleware
+│   ├── Models/            # Eloquent models
+│   ├── Providers/          # Service providers
+│   └── Services/           # Custom services
+├── database/              # Migrations and seeders
+├── public/                 # Public assets
+├── resources/              # Views and assets
+├── routes/                # Route definitions
+├── scripts/                # Python monitoring scripts
+└── tests/                  # Automated tests
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## 🚀 Instalasi
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Persyaratan Sistem
 
-## Laravel Sponsors
+- PHP 8.2 atau lebih tinggi
+- Composer
+- MySQL / MariaDB
+- Node.js dan npm
+- Python 3.6+ (untuk monitoring script)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Langkah Instalasi
 
-### Premium Partners
+1. **Clone repository:**
+   ```bash
+   git clone https://github.com/your-repo/monitoring-konektivitas.git
+   cd monitoring-konektivitas
+   ```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+2. **Instal dependensi PHP:**
+   ```bash
+   composer install
+   ```
 
-## Contributing
+3. **Instal dependensi frontend:**
+   ```bash
+   npm install
+   npm run build
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+4. **Konfigurasi database:**
+   ```bash
+   cp .env.example .env
+   # Edit file .env sesuai konfigurasi database Anda
+   php artisan key:generate
+   ```
 
-## Code of Conduct
+5. **Migrasi dan seeding database:**
+   ```bash
+   php artisan migrate --seed
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+6. **Jalankan server development:**
+   ```bash
+   php artisan serve
+   ```
 
-## Security Vulnerabilities
+## 🔧 Konfigurasi
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Akun Default
 
-## License
+Setelah instalasi selesai, sistem akan memiliki akun default:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **Admin:**
+  - Email: `admin@sttwastukancana.ac.id`
+  - Password: `password`
+
+- **Petugas:**
+  - Email: `petugas@sttwastukancana.ac.id`
+  - Password: `password`
+
+### Menjalankan Monitoring
+
+Ada dua cara untuk menjalankan monitoring:
+
+#### 1. Menggunakan Command Line (Direkomendasikan)
+
+```bash
+php artisan monitor:devices
+```
+
+#### 2. Menggunakan Python Script
+
+```bash
+cd scripts
+python3 monitor.py
+```
+
+### Konfigurasi Cron Job
+
+Untuk monitoring otomatis setiap 5 menit, tambahkan ke crontab:
+
+```bash
+*/5 * * * * cd /path/to/your/project && php artisan monitor:devices >> /dev/null 2>&1
+```
+
+## 📊 API Endpoints
+
+### Devices
+- `GET /api/devices` - Mendapatkan semua perangkat aktif
+- `GET /api/devices/{id}` - Mendapatkan detail perangkat tertentu
+- `POST /api/devices/{id}/status` - Mencatat status perangkat dari script monitoring
+
+### Authentication
+Menggunakan Laravel Sanctum untuk API authentication.
+
+## 🔒 Role dan Hak Akses
+
+### Admin
+- Akses penuh ke semua fitur
+- Dapat mengelola perangkat, pengguna, dan pengaturan sistem
+
+### Petugas
+- Akses terbatas untuk operasional
+- Dapat melihat status perangkat dan menandai peringatan
+
+## 🎨 Desain UI/UX
+
+Sistem mendukung mode gelap dan terang dengan:
+
+- **Tailwind CSS:** Untuk styling yang responsif
+- **Desain Modern:** Antarmuka yang bersih dan intuitif
+- **Dark Mode Toggle:** Tombol untuk beralih antara mode terang/gelap
+- **Responsive Design:** Berfungsi baik di desktop maupun mobile
+
+## 📈 Laporan dan Visualisasi
+
+- **Dashboard Real-time:** Statistik langsung tentang status perangkat
+- **Grafik Interaktif:** Menggunakan Chart.js untuk visualisasi data
+- **Laporan PDF:** Dapat menghasilkan laporan dalam format PDF dengan filter tanggal
+
+## 🛡️ Keamanan
+
+- **Role-Based Access Control:** Menggunakan Spatie Laravel Permission
+- **Validasi Input:** Validasi data masuk untuk mencegah injection
+- **CSRF Protection:** Perlindungan terhadap serangan CSRF
+- **Rate Limiting:** Pembatasan permintaan untuk mencegah abuse
+
+## 🧪 Testing
+
+Untuk menjalankan test:
+
+```bash
+php artisan test
+```
+
+## 📄 Lisensi
+
+MIT License - lihat file [LICENSE](LICENSE) untuk detail lebih lanjut.
+
+## 🤝 Kontribusi
+
+1. Fork repository
+2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
+3. Commit perubahan (`git commit -m 'Add some AmazingFeature'`)
+4. Push ke branch (`git push origin feature/AmazingFeature`)
+5. Buka Pull Request
+
+## 📞 Dukungan
+
+Untuk dukungan, buka issue di repository ini atau hubungi tim pengembang.

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="description" content="Sistem Monitoring Konektivitas Jaringan STT Wastukancana">
+        <meta name="author" content="STT Wastukancana IT Department">
+
+        <title>{{ config('app.name', 'Monitoring System') }} - @yield('title', 'Network Monitoring')</title>
+
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+
+        <!-- Scripts -->
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        
+        <!-- Icons -->
+        <link rel="icon" type="image/png" href="{{ asset('favicon.ico') }}">
+        
+        <!-- Dark Mode Support -->
+        <script>
+            // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark')
+            } else {
+                document.documentElement.classList.remove('dark')
+            }
+        </script>
+    </head>
+    <body class="font-sans antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        <div class="min-h-screen">
+            @include('layouts.navigation')
+
+            <!-- Page Heading -->
+            @isset($header)
+                <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+                    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                {{ $header }}
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <!-- Quick Stats -->
+                                @auth
+                                    <div class="hidden md:flex items-center space-x-4 text-sm">
+                                        <div class="flex items-center text-green-600 dark:text-green-400">
+                                            <div class="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
+                                            <span>{{ \App\Models\Device::where('status', 'up')->count() }}</span>
+                                        </div>
+                                        <div class="flex items-center text-red-600 dark:text-red-400">
+                                            <div class="w-2 h-2 rounded-full bg-red-500 mr-1"></div>
+                                            <span>{{ \App\Models\Device::where('status', 'down')->count() }}</span>
+                                        </div>
+                                    </div>
+                                @endauth
+                            </div>
+                        </div>
+                    </div>
+                </header>
+            @endisset
+
+            <!-- Page Content -->
+            <main class="py-6">
+                <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    @if(session('success'))
+                        <div class="mb-6 rounded-lg bg-green-50 dark:bg-green-900/20 p-4 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800/50">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium">{{ session('success') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                    
+                    @if(session('error'))
+                        <div class="mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 p-4 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800/50">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium">{{ session('error') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                    
+                    {{ $slot }}
+                </div>
+            </main>
+            
+            <!-- Footer -->
+            <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
+                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    <div class="md:flex md:items-center md:justify-between">
+                        <div class="flex justify-center md:justify-start">
+                            <div class="flex items-center">
+                                <x-application-logo class="block h-8 w-auto fill-current text-gray-800 dark:text-gray-200" />
+                                <span class="ml-2 text-lg font-semibold text-gray-800 dark:text-white">Monitoring System</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 md:mt-0 md:order-1">
+                            <p class="text-center text-sm text-gray-500 dark:text-gray-400">
+                                &copy; {{ date('Y') }} STT Wastukancana. All rights reserved.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+        
+        <!-- Global Toast Notifications -->
+        <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+        
+        <script>
+            // Toast notification function
+            function showToast(message, type = 'success') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = `max-w-sm w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 transition duration-300 ease-in-out transform translate-y-0 opacity-100`;
+                toast.innerHTML = `
+                    <div class="p-4">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                ${type === 'success' ? 
+                                    '<svg class="h-6 w-6 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>' : 
+                                    '<svg class="h-6 w-6 text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>'
+                                }
+                            </div>
+                            <div class="ml-3 w-0 flex-1 pt-0.5">
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">${message}</p>
+                            </div>
+                            <div class="ml-4 flex-shrink-0 flex">
+                                <button onclick="this.parentElement.parentElement.parentElement.parentElement.remove()" class="bg-white dark:bg-gray-800 rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none">
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(toast);
+                
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.remove();
+                    }
+                }, 5000);
+            }
+            
+            // Show flash messages
+            @if(session('success'))
+                showToast("{{ session('success') }}", 'success');
+            @endif
+            
+            @if(session('error'))
+                showToast("{{ session('error') }}", 'error');
+            @endif
+        </script>
+    </body>
+</html>
