@@ -1,3 +1,43 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --bg: #FFFFFF;
+  --bg-secondary: #F5F5F5;
+  --text: #1A1A1A;
+  --text-secondary: #5C5C5C;
+  --primary: #FF4D6D;
+  --primary-hover: #FF6F91;
+}
+
+.dark {
+  --bg: #0D0D0D;
+  --bg-secondary: #1A1A1A;
+  --text: #EAEAEA;
+  --text-secondary: #A1A1A1;
+  --primary: #FF8BA7;
+  --primary-hover: #FFB3C1;
+}
+
+/* Apply the new color variables */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.bg-primary {
+  background-color: var(--primary);
+}
+
+.bg-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}

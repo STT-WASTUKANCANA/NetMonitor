@@ -231,13 +231,35 @@
         if (localStorage.theme === 'dark' || 
             (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             html.classList.add('dark');
+            // Ensure both navigation and dashboard toggles show correct state
+            document.querySelectorAll('#dark-mode-sun, #dashboard-dark-mode-sun').forEach(el => {
+                if(el) el.classList.remove('hidden');
+            });
+            document.querySelectorAll('#dark-mode-moon, #dashboard-dark-mode-moon').forEach(el => {
+                if(el) el.classList.add('hidden');
+            });
         } else {
             html.classList.remove('dark');
+            // Ensure both navigation and dashboard toggles show correct state
+            document.querySelectorAll('#dark-mode-sun, #dashboard-dark-mode-sun').forEach(el => {
+                if(el) el.classList.add('hidden');
+            });
+            document.querySelectorAll('#dark-mode-moon, #dashboard-dark-mode-moon').forEach(el => {
+                if(el) el.classList.remove('hidden');
+            });
         }
         
         // Toggle dark mode
         darkModeToggle?.addEventListener('click', function() {
             html.classList.toggle('dark');
+            
+            // Update both the dashboard and navigation toggles' appearance
+            document.querySelectorAll('#dark-mode-sun, #dashboard-dark-mode-sun').forEach(el => {
+                if(el) el.classList.toggle('hidden');
+            });
+            document.querySelectorAll('#dark-mode-moon, #dashboard-dark-mode-moon').forEach(el => {
+                if(el) el.classList.toggle('hidden');
+            });
             
             // Save preference to localStorage
             if (html.classList.contains('dark')) {

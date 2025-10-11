@@ -13,12 +13,12 @@
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label for="device-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pilih Perangkat</label>
-                            <select id="device-select" multiple class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <select id="device-select" multiple class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white dark:border-gray-600">
                                 @foreach($devices as $device)
                                     <option value="{{ $device->id }}">{{ $device->name }} ({{ $device->ip_address }})</option>
                                 @endforeach
                             </select>
-                            <p class="mt-1 text-sm text-gray-500">Pilih satu atau lebih perangkat untuk difilter</p>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Pilih satu atau lebih perangkat untuk difilter</p>
                         </div>
                         
                         <div>
