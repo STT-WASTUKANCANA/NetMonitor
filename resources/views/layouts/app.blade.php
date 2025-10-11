@@ -8,7 +8,7 @@
     <meta name="description" content="Sistem Monitoring Konektivitas Jaringan STT Wastukancana">
     <meta name="author" content="STT Wastukancana IT Department">
 
-    <title>{{ config('app.name', 'Monitoring System') }} - @yield('title', 'Network Monitoring')</title>
+    <title>{{ config('app.name', 'Monitoring System') }} - @yield('title', 'Sistem Monitoring Konektivitas Jaringan STT Wastukancana')</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -19,6 +19,8 @@
 
     <!-- Icons -->
     <link rel="icon" type="image/png" href="{{ asset('favicon.ico') }}">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
 <body class="font-sans antialiased bg-gray-50 text-gray-900 h-full flex flex-col">
