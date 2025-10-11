@@ -28,7 +28,34 @@
         @include('layouts.navigation')
 
         <!-- Page Heading -->
-        @isset($header)
+        @hasSection('title')
+            <header class="bg-white shadow-sm border-b border-gray-200">
+                <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                                @yield('title')
+                            </h2>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <!-- Quick Stats -->
+                            @auth
+                                <div class="hidden md:flex items-center space-x-4 text-sm">
+                                    <div class="flex items-center text-green-600">
+                                        <div class="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
+                                        <span>{{ \App\Models\Device::where('status', 'up')->count() }}</span>
+                                    </div>
+                                    <div class="flex items-center text-red-600">
+                                        <div class="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
+                                        <span>{{ \App\Models\Device::where('status', 'down')->count() }}</span>
+                                    </div>
+                                </div>
+                            @endauth
+                        </div>
+                    </div>
+                </div>
+            </header>
+        @elseif(isset($header) && $header)
             <header class="bg-white shadow-sm border-b border-gray-200">
                 <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center justify-between">
@@ -53,7 +80,7 @@
                     </div>
                 </div>
             </header>
-        @endisset
+        @endif
 
         <!-- Page Content -->
         <main class="py-6 flex-grow">
@@ -96,7 +123,11 @@
                     </div>
                 @endif
 
-                {{ $slot }}
+                @hasSection('content')
+                    @yield('content')
+                @else
+                    {{ $slot ?? '' }}
+                @endif
             </div>
         </main>
 

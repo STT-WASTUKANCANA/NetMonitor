@@ -5,6 +5,7 @@ use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -27,6 +28,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/response-time', [ReportController::class, 'getResponseTimeData'])->name('reports.response-time');
     Route::get('/reports/status', [ReportController::class, 'getStatusData'])->name('reports.status');
     Route::post('/reports/pdf', [ReportController::class, 'generatePdf'])->name('reports.pdf');
+    
+    // User management routes (Admin only)
+    Route::resource('users', UserController::class);
     
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

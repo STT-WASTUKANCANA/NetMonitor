@@ -21,7 +21,7 @@
                             <div class="space-y-6">
                                 <div>
                                     <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Perangkat *</label>
-                                    <input type="text" name="name" id="name" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white @error('name') border-red-500 @enderror" value="{{ old('name') }}" required>
+                                    <input type="text" name="name" id="name" class="block w-full rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white @error('name') border-red-500 @enderror" value="{{ old('name') }}" required>
                                     @error('name')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -29,7 +29,7 @@
 
                                 <div>
                                     <label for="ip_address" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Alamat IP *</label>
-                                    <input type="text" name="ip_address" id="ip_address" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white @error('ip_address') border-red-500 @enderror" value="{{ old('ip_address') }}" required>
+                                    <input type="text" name="ip_address" id="ip_address" class="block w-full rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white @error('ip_address') border-red-500 @enderror" value="{{ old('ip_address') }}" required>
                                     @error('ip_address')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -38,7 +38,7 @@
 
                                 <div>
                                     <label for="type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipe Perangkat *</label>
-                                    <select name="type" id="type" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white @error('type') border-red-500 @enderror" required>
+                                    <select name="type" id="type" class="block w-full rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white @error('type') border-red-500 @enderror" required>
                                         <option value="" disabled {{ old('type') ? '' : 'selected' }}>Pilih tipe perangkat</option>
                                         <option value="router" {{ old('type') === 'router' ? 'selected' : '' }}>Router</option>
                                         <option value="switch" {{ old('type') === 'switch' ? 'selected' : '' }}>Switch</option>
@@ -53,7 +53,7 @@
 
                                 <div>
                                     <label for="hierarchy_level" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Level Hirarki *</label>
-                                    <select name="hierarchy_level" id="hierarchy_level" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white @error('hierarchy_level') border-red-500 @enderror" required>
+                                    <select name="hierarchy_level" id="hierarchy_level" class="block w-full rounded-lg  shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white @error('hierarchy_level') border-red-500 @enderror" required>
                                         <option value="" disabled {{ old('hierarchy_level') ? '' : 'selected' }}>Pilih level hirarki</option>
                                         <option value="utama" {{ old('hierarchy_level') === 'utama' ? 'selected' : '' }}>Utama</option>
                                         <option value="sub" {{ old('hierarchy_level') === 'sub' ? 'selected' : '' }}>Sub</option>
@@ -82,7 +82,7 @@
 
                                 <div>
                                     <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lokasi</label>
-                                    <input type="text" name="location" id="location" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white @error('location') border-red-500 @enderror" value="{{ old('location') }}">
+                                    <input type="text" name="location" id="location" class="block w-full rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white @error('location') border-red-500 @enderror" value="{{ old('location') }}">
                                     @error('location')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -90,7 +90,7 @@
 
                                 <div>
                                     <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Deskripsi</label>
-                                    <textarea name="description" id="description" rows="3" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white @error('description') border-red-500 @enderror">{{ old('description') }}</textarea>
+                                    <textarea name="description" id="description" rows="3" class="block w-full rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white @error('description') border-red-500 @enderror">{{ old('description') }}</textarea>
                                     @error('description')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
