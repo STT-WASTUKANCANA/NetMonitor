@@ -1,111 +1,114 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Services;
 
-use App\Http\Controllers\Controller;
-use App\Http\Resources\DeviceResource;
 use App\Models\Device;
 use App\Models\DeviceLog;
 use App\Models\Alert;
-use App\Services\PingService;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
-class DeviceController extends Controller
+class PingService
 {
-    private $pingService;
-
-    public function __construct(PingService $pingService)
-    {
-        $this->pingService = $pingService;
-    }
     /**
-     * Display a listing of the resource.
+     * Ping a specific device and return the result
+     * 
+     * @param Device $device
+     * @return array
      */
-    public function index(): JsonResponse
+    public function ping(Device $device): array
     {
-        // This endpoint is used by the Python script to get all active devices
-        $devices = Device::where('is_active', true)
-            ->select('id', 'name', 'ip_address', 'type', 'hierarchy_level', 'parent_id', 'location', 'description', 'status', 'last_checked_at')
-            ->get();
-
-        return response()->json(DeviceResource::collection($devices));
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $device = Device::with(['parent', 'children', 'logs', 'alerts'])->findOrFail($id);
+        $ipAddress = $device->ip_address;
         
-        return response()->json(new DeviceResource($device));
+        // Measure start time for response time calculation
+        $startTime = microtime(true);
+
+        try {
+            // Attempt ping using the system's ping command
+            $command = "ping -c 1 -W 2 " . escapeshellarg($ipAddress);
+            $output = [];
+            $returnCode = 0;
+            
+            // Execute ping command
+            exec($command, $output, $returnCode);
+            
+            $endTime = microtime(true);
+            $responseTime = round(($endTime - $startTime) * 1000, 2); // Convert to milliseconds
+
+            if ($returnCode === 0) {
+                // Parse response time from ping output if possible
+                foreach ($output as $line) {
+                    if (preg_match('/time=(\d+\.?\d*)\s*ms/', $line, $matches)) {
+                        $responseTime = floatval($matches[1]);
+                        break;
+                    }
+                }
+
+                return [
+                    'status' => 'up',
+                    'response_time' => $responseTime,
+                    'message' => 'Device responded to ping'
+                ];
+            } else {
+                return [
+                    'status' => 'down',
+                    'response_time' => null,
+                    'message' => 'Device did not respond to ping'
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::error('Error pinging device: ' . $e->getMessage(), [
+                'device_id' => $device->id,
+                'ip_address' => $ipAddress
+            ]);
+            
+            return [
+                'status' => 'down',
+                'response_time' => null,
+                'message' => 'Error during ping: ' . $e->getMessage()
+            ];
+        }
     }
 
     /**
-     * Update the specified resource in storage.
+     * Ping a device and update its status
+     * 
+     * @param Device $device
+     * @return array
      */
-    public function update(Request $request, string $id)
+    public function pingAndRecord(Device $device): array
     {
-        //
-    }
-
-    /**
-     * Record device status from monitoring script
-     */
-    public function recordStatus(Request $request, string $id): JsonResponse
-    {
-        $device = Device::with('parent')->findOrFail($id);
-
-        // Validate the incoming request
-        $validated = $request->validate([
-            'status' => 'required|in:up,down',
-            'response_time' => 'nullable|numeric|min:0',
-        ]);
-
+        $result = $this->ping($device);
+        
         // Create a new log entry
         $log = DeviceLog::create([
             'device_id' => $device->id,
-            'status' => $validated['status'],
-            'response_time' => $validated['response_time'] ?? null,
+            'status' => $result['status'],
+            'response_time' => $result['response_time'],
             'checked_at' => now(),
+            'is_manual_check' => true, // Mark this as a manual check
         ]);
 
         // Update the device's status and last checked time
         $device->update([
-            'status' => $validated['status'],
+            'status' => $result['status'],
             'last_checked_at' => now(),
         ]);
 
         // Check if an alert needs to be created based on status change
-        $this->checkForAlert($device, $validated['status']);
+        $this->checkForAlert($device, $result['status']);
 
         // If device is down and it's a 'utama' level device, mark all children as down too
-        if ($validated['status'] === 'down' && $device->hierarchy_level === 'utama') {
+        if ($result['status'] === 'down' && $device->hierarchy_level === 'utama') {
             $this->markChildrenAsDown($device);
         }
 
-        return response()->json([
-            'message' => 'Device status recorded successfully',
-            'log_id' => $log->id
-        ], 201);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return [
+            'device' => $device,
+            'log' => $log,
+            'result' => $result
+        ];
     }
 
     /**
@@ -171,6 +174,7 @@ class DeviceController extends Controller
                 'status' => 'down',
                 'response_time' => null,
                 'checked_at' => now(),
+                'is_manual_check' => true, // Mark as manual check
             ]);
 
             // Create alert for the child if needed
@@ -186,39 +190,6 @@ class DeviceController extends Controller
             if ($child->children()->exists()) {
                 $this->markChildrenAsDown($child);
             }
-        }
-    }
-
-    /**
-     * Manually ping a specific device
-     */
-    public function pingDevice(Request $request, string $id): JsonResponse
-    {
-        $device = Device::findOrFail($id);
-
-        // Authorize the action - user must have permission to view or edit devices
-        if (!$request->user()->can('view devices') && !$request->user()->can('edit devices')) {
-            return response()->json([
-                'message' => 'Unauthorized to ping device',
-                'error' => true
-            ], 403);
-        }
-
-        try {
-            // Ping the device and record the result
-            $pingResult = $this->pingService->pingAndRecord($device);
-
-            return response()->json([
-                'message' => 'Device pinged successfully',
-                'device' => new DeviceResource($device),
-                'result' => $pingResult['result'],
-                'timestamp' => now()->toISOString()
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error pinging device: ' . $e->getMessage(),
-                'error' => true
-            ], 500);
         }
     }
 }

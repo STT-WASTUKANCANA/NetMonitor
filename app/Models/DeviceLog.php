@@ -15,6 +15,7 @@ class DeviceLog extends Model
         'response_time',
         'status',
         'checked_at',
+        'is_manual_check',
     ];
 
     protected $casts = [

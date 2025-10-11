@@ -20,4 +20,5 @@ Route::prefix('devices')->group(function () {
     Route::get('/', [DeviceController::class, 'index'])->name('api.devices.index');
     Route::get('/{id}', [DeviceController::class, 'show'])->name('api.devices.show');
     Route::post('/{id}/status', [DeviceController::class, 'recordStatus'])->name('api.devices.recordStatus');
+    Route::post('/{id}/ping', [DeviceController::class, 'pingDevice'])->name('api.devices.ping');
 });

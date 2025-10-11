@@ -47,6 +47,15 @@
                                     
                                     @can('edit devices')
                                         <div class="flex space-x-2 ml-2">
+                                            <button type="button" 
+                                                onclick="pingDevice({{ $device->id }})" 
+                                                title="Ping Connection" 
+                                                class="text-green-500 hover:text-green-700 ping-btn" 
+                                                data-device-id="{{ $device->id }}">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                                </svg>
+                                            </button>
                                             <a href="{{ route('devices.edit', $device) }}" class="text-blue-500 hover:text-blue-700">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -140,4 +149,85 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        async function pingDevice(deviceId) {
+            const pingBtn = document.querySelector(`button[data-device-id="${deviceId}"]`);
+            const originalIcon = pingBtn.innerHTML;
+            
+            // Show loading state
+            pingBtn.innerHTML = `
+                <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+            `;
+            pingBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`/api/devices/${deviceId}/ping`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Update device status display
+                    const deviceElement = pingBtn.closest('.border');
+                    const statusSpan = deviceElement.querySelector('span[title], span.font-medium');
+                    const statusDot = deviceElement.querySelector('.bg-green-500, .bg-red-500, .bg-gray-500');
+                    
+                    // Update status text and badge
+                    if (statusSpan) {
+                        // Find the status span and update it
+                        const statusText = deviceElement.querySelector('.bg-green-100, .bg-red-100, .bg-gray-100');
+                        if (statusText) {
+                            // Remove old classes
+                            statusText.className = statusText.className.replace(/\s*(bg-green-100|bg-red-100|bg-gray-100|text-green-800|text-red-800|text-gray-800)/g, '');
+                            // Add new classes based on result
+                            statusText.className += ` ${data.result.status === 'up' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+                            statusText.textContent = data.result.status;
+                        }
+                        
+                        // Update status dot
+                        if (statusDot) {
+                            statusDot.className = statusDot.className.replace(/\s*(bg-green-500|bg-red-500|bg-gray-500)/g, '');
+                            statusDot.className += ` ${data.result.status === 'up' ? 'bg-green-500' : 'bg-red-500'}`;
+                        }
+                    }
+                    
+                    // Update last checked time
+                    const lastCheckedElements = document.querySelectorAll('span');
+                    lastCheckedElements.forEach(el => {
+                        if (el.textContent.includes('Last checked')) {
+                            // Update the text after the colon to show "just now"
+                            const text = el.textContent;
+                            const colonIndex = text.indexOf(':');
+                            if (colonIndex !== -1) {
+                                el.textContent = text.substring(0, colonIndex + 1) + ' just now';
+                            } else {
+                                el.textContent = 'Last checked: just now';
+                            }
+                        }
+                    });
+                    
+                    // Show success message using existing toast function
+                    showToast(`Device pinged successfully. Status: ${data.result.status}`, 'success');
+                } else {
+                    showToast(data.message || 'Error pinging device', 'error');
+                }
+            } catch (error) {
+                showToast('Network error occurred while pinging device', 'error');
+                console.error('Error:', error);
+            } finally {
+                // Restore original icon
+                pingBtn.innerHTML = originalIcon;
+                pingBtn.disabled = false;
+            }
+        }
+    </script>
 </x-app-layout>

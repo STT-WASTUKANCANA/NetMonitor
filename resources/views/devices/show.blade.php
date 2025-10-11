@@ -23,6 +23,16 @@
                         
                         <div class="flex space-x-2">
                             @can('edit devices')
+                                <button type="button" 
+                                    onclick="pingDevice({{ $device->id }})" 
+                                    title="Ping Connection" 
+                                    class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 ping-btn" 
+                                    data-device-id="{{ $device->id }}">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                    </svg>
+                                    Ping
+                                </button>
                                 <a href="{{ route('devices.edit', $device) }}" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                                     Edit
                                 </a>
@@ -163,4 +173,94 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        async function pingDevice(deviceId) {
+            const pingBtn = document.querySelector(`button[data-device-id="${deviceId}"]`);
+            const originalText = pingBtn.innerHTML;
+            
+            // Show loading state
+            pingBtn.innerHTML = `
+                <svg class="w-4 h-4 inline mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                Pinging...
+            `;
+            pingBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`/api/devices/${deviceId}/ping`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Update device status display
+                    const statusDot = document.querySelector('.inline-block.w-3.h-3.rounded-full');
+                    const statusText = document.querySelector('.font-medium.text-gray-600, .text-green-600, .text-red-600, .font-medium');
+                    const statusBadge = document.querySelector('.bg-green-100, .bg-red-100, .bg-gray-100');
+                    
+                    // Update status dot
+                    if (statusDot) {
+                        statusDot.className = statusDot.className.replace(/\s*(bg-green-500|bg-red-500|bg-gray-500)/g, '');
+                        statusDot.className += ` ${data.result.status === 'up' ? 'bg-green-500' : 'bg-red-500'}`;
+                    }
+                    
+                    // Update status text
+                    if (statusText) {
+                        // Find the element that contains the status text
+                        const statusElements = document.querySelectorAll('.font-medium');
+                        statusElements.forEach(el => {
+                            if (el.textContent === 'up' || el.textContent === 'down') {
+                                el.innerHTML = `<span class="${data.result.status === 'up' ? 'text-green-600' : 
+                                                (data.result.status === 'down' ? 'text-red-600' : 'text-gray-600')}">
+                                    ${data.result.status}
+                                </span>`;
+                            }
+                        });
+                    }
+                    
+                    // Update status badge if exists
+                    if (statusBadge) {
+                        statusBadge.className = statusBadge.className.replace(/\s*(bg-green-100|bg-red-100|bg-gray-100|text-green-800|text-red-800|text-gray-800)/g, '');
+                        statusBadge.className += ` ${data.result.status === 'up' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+                        statusBadge.textContent = data.result.status;
+                    }
+                    
+                    // Update last checked time
+                    const lastCheckedElements = document.querySelectorAll('span');
+                    lastCheckedElements.forEach(el => {
+                        if (el.textContent.includes('Terakhir Dicek') || el.textContent.includes('Last checked')) {
+                            // Update the text after the colon to show "just now"
+                            const text = el.textContent;
+                            const colonIndex = text.indexOf(':');
+                            if (colonIndex !== -1) {
+                                el.textContent = text.substring(0, colonIndex + 1) + ' just now';
+                            } else {
+                                el.textContent = 'Last checked: just now';
+                            }
+                        }
+                    });
+                    
+                    // Show success message using existing toast function
+                    showToast(`Device pinged successfully. Status: ${data.result.status}`, 'success');
+                } else {
+                    showToast(data.message || 'Error pinging device', 'error');
+                }
+            } catch (error) {
+                showToast('Network error occurred while pinging device', 'error');
+                console.error('Error:', error);
+            } finally {
+                // Restore original button text
+                pingBtn.innerHTML = originalText;
+                pingBtn.disabled = false;
+            }
+        }
+    </script>
 </x-app-layout>
