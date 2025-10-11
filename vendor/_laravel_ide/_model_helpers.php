@@ -985,6 +985,7 @@ namespace App\Models {
     /**
      * App\Models\User
      *
+     * @property string|null $profile_photo_path
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
      * @property string|null $remember_token
@@ -994,6 +995,7 @@ namespace App\Models {
      * @property string $name
      * @property int $id
      * @property-read mixed $role_name
+     * @property-read mixed $profile_photo_url
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
      * @property-read int|null $notifications_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Role> $roles
@@ -1008,6 +1010,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereRememberToken($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereCreatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereUpdatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereProfilePhotoPath($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User role()
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User withoutRole()
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User permission()

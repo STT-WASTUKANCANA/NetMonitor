@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -32,9 +33,44 @@ class ProfileController extends Controller
             $request->user()->email_verified_at = null;
         }
 
+        // Handle profile photo upload
+        if ($request->hasFile('avatar')) {
+            $request->validate([
+                'avatar' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ]);
+
+            $user = $request->user();
+            
+            // Delete old profile photo if exists
+            if ($user->profile_photo_path) {
+                Storage::delete($user->profile_photo_path);
+            }
+
+            // Store new profile photo
+            $path = $request->file('avatar')->store('profile-photos', 'public');
+            $user->profile_photo_path = $path;
+        }
+
         $request->user()->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    /**
+     * Remove the user's profile photo.
+     */
+    public function destroyPhoto(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        
+        // Delete old profile photo if exists
+        if ($user->profile_photo_path) {
+            Storage::delete($user->profile_photo_path);
+            $user->profile_photo_path = null;
+            $user->save();
+        }
+
+        return Redirect::route('profile.edit')->with('status', 'profile-photo-deleted');
     }
 
     /**
@@ -47,6 +83,11 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        // Delete profile photo when account is deleted
+        if ($user->profile_photo_path) {
+            Storage::delete($user->profile_photo_path);
+        }
 
         Auth::logout();
 

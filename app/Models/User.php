@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'profile_photo_path',
     ];
 
     /**
@@ -69,5 +70,18 @@ class User extends Authenticatable
     public function getRoleNameAttribute(): string
     {
         return $this->roles->first()->name ?? 'User';
+    }
+    
+    /**
+     * Get the profile photo URL
+     */
+    public function getProfilePhotoUrlAttribute(): string
+    {
+        if ($this->profile_photo_path) {
+            return asset('storage/' . $this->profile_photo_path);
+        }
+        
+        // Return default avatar if no profile photo is set
+        return asset('images/default-profile.svg');
     }
 }

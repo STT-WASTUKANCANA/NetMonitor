@@ -1,13 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight hidden">
-                {{ __('Profile') }}
-            </h2>
-            <div class="mb-6">
+            <div class="mb-2">
                 <!-- Judul Halaman -->
                 <div class="flex items-center justify-between">
-                    <h1 class="text-2xl font-semibold text-black">Profile</h1>
+                    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                        {{ __('Profile') }}
+                    </h2>
                 </div>
 
                 <!-- Breadcrumb -->

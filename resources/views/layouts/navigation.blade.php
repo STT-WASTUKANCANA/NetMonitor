@@ -84,10 +84,7 @@
 
                             <div class="flex items-center">
                                 <!-- Avatar -->
-                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 
-                            flex items-center justify-center text-white font-semibold text-sm mr-2 shadow-md">
-                                    {{ substr(Auth::user()->name, 0, 1) }}
-                                </div>
+                                <x-avatar :user="Auth::user()" size="sm" :showName="false" class="mr-2" />
 
                                 <!-- Nama -->
                                 <div class="hidden md:block font-medium">{{ Auth::user()->name }}</div>
@@ -242,10 +239,7 @@
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
                 <div class="flex items-center">
-                    <div
-                        class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium text-sm mr-3">
-                        {{ substr(Auth::user()->name, 0, 1) }}
-                    </div>
+                    <x-avatar :user="Auth::user()" size="lg" :showName="false" class="mr-3" />
                     <div>
                         <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}
                         </div>

@@ -73,10 +73,23 @@
                 <div class="relative">
                     <img 
                         id="avatar-preview" 
-                        src="{{ $user->avatar ? Storage::url($user->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&color=7F9CF5&background=EBF4FF' }}" 
+                        src="{{ $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&color=7F9CF5&background=EBF4FF' }}" 
                         alt="Avatar Preview" 
                         class="w-16 h-16 rounded-full object-cover border-2 border-gray-200 shadow-sm"
                     >
+                    @if($user->profile_photo_path)
+                    <form method="post" action="{{ route('profile.photo.destroy') }}" class="absolute -bottom-2 -right-2">
+                        @csrf
+                        @method('delete')
+                        <button type="submit" 
+                                class="bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-sm transition duration-200"
+                                title="Remove profile photo">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </form>
+                    @endif
                 </div>
                 <div class="flex-1">
                     <x-text-input 
