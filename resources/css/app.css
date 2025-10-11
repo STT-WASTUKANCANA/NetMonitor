@@ -41,3 +41,21 @@ body {
 .text-secondary {
   color: var(--text-secondary);
 }
+
+.theme-transition {
+    transition: all 0.3s ease-in-out;
+}
+
+/* 🎭 Base Theme Utilities */
+.bg-theme {
+    background-color: var(--color-bg);
+}
+.text-theme {
+    color: var(--color-text);
+}
+.surface {
+    background-color: var(--color-surface);
+}
+.border-theme {
+    border-color: var(--color-muted);
+}
