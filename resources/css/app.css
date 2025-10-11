@@ -5,22 +5,23 @@
 :root {
   --bg: #FFFFFF;
   --bg-secondary: #F5F5F5;
-  --text: #1A1A1A;
-  --text-secondary: #5C5C5C;
+  --text: #000000; /* Changed to pure black */
+  --text-secondary: #333333; /* Darker gray for better contrast */
   --primary: #FF4D6D;
   --primary-hover: #FF6F91;
 }
 
-.dark {
+/* Remove or minimize dark mode styles */
+/* .dark {
   --bg: #0D0D0D;
   --bg-secondary: #1A1A1A;
   --text: #EAEAEA;
   --text-secondary: #A1A1A1;
   --primary: #FF8BA7;
   --primary-hover: #FFB3C1;
-}
+} */
 
-/* Apply the new color variables */
+/* Apply the light mode color variables */
 body {
   background-color: var(--bg);
   color: var(--text);
@@ -46,16 +47,18 @@ body {
     transition: all 0.3s ease-in-out;
 }
 
-/* 🎭 Base Theme Utilities */
+/* Light mode focused theme utilities */
 .bg-theme {
-    background-color: var(--color-bg);
+    background-color: var(--bg);
 }
 .text-theme {
-    color: var(--color-text);
+    color: var(--text);
 }
 .surface {
-    background-color: var(--color-surface);
+    background-color: #FFFFFF;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
 }
 .border-theme {
-    border-color: var(--color-muted);
+    border-color: #e5e7eb;
 }

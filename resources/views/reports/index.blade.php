@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Performance Reports') }}
         </h2>
     </x-slot>
@@ -8,21 +8,21 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Filters -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6 text-gray-900">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label for="device-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pilih Perangkat</label>
-                            <select id="device-select" multiple class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                            <label for="device-select" class="block text-sm font-medium text-gray-700 mb-1">Pilih Perangkat</label>
+                            <select id="device-select" multiple class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 @foreach($devices as $device)
                                     <option value="{{ $device->id }}">{{ $device->name }} ({{ $device->ip_address }})</option>
                                 @endforeach
                             </select>
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Pilih satu atau lebih perangkat untuk difilter</p>
+                            <p class="mt-1 text-sm text-gray-500">Pilih satu atau lebih perangkat untuk difilter</p>
                         </div>
                         
                         <div>
-                            <label for="date-range" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rentang Waktu</label>
+                            <label for="date-range" class="block text-sm font-medium text-gray-700 mb-1">Rentang Waktu</label>
                             <select id="date-range" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 <option value="1">1 Hari</option>
                                 <option value="7" selected>7 Hari</option>
@@ -47,8 +47,8 @@
             </div>
 
             <!-- Response Time Chart -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6 text-gray-900">
                     <h3 class="text-lg font-medium mb-4">Tren Waktu Respons (ms)</h3>
                     <div class="h-80">
                         <canvas id="responseTimeChart"></canvas>
@@ -57,8 +57,8 @@
             </div>
 
             <!-- Status Chart -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
                     <h3 class="text-lg font-medium mb-4">Tren Status Perangkat</h3>
                     <div class="h-80">
                         <canvas id="statusChart"></canvas>

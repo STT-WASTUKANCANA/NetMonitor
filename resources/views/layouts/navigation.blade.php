@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -6,8 +6,8 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" class="flex items-center">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
-                        <span class="ml-2 text-xl font-bold text-gray-800 dark:text-white hidden md:block">Monitoring
+                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
+                        <span class="ml-2 text-xl font-bold text-gray-800 hidden md:block">Monitoring
                             Konektivitas</span>
                     </a>
                 </div>
@@ -47,7 +47,7 @@
                             {{ __('Alerts') }}
                             @if(auth()->user()->can('view alerts') && \App\Models\Alert::where('status', 'active')->count() > 0)
                                 <span
-                                    class="ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300">
+                                    class="ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                     {{ \App\Models\Alert::where('status', 'active')->count() }}
                                 </span>
                             @endif
@@ -70,30 +70,13 @@
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <!-- Dark Mode Toggle -->
-                {{-- <button id="dark-mode-toggle"
-                    class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 mr-3 transition-colors duration-200">
-                    <svg id="dark-mode-sun" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
-                        </path>
-                    </svg>
-                    <svg id="dark-mode-moon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
-                        </path>
-                    </svg>
-                </button> --}}
-
                 <x-dropdown align="right" width="56">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-lg
-                   text-gray-700 dark:text-gray-200 
-                   bg-white dark:bg-gray-800 
-                   hover:bg-gray-300 dark:hover:bg-gray-700/70
-                   transition-all duration-200 ease-in-out shadow-sm dark:shadow-none">
+                   text-gray-700 
+                   bg-white 
+                   hover:bg-gray-100
+                   transition-all duration-200 ease-in-out shadow-sm">
 
                             <div class="flex items-center">
                                 <!-- Avatar -->
@@ -119,24 +102,23 @@
 
                     <x-slot name="content">
                         <div
-                            class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-t-lg">
-                            <div class="font-semibold text-base text-gray-800 dark:text-gray-100">
+                            class="px-4 py-3 border-b border-gray-200 bg-white rounded-t-lg">
+                            <div class="font-semibold text-base text-gray-800">
                                 {{ Auth::user()->name }}</div>
-                            <div class="text-sm text-gray-500 dark:text-gray-400">{{ Auth::user()->email }}</div>
+                            <div class="text-sm text-gray-500">{{ Auth::user()->email }}</div>
 
                             <div class="mt-2">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                             bg-blue-100 text-blue-800 
-                             dark:bg-blue-900/30 dark:text-blue-300 border border-transparent dark:border-blue-700/30">
+                             bg-blue-100 text-blue-800">
                                     {{ Auth::user()->getRoleNameAttribute() }}
                                 </span>
                             </div>
                         </div>
 
                         <div
-                            class="bg-white dark:bg-gray-800 rounded-b-lg shadow-lg dark:shadow-gray-900/40 overflow-hidden">
-                            <x-dropdown-link :href="route('profile.edit')" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 
-                                    hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-150">
+                            class="bg-white rounded-b-lg shadow-lg overflow-hidden">
+                            <x-dropdown-link :href="route('profile.edit')" class="flex items-center px-4 py-2 text-gray-700 
+                                    hover:bg-gray-100 transition-all duration-150">
                                 <svg class="w-5 h-5 mr-2 opacity-70" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -149,8 +131,7 @@
                                 @csrf
                                 <x-dropdown-link :href="route('logout')"
                                     onclick="event.preventDefault(); this.closest('form').submit();" class="flex items-center px-4 py-2 text-red-600 hover:text-red-700 
-                                        dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 
-                                        transition-all duration-150">
+                                        hover:bg-red-50 transition-all duration-150">
                                     <svg class="w-5 h-5 mr-2 opacity-70" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -167,7 +148,7 @@
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open"
-                    class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700 focus:text-gray-500 transition duration-150 ease-in-out">
+                    class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex"
                             stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -219,7 +200,7 @@
                     {{ __('Alerts') }}
                     @if(auth()->user()->can('view alerts') && \App\Models\Alert::where('status', 'active')->count() > 0)
                         <span
-                            class="ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300">
+                            class="ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                             {{ \App\Models\Alert::where('status', 'active')->count() }}
                         </span>
                     @endif
@@ -241,7 +222,7 @@
         </div>
 
         <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
+        <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
                 <div class="flex items-center">
                     <div
@@ -249,13 +230,13 @@
                         {{ substr(Auth::user()->name, 0, 1) }}
                     </div>
                     <div>
-                        <div class="font-medium text-base text-gray-800 dark:text-gray-200">{{ Auth::user()->name }}
+                        <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}
                         </div>
-                        <div class="font-medium text-sm text-gray-500 dark:text-gray-400">{{ Auth::user()->email }}
+                        <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}
                         </div>
                         <div class="mt-1">
                             <span
-                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                 {{ Auth::user()->getRoleNameAttribute() }}
                             </span>
                         </div>
@@ -279,7 +260,7 @@
 
                     <x-responsive-nav-link :href="route('logout')" onclick="event.preventDefault();
                                         this.closest('form').submit();"
-                        class="flex items-center text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
+                        class="flex items-center text-red-600 hover:text-red-800">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -293,53 +274,3 @@
         </div>
     </div>
 </nav>
-
-<script>
-    // Dark mode toggle functionality
-    document.addEventListener('DOMContentLoaded', function () {
-        const darkModeToggle = document.getElementById('dark-mode-toggle');
-        const html = document.documentElement;
-
-        // Check for saved theme preference or respect OS preference
-        if (localStorage.theme === 'dark' ||
-            (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            html.classList.add('dark');
-            // Ensure both navigation and dashboard toggles show correct state
-            document.querySelectorAll('#dark-mode-sun, #dashboard-dark-mode-sun').forEach(el => {
-                if (el) el.classList.remove('hidden');
-            });
-            document.querySelectorAll('#dark-mode-moon, #dashboard-dark-mode-moon').forEach(el => {
-                if (el) el.classList.add('hidden');
-            });
-        } else {
-            html.classList.remove('dark');
-            // Ensure both navigation and dashboard toggles show correct state
-            document.querySelectorAll('#dark-mode-sun, #dashboard-dark-mode-sun').forEach(el => {
-                if (el) el.classList.add('hidden');
-            });
-            document.querySelectorAll('#dark-mode-moon, #dashboard-dark-mode-moon').forEach(el => {
-                if (el) el.classList.remove('hidden');
-            });
-        }
-
-        // Toggle dark mode
-        darkModeToggle?.addEventListener('click', function () {
-            html.classList.toggle('dark');
-
-            // Update both the dashboard and navigation toggles' appearance
-            document.querySelectorAll('#dark-mode-sun, #dashboard-dark-mode-sun').forEach(el => {
-                if (el) el.classList.toggle('hidden');
-            });
-            document.querySelectorAll('#dark-mode-moon, #dashboard-dark-mode-moon').forEach(el => {
-                if (el) el.classList.toggle('hidden');
-            });
-
-            // Save preference to localStorage
-            if (html.classList.contains('dark')) {
-                localStorage.theme = 'dark';
-            } else {
-                localStorage.theme = 'light';
-            }
-        });
-    });
-</script>

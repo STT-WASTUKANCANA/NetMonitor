@@ -19,25 +19,15 @@
 
     <!-- Icons -->
     <link rel="icon" type="image/png" href="{{ asset('favicon.ico') }}">
-
-    <!-- Dark Mode Support -->
-    <script>
-        // On page load or when changing themes, best to add inline in `head` to avoid FOUC
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark')
-        } else {
-            document.documentElement.classList.remove('dark')
-        }
-    </script>
 </head>
 
-<body class="font-sans antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 h-full flex flex-col">
+<body class="font-sans antialiased bg-gray-50 text-gray-900 h-full flex flex-col">
     <div class="flex flex-col flex-1 min-h-screen">
         @include('layouts.navigation')
 
         <!-- Page Heading -->
         @isset($header)
-            <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+            <header class="bg-white shadow-sm border-b border-gray-200">
                 <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center justify-between">
                         <div>
@@ -47,11 +37,11 @@
                             <!-- Quick Stats -->
                             @auth
                                 <div class="hidden md:flex items-center space-x-4 text-sm">
-                                    <div class="flex items-center text-green-600 dark:text-green-400">
+                                    <div class="flex items-center text-green-600">
                                         <div class="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
                                         <span>{{ \App\Models\Device::where('status', 'up')->count() }}</span>
                                     </div>
-                                    <div class="flex items-center text-red-600 dark:text-red-400">
+                                    <div class="flex items-center text-red-600">
                                         <div class="w-2 h-2 rounded-full bg-red-500 mr-1"></div>
                                         <span>{{ \App\Models\Device::where('status', 'down')->count() }}</span>
                                     </div>
@@ -68,7 +58,7 @@
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 @if(session('success'))
                     <div
-                        class="mb-6 rounded-lg bg-green-50 dark:bg-green-900/20 p-4 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800/50">
+                        class="mb-6 rounded-lg bg-green-50 p-4 text-green-800 border border-green-200">
                         <div class="flex">
                             <div class="flex-shrink-0">
                                 <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
@@ -87,7 +77,7 @@
 
                 @if(session('error'))
                     <div
-                        class="mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 p-4 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800/50">
+                        class="mb-6 rounded-lg bg-red-50 p-4 text-red-800 border border-red-200">
                         <div class="flex">
                             <div class="flex-shrink-0">
                                 <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
@@ -109,20 +99,20 @@
         </main>
 
         {{-- <!-- Footer -->
-        <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-auto">
+        <footer class="bg-white border-t border-gray-200 mt-auto">
             <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                 <div class="md:flex md:items-center md:justify-between">
                     <div class="flex justify-center md:justify-start">
                         <div class="flex items-center">
                             <x-application-logo
-                                class="block h-8 w-auto fill-current text-gray-800 dark:text-gray-200" />
-                            <span class="ml-2 text-lg font-semibold text-gray-800 dark:text-white">
+                                class="block h-8 w-auto fill-current text-gray-800" />
+                            <span class="ml-2 text-lg font-semibold text-gray-800">
                                 Monitoring System
                             </span>
                         </div>
                     </div>
                     <div class="mt-4 md:mt-0 md:order-1">
-                        <p class="text-center text-sm text-gray-500 dark:text-gray-400">
+                        <p class="text-center text-sm text-gray-500">
                             &copy; {{ date('Y') }} STT Wastukancana. All rights reserved.
                         </p>
                     </div>
@@ -139,7 +129,7 @@
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `max-w-sm w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 transition duration-300 ease-in-out transform translate-y-0 opacity-100`;
+            toast.className = `max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 transition duration-300 ease-in-out transform translate-y-0 opacity-100`;
             toast.innerHTML = `
                     <div class="p-4">
                         <div class="flex items-start">
@@ -150,10 +140,10 @@
                 }
                             </div>
                             <div class="ml-3 w-0 flex-1 pt-0.5">
-                                <p class="text-sm font-medium text-gray-900 dark:text-white">${message}</p>
+                                <p class="text-sm font-medium text-gray-900">${message}</p>
                             </div>
                             <div class="ml-4 flex-shrink-0 flex">
-                                <button onclick="this.parentElement.parentElement.parentElement.parentElement.remove()" class="bg-white dark:bg-gray-800 rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none">
+                                <button onclick="this.parentElement.parentElement.parentElement.parentElement.remove()" class="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none">
                                     <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                                     </svg>
