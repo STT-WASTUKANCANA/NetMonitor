@@ -12,33 +12,48 @@
                 <div class="p-6 text-gray-900">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label for="device-select" class="block text-sm font-medium text-gray-700 mb-1">Pilih Perangkat</label>
-                            <select id="device-select" multiple class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <label for="device-select" class="block text-sm font-medium text-gray-700 mb-1">
+                                Pilih Perangkat
+                            </label>
+
+                            <select id="device-select" multiple class="w-full h-56 text-sm rounded-lg border border-gray-300 bg-white shadow-sm
+                            focus:border-blue-100 focus:ring focus:ring-indigo-200 focus:ring-opacity-50
+                            overflow-y-auto p-2 space-y-1">
                                 @foreach($devices as $device)
-                                    <option value="{{ $device->id }}">{{ $device->name }} ({{ $device->ip_address }})</option>
+                                    <option value="{{ $device->id }}"
+                                        class="py-2 px-3 border-b border-gray-200 last:border-0 hover:bg-indigo-50">
+                                        {{ $device->name }}
+                                    </option>
                                 @endforeach
                             </select>
-                            <p class="mt-1 text-sm text-gray-500">Pilih satu atau lebih perangkat untuk difilter</p>
+
+                            <p class="mt-1 text-sm text-gray-500">
+                                Pilih satu atau lebih perangkat untuk difilter
+                            </p>
                         </div>
-                        
+
                         <div>
-                            <label for="date-range" class="block text-sm font-medium text-gray-700 mb-1">Rentang Waktu</label>
-                            <select id="date-range" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <label for="date-range" class="block text-sm font-medium text-gray-700 mb-1">Rentang
+                                Waktu</label>
+                            <select id="date-range"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 <option value="1">1 Hari</option>
                                 <option value="7" selected>7 Hari</option>
                                 <option value="30">30 Hari</option>
                                 <option value="90">90 Hari</option>
                             </select>
                         </div>
-                        
+
                         <div class="flex items-end space-x-2">
-                            <button id="refresh-charts" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            <button id="refresh-charts"
+                                class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                                 Refresh Charts
                             </button>
                         </div>
-                        
+
                         <div class="flex items-end">
-                            <button id="generate-pdf" class="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                            <button id="generate-pdf"
+                                class="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                                 Generate PDF Report
                             </button>
                         </div>
@@ -70,25 +85,25 @@
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <script>
         // Initialize charts
         let responseTimeChart, statusChart;
-        
+
         // Fetch and update charts
         async function updateCharts() {
             // Get selected devices and date range
             const selectedDevices = Array.from(document.getElementById('device-select').selectedOptions)
                 .map(option => option.value);
             const dateRange = document.getElementById('date-range').value;
-            
+
             // Update response time chart
             await updateResponseTimeChart(selectedDevices, dateRange);
-            
+
             // Update status chart
             await updateStatusChart(selectedDevices, dateRange);
         }
-        
+
         async function updateResponseTimeChart(deviceIds, range) {
             try {
                 const response = await fetch(`{{ route('reports.response-time') }}?${new URLSearchParams({
@@ -101,16 +116,16 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     }
                 });
-                
+
                 if (response.ok) {
                     const data = await response.json();
-                    
+
                     const ctx = document.getElementById('responseTimeChart').getContext('2d');
-                    
+
                     if (responseTimeChart) {
                         responseTimeChart.destroy();
                     }
-                    
+
                     responseTimeChart = new Chart(ctx, {
                         type: 'line',
                         data: {
@@ -149,7 +164,7 @@
                 console.error('Error fetching response time data:', error);
             }
         }
-        
+
         async function updateStatusChart(deviceIds, range) {
             try {
                 const response = await fetch(`{{ route('reports.status') }}?${new URLSearchParams({
@@ -162,16 +177,16 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     }
                 });
-                
+
                 if (response.ok) {
                     const data = await response.json();
-                    
+
                     const ctx = document.getElementById('statusChart').getContext('2d');
-                    
+
                     if (statusChart) {
                         statusChart.destroy();
                     }
-                    
+
                     statusChart = new Chart(ctx, {
                         type: 'bar',
                         data: {
@@ -218,32 +233,32 @@
                 console.error('Error fetching status data:', error);
             }
         }
-        
+
         // Setup event listeners
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Initialize charts
             updateCharts();
-            
+
             // Refresh button
             document.getElementById('refresh-charts').addEventListener('click', updateCharts);
-            
+
             // Auto-refresh when filters change
             document.getElementById('device-select').addEventListener('change', updateCharts);
             document.getElementById('date-range').addEventListener('change', updateCharts);
-            
+
             // PDF generation
-            document.getElementById('generate-pdf').addEventListener('click', function() {
+            document.getElementById('generate-pdf').addEventListener('click', function () {
                 // Get selected devices and date range
                 const selectedDevices = Array.from(document.getElementById('device-select').selectedOptions)
                     .map(option => option.value);
                 const dateRange = document.getElementById('date-range').value;
-                
+
                 // Build the query parameters
                 const params = new URLSearchParams({
                     device_ids: selectedDevices,
                     range: dateRange
                 });
-                
+
                 // Redirect to the PDF generation endpoint
                 window.location.href = '{{ route('reports.pdf') }}?' + params.toString();
             });

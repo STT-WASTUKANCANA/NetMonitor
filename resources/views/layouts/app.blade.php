@@ -8,7 +8,7 @@
     <meta name="description" content="Sistem Monitoring Konektivitas Jaringan STT Wastukancana">
     <meta name="author" content="STT Wastukancana IT Department">
 
-    <title>{{ config('app.name', 'Monitoring System') }} - @yield('title', 'Sistem Monitoring Konektivitas Jaringan STT Wastukancana')</title>
+    <title>{{ config('app.name', 'Monitoring System') }} @yield('title', 'Sistem Monitoring Konektivitas Jaringan STT Wastukancana')</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
