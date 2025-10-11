@@ -50,7 +50,7 @@ Sistem monitoring jaringan berbasis web untuk memantau kesehatan dan performa pe
 
 1. **Clone repository:**
    ```bash
-   git clone https://github.com/your-repo/monitoring-konektivitas.git
+   git clone https://github.com/bondanbanuaji/monitoring-konektivitas.git
    cd monitoring-konektivitas
    ```
 
