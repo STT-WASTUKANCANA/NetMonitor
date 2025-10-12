@@ -117,7 +117,7 @@
                         x-transition:leave="transition ease-in duration-150"
                         x-transition:leave-start="opacity-100 scale-100"
                         x-transition:leave-end="opacity-0 scale-95"
-                        class="absolute right-0 mt-2 w-72 origin-top-right rounded-2xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                        class="absolute right-0 mt-2 w-72 origin-top-right rounded-2xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-40"
                         style="display: none;">
                         
                         <div class="p-4">
@@ -176,7 +176,7 @@
          x-transition:leave="duration-200 ease-in"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-[1000] bg-white flex items-center justify-center p-6 sm:p-8"
+         class="fixed inset-0 z-50 bg-white bg-opacity-95 backdrop-blur-sm flex items-center justify-center p-6 sm:p-8"
          style="display: none;"
          x-cloak>
         
