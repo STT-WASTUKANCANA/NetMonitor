@@ -25,9 +25,14 @@ class DeviceResource extends JsonResource
             'description' => $this->description,
             'status' => $this->status,
             'last_checked_at' => $this->last_checked_at?->format('Y-m-d H:i:s'),
+            'last_checked_formatted' => $this->last_checked_formatted,
+            'last_checked_short' => $this->last_checked_short,
+            'last_checked_day' => $this->last_checked_day,
             'is_active' => $this->is_active,
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'created_formatted' => $this->created_formatted,
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
+            'updated_formatted' => $this->updated_formatted,
         ];
     }
 }

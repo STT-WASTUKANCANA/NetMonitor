@@ -52,13 +52,13 @@ class DeviceMonitoringService
             'status' => $status,
             'response_time' => $responseTime,
             'message' => $status === 'up' ? 'Device responded to ping' : 'Device did not respond to ping',
-            'checked_at' => now(),
+            'checked_at' => now(), // This will use the application timezone
         ]);
 
         // Update device's status and last checked time
         $device->update([
             'status' => $status,
-            'last_checked_at' => now(),
+            'last_checked_at' => now(), // This will use the application timezone
         ]);
 
         // Create alert if status changed from up to down (or vice versa)
@@ -67,7 +67,14 @@ class DeviceMonitoringService
         return [
             'status' => $status,
             'response_time' => $responseTime,
-            'log' => $log
+            'log' => $log,
+            'timestamp' => now(),
+            'datetime_info' => [
+                'current' => now()->format('l, d F Y H:i:s'),
+                'date' => now()->format('d/m/Y'),
+                'time' => now()->format('H:i:s'),
+                'day' => now()->format('l')
+            ]
         ];
     }
 
@@ -150,7 +157,7 @@ class DeviceMonitoringService
             // Update child device status to down
             $child->update([
                 'status' => 'down',
-                'last_checked_at' => now(),
+                'last_checked_at' => now(), // This will use the application timezone
             ]);
 
             // Create a log entry for the child
@@ -159,7 +166,7 @@ class DeviceMonitoringService
                 'status' => 'down',
                 'response_time' => null,
                 'message' => "Device went down due to parent device failure ({$parent->name})",
-                'checked_at' => now(),
+                'checked_at' => now(), // This will use the application timezone
             ]);
 
             // Create alert for the child if needed
@@ -214,7 +221,7 @@ class DeviceMonitoringService
                     ->where('status', 'active')
                     ->update([
                         'status' => 'resolved',
-                        'resolved_at' => now(),
+                        'resolved_at' => now(), // This will use the application timezone
                     ]);
             }
         }

@@ -12,6 +12,11 @@ namespace App\Models {
      * @property string|null $message
      * @property mixed $device_id
      * @property int $id
+     * @property-read mixed $resolved_formatted
+     * @property-read mixed $resolved_short
+     * @property-read mixed $resolved_day
+     * @property-read mixed $created_formatted
+     * @property-read mixed $updated_formatted
      * @property-read \App\Models\Device $device
      * @method static \Illuminate\Database\Eloquent\Builder<Alert>|Alert whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Alert>|Alert whereDeviceId($value)
@@ -338,6 +343,11 @@ namespace App\Models {
      * @property string $ip_address
      * @property string $name
      * @property int $id
+     * @property-read mixed $last_checked_formatted
+     * @property-read mixed $last_checked_short
+     * @property-read mixed $last_checked_day
+     * @property-read mixed $created_formatted
+     * @property-read mixed $updated_formatted
      * @property-read \App\Models\Device $parent
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Device> $children
      * @property-read int|null $children_count
@@ -668,17 +678,24 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
      * @property bool $is_manual_check
+     * @property string|null $message
      * @property \Illuminate\Support\Carbon $checked_at
      * @property mixed $status
      * @property float|null $response_time
      * @property mixed $device_id
      * @property int $id
+     * @property-read mixed $checked_formatted
+     * @property-read mixed $checked_short
+     * @property-read mixed $checked_day
+     * @property-read mixed $created_formatted
+     * @property-read mixed $updated_formatted
      * @property-read \App\Models\Device $device
      * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereDeviceId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereResponseTime($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereCheckedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereMessage($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereIsManualCheck($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereCreatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereUpdatedAt($value)

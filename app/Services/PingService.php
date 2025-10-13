@@ -88,14 +88,14 @@ class PingService
             'status' => $result['status'],
             'response_time' => $result['response_time'],
             'message' => $result['message'],
-            'checked_at' => now(),
+            'checked_at' => now(), // This will use the application timezone
             'is_manual_check' => true, // Mark this as a manual check
         ]);
 
         // Update the device's status and last checked time
         $device->update([
             'status' => $result['status'],
-            'last_checked_at' => now(),
+            'last_checked_at' => now(), // This will use the application timezone
         ]);
 
         // Check if an alert needs to be created based on status change
@@ -109,7 +109,14 @@ class PingService
         return [
             'device' => $device,
             'log' => $log,
-            'result' => $result
+            'result' => $result,
+            'timestamp' => now(),
+            'datetime_info' => [
+                'current' => now()->format('l, d F Y H:i:s'),
+                'date' => now()->format('d/m/Y'),
+                'time' => now()->format('H:i:s'),
+                'day' => now()->format('l')
+            ]
         ];
     }
 
@@ -149,7 +156,7 @@ class PingService
                     ->where('status', 'active')
                     ->update([
                         'status' => 'resolved',
-                        'resolved_at' => now(),
+                        'resolved_at' => now(), // This will use the application timezone
                     ]);
             }
         }
@@ -167,7 +174,7 @@ class PingService
             // Update child device status to down
             $child->update([
                 'status' => 'down',
-                'last_checked_at' => now(),
+                'last_checked_at' => now(), // This will use the application timezone
             ]);
 
             // Create a log entry for the child
@@ -176,7 +183,7 @@ class PingService
                 'status' => 'down',
                 'response_time' => null,
                 'message' => "Device went down due to parent device failure ({$parent->name})",
-                'checked_at' => now(),
+                'checked_at' => now(), // This will use the application timezone
                 'is_manual_check' => true, // Mark as manual check
             ]);
 

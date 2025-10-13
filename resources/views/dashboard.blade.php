@@ -6,13 +6,19 @@
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                     {{ __('Dashboard') }}
                 </h2>
-                <div class="flex items-center space-x-2">
-                    <span class="text-sm text-gray-500" id="last-updated">Memuat...</span>
-                    <button id="refresh-btn" class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
-                    </button>
+                <div class="flex flex-wrap items-center justify-between mt-1">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-500" id="last-updated">Memuat...</span>
+                        <button id="refresh-btn" class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="text-right">
+                        <div id="current-date" class="text-sm font-medium text-gray-800">{{ $currentDate ?? now()->format('l, d F Y') }}</div>
+                        <div id="current-time" class="text-xs text-gray-500">{{ $currentTime ?? now()->format('H:i:s') }}</div>
+                    </div>
                 </div>
             </div>
 
@@ -327,7 +333,15 @@
                     document.getElementById('active-alerts-stat').textContent = data.activeAlerts;
                     
                     // Update last updated time
-                    document.getElementById('last-updated').textContent = 'Terakhir diperbarui: ' + new Date().toLocaleTimeString();
+                    const now = new Date();
+                    const jakartaTime = now.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    document.getElementById('last-updated').textContent = 'Terakhir diperbarui: ' + jakartaTime;
+                    
+                    // Update current date and time if available in the response
+                    if (data.currentDateTime) {
+                        document.getElementById('current-date').textContent = data.currentDateTime.full;
+                        document.getElementById('current-time').textContent = data.currentDateTime.time;
+                    }
                     
                     // Update main devices status
                     updateMainDevices(data.mainDevices);
@@ -463,7 +477,7 @@
                 cardHtml += `
                     <div class="mt-4 pt-4 border-t border-gray-200 flex justify-between">
                         <span class="text-xs text-gray-500">
-                            Diperiksa: ${device.last_checked_at}
+                            Diperiksa: ${device.last_checked_short || device.last_checked_at}
                         </span>
                     </div>
                 </div>
@@ -475,6 +489,33 @@
             gridContent += '</div>';
             container.innerHTML = gridContent;
         }
+        
+        // Update the clock every second
+        function updateClock() {
+            const now = new Date();
+            // Format date in Indonesian format
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                timeZone: 'Asia/Jakarta'
+            };
+            const formattedDate = now.toLocaleDateString('id-ID', options);
+            const formattedTime = now.toLocaleTimeString('id-ID', { 
+                timeZone: 'Asia/Jakarta', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            
+            document.getElementById('current-date').textContent = formattedDate;
+            document.getElementById('current-time').textContent = formattedTime;
+        }
+        
+        // Update the clock immediately and then every second
+        updateClock();
+        setInterval(updateClock, 1000);
         
         // Handle page visibility to pause/resume updates
         document.addEventListener('visibilitychange', function() {

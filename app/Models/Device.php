@@ -29,6 +29,77 @@ class Device extends Model
         'is_active' => 'boolean',
     ];
 
+    /**
+     * The attributes that should be mutated to dates.
+     *
+     * @var array
+     */
+    protected $dates = [
+        'last_checked_at',
+        'created_at',
+        'updated_at',
+    ];
+
+    /**
+     * Get the current time with the application timezone.
+     *
+     * @return \Illuminate\Support\Carbon
+     */
+    public function currentTimestamp()
+    {
+        return now();
+    }
+
+    /**
+     * Format the last checked timestamp in a readable format.
+     *
+     * @return string|null
+     */
+    public function getLastCheckedFormattedAttribute()
+    {
+        return $this->last_checked_at ? $this->last_checked_at->format('l, d F Y H:i:s') : null;
+    }
+
+    /**
+     * Format the last checked timestamp in short format (d/m/Y H:i).
+     *
+     * @return string|null
+     */
+    public function getLastCheckedShortAttribute()
+    {
+        return $this->last_checked_at ? $this->last_checked_at->format('d/m/Y H:i') : null;
+    }
+
+    /**
+     * Get the day of the week when the device was last checked.
+     *
+     * @return string|null
+     */
+    public function getLastCheckedDayAttribute()
+    {
+        return $this->last_checked_at ? $this->last_checked_at->format('l') : null;
+    }
+
+    /**
+     * Get the creation date in readable format.
+     *
+     * @return string|null
+     */
+    public function getCreatedFormattedAttribute()
+    {
+        return $this->created_at ? $this->created_at->format('l, d F Y H:i:s') : null;
+    }
+
+    /**
+     * Get the update date in readable format.
+     *
+     * @return string|null
+     */
+    public function getUpdatedFormattedAttribute()
+    {
+        return $this->updated_at ? $this->updated_at->format('l, d F Y H:i:s') : null;
+    }
+
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Device::class, 'parent_id');

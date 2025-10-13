@@ -18,6 +18,13 @@ class DashboardController extends Controller
     {
         $this->authorize('view dashboard');
         
+        // Get current date and time information
+        $currentDateTime = now();
+        $currentDate = $currentDateTime->format('l, d F Y'); // Day, date Month Year format
+        $currentDay = $currentDateTime->format('l'); // Full day name
+        $currentDateShort = $currentDateTime->format('d/m/Y'); // Day/Month/Year format
+        $currentTime = $currentDateTime->format('H:i:s'); // 24-hour time format
+        
         // Get statistics for dashboard
         $totalDevices = Device::count();
         $activeDevices = Device::where('status', 'up')->count();
@@ -53,7 +60,11 @@ class DashboardController extends Controller
             'activeAlerts', 
             'recentAlerts', 
             'mainDevices',
-            'deviceStatusData'
+            'deviceStatusData',
+            'currentDate',
+            'currentDay',
+            'currentDateShort',
+            'currentTime'
         ));
     }
     
@@ -63,6 +74,13 @@ class DashboardController extends Controller
     public function getRealTimeData()
     {
         $this->authorize('view dashboard');
+        
+        // Get current date and time information
+        $currentDateTime = now();
+        $currentDate = $currentDateTime->format('l, d F Y'); // Day, date Month Year format
+        $currentDay = $currentDateTime->format('l'); // Full day name
+        $currentDateShort = $currentDateTime->format('d/m/Y'); // Day/Month/Year format
+        $currentTime = $currentDateTime->format('H:i:s'); // 24-hour time format
         
         // Get updated statistics
         $totalDevices = Device::count();
@@ -98,6 +116,13 @@ class DashboardController extends Controller
             'downDevices' => $downDevices,
             'activeAlerts' => $activeAlerts,
             'mainDevices' => $mainDevices,
+            'currentDateTime' => [
+                'full' => $currentDate,
+                'date' => $currentDateShort,
+                'day' => $currentDay,
+                'time' => $currentTime,
+                'timestamp' => $currentDateTime->toISOString(),
+            ],
         ]);
     }
 }

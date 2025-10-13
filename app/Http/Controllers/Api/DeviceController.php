@@ -86,13 +86,13 @@ class DeviceController extends Controller
             'status' => $validated['status'],
             'response_time' => $validated['response_time'] ?? null,
             'message' => $validated['message'] ?? null,
-            'checked_at' => now(),
+            'checked_at' => now(), // This will use the application timezone
         ]);
 
         // Update the device's status and last checked time
         $device->update([
             'status' => $validated['status'],
-            'last_checked_at' => now(),
+            'last_checked_at' => now(), // This will use the application timezone
         ]);
 
         // Check if an alert needs to be created based on status change
@@ -153,7 +153,7 @@ class DeviceController extends Controller
                     ->where('status', 'active')
                     ->update([
                         'status' => 'resolved',
-                        'resolved_at' => now(),
+                        'resolved_at' => now(), // This will use the application timezone
                     ]);
             }
         }
@@ -171,7 +171,7 @@ class DeviceController extends Controller
             // Update child device status to down
             $child->update([
                 'status' => 'down',
-                'last_checked_at' => now(),
+                'last_checked_at' => now(), // This will use the application timezone
             ]);
 
             // Create a log entry for the child
@@ -180,7 +180,7 @@ class DeviceController extends Controller
                 'status' => 'down',
                 'response_time' => null,
                 'message' => "Device went down due to parent device failure ({$parent->name})",
-                'checked_at' => now(),
+                'checked_at' => now(), // This will use the application timezone
             ]);
 
             // Create alert for the child if needed
@@ -222,7 +222,13 @@ class DeviceController extends Controller
                 'message' => 'Device pinged successfully',
                 'device' => new DeviceResource($device),
                 'result' => $pingResult['result'],
-                'timestamp' => now()->toISOString()
+                'timestamp' => now()->toISOString(), // This will automatically use the application timezone
+                'datetime_info' => [
+                    'current' => now()->format('l, d F Y H:i:s'),
+                    'date' => now()->format('d/m/Y'),
+                    'time' => now()->format('H:i:s'),
+                    'day' => now()->format('l')
+                ]
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
