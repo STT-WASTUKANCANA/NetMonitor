@@ -98,7 +98,7 @@ Setelah instalasi selesai, sistem akan memiliki akun default:
 
 ### Menjalankan Monitoring
 
-Ada dua cara untuk menjalankan monitoring:
+Ada 2 cara untuk menjalankan monitoring:
 
 #### 1. Menggunakan Command Line (Direkomendasikan)
 
