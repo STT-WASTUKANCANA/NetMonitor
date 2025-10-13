@@ -184,7 +184,7 @@
                                         </tr>
                                     </thead>
                                     <tbody class="bg-white divide-y divide-gray-200">
-                                        @foreach($device->logs->sortByDesc('logged_at')->take(10) as $log)
+                                        @foreach($device->logs->sortByDesc('checked_at')->take(10) as $log)
                                             <tr>
                                                 <td class="px-6 py-4 whitespace-nowrap">
                                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
@@ -197,10 +197,10 @@
                                                     {{ $log->response_time ? $log->response_time . ' ms' : '-' }}
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {{ $log->logged_at->format('d M Y H:i:s') }}
+                                                    {{ $log->checked_at ? $log->checked_at->format('d M Y H:i:s') : '-' }}
                                                 </td>
                                                 <td class="px-6 py-4 text-sm text-gray-500 max-w-xs">
-                                                    {{ Str::limit($log->message, 50) }}
+                                                    {{ $log->message ? Str::limit($log->message, 50) : '-' }}
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -229,7 +229,7 @@
             pingBtn.disabled = true;
             
             try {
-                const response = await fetch(`/api/devices/${deviceId}/ping`, {
+                const response = await fetch(`/api/device/${deviceId}/ping`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

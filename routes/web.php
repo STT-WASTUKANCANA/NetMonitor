@@ -40,17 +40,20 @@ Route::middleware('auth')->group(function () {
     // Profile photo API-style routes for frontend JavaScript integration
     Route::prefix('api')->group(function () {
         Route::middleware('auth')->group(function () {
-            Route::get('/profile/photo', [\App\Http\Controllers\Api\ProfilePhotoController::class, 'show'])->name('api.profile.photo.show');
-            Route::post('/profile/photo', [\App\Http\Controllers\Api\ProfilePhotoController::class, 'store'])->name('api.profile.photo.store');
-            Route::delete('/profile/photo', [\App\Http\Controllers\Api\ProfilePhotoController::class, 'destroy'])->name('api.profile.photo.destroy');
+            Route::get('/profile/photo', [App\Http\Controllers\Api\ProfilePhotoController::class, 'show'])->name('api.profile.photo.show');
+            Route::post('/profile/photo', [App\Http\Controllers\Api\ProfilePhotoController::class, 'store'])->name('api.profile.photo.store');
+            Route::delete('/profile/photo', [App\Http\Controllers\Api\ProfilePhotoController::class, 'destroy'])->name('api.profile.photo.destroy');
             
             // User photo management for admin
             Route::prefix('users')->middleware('can:edit users')->group(function () {
-                Route::post('/{user}/photo', [\App\Http\Controllers\Api\UserController::class, 'updatePhoto'])->name('api.users.photo.update');
-                Route::delete('/{user}/photo', [\App\Http\Controllers\Api\UserController::class, 'removePhoto'])->name('api.users.photo.remove');
+                Route::post('/{user}/photo', [App\Http\Controllers\Api\UserController::class, 'updatePhoto'])->name('api.users.photo.update');
+                Route::delete('/{user}/photo', [App\Http\Controllers\Api\UserController::class, 'removePhoto'])->name('api.users.photo.remove');
             });
         });
     });
+    
+    // Separate route for device ping to avoid conflict with API routes
+    Route::post('/api/device/{id}/ping', [App\Http\Controllers\Api\DeviceController::class, 'pingDevice'])->middleware(['auth'])->name('api.device.ping');
 });
 
 require __DIR__.'/auth.php';

@@ -51,6 +51,7 @@ class DeviceMonitoringService
             'device_id' => $device->id,
             'status' => $status,
             'response_time' => $responseTime,
+            'message' => $status === 'up' ? 'Device responded to ping' : 'Device did not respond to ping',
             'checked_at' => now(),
         ]);
 
@@ -157,6 +158,7 @@ class DeviceMonitoringService
                 'device_id' => $child->id,
                 'status' => 'down',
                 'response_time' => null,
+                'message' => "Device went down due to parent device failure ({$parent->name})",
                 'checked_at' => now(),
             ]);
 

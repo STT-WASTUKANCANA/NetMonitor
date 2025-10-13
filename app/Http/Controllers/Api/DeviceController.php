@@ -77,6 +77,7 @@ class DeviceController extends Controller
         $validated = $request->validate([
             'status' => 'required|in:up,down',
             'response_time' => 'nullable|numeric|min:0',
+            'message' => 'nullable|string',
         ]);
 
         // Create a new log entry
@@ -84,6 +85,7 @@ class DeviceController extends Controller
             'device_id' => $device->id,
             'status' => $validated['status'],
             'response_time' => $validated['response_time'] ?? null,
+            'message' => $validated['message'] ?? null,
             'checked_at' => now(),
         ]);
 
@@ -96,8 +98,8 @@ class DeviceController extends Controller
         // Check if an alert needs to be created based on status change
         $this->checkForAlert($device, $validated['status']);
 
-        // If device is down, mark all children as down too
-        if ($validated['status'] === 'down') {
+        // If device is down and it's a 'utama' or 'sub' level device, mark all children as down too
+        if ($validated['status'] === 'down' && in_array($device->hierarchy_level, ['utama', 'sub'])) {
             $this->markChildrenAsDown($device);
         }
 
@@ -177,6 +179,7 @@ class DeviceController extends Controller
                 'device_id' => $child->id,
                 'status' => 'down',
                 'response_time' => null,
+                'message' => "Device went down due to parent device failure ({$parent->name})",
                 'checked_at' => now(),
             ]);
 

@@ -202,7 +202,7 @@
             pingBtn.disabled = true;
             
             try {
-                const response = await fetch(`/api/devices/${deviceId}/ping`, {
+                const response = await fetch(`/api/device/${deviceId}/ping`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -14,6 +14,7 @@ class DeviceLog extends Model
         'device_id',
         'response_time',
         'status',
+        'message',
         'checked_at',
         'is_manual_check',
     ];

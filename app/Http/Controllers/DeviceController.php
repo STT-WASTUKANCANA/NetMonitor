@@ -36,8 +36,9 @@ class DeviceController extends Controller
     {
         $this->authorize('create devices');
         
-        // Get all active devices that can be parents (any device can potentially be a parent)
+        // Get only active devices that can be parents (utama or sub level devices only)
         $parentDevices = Device::active()
+            ->whereIn('hierarchy_level', ['utama', 'sub'])
             ->orderBy('hierarchy_level')
             ->orderBy('name')
             ->get();
@@ -51,17 +52,32 @@ class DeviceController extends Controller
     {
         $this->authorize('create devices');
         
-        $request->validate([
+        $validationRules = [
             'name' => 'required|string|max:255',
             'ip_address' => 'required|ip',
             'type' => 'required|in:router,switch,access_point,server,other',
             'hierarchy_level' => 'required|in:utama,sub,device',
-            'parent_id' => 'nullable|exists:devices,id',
             'location' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-        ]);
+        ];
 
-        Device::create($request->all());
+        if ($request->hierarchy_level !== 'utama') {
+            $validationRules['parent_id'] = 'required|exists:devices,id';
+        }
+
+        $request->validate($validationRules);
+
+        $deviceData = $request->all();
+
+        // Additional validation to ensure parent device is not of 'device' level
+        if (isset($deviceData['parent_id']) && $deviceData['parent_id']) {
+            $parentDevice = Device::find($deviceData['parent_id']);
+            if ($parentDevice && $parentDevice->hierarchy_level === 'device') {
+                return redirect()->back()->withErrors(['parent_id' => 'Perangkat induk harus berupa perangkat utama atau sub, bukan perangkat biasa.'])->withInput();
+            }
+        }
+
+        Device::create($deviceData);
 
         return redirect()->route('devices.index')->with('success', 'Device created successfully.');
     }
@@ -84,8 +100,9 @@ class DeviceController extends Controller
     {
         $this->authorize('edit devices');
         
-        // Get all active devices that can be parents (excluding the current device to prevent circular reference)
+        // Get only active devices that can be parents (utama or sub level devices only, excluding the current device to prevent circular reference)
         $parentDevices = Device::active()
+            ->whereIn('hierarchy_level', ['utama', 'sub'])
             ->where('id', '!=', $device->id)
             ->orderBy('hierarchy_level')
             ->orderBy('name')
@@ -101,17 +118,32 @@ class DeviceController extends Controller
     {
         $this->authorize('edit devices');
         
-        $request->validate([
+        $validationRules = [
             'name' => 'required|string|max:255',
             'ip_address' => 'required|ip',
             'type' => 'required|in:router,switch,access_point,server,other',
             'hierarchy_level' => 'required|in:utama,sub,device',
-            'parent_id' => 'nullable|exists:devices,id',
             'location' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-        ]);
+        ];
 
-        $device->update($request->all());
+        if ($request->hierarchy_level !== 'utama') {
+            $validationRules['parent_id'] = 'required|exists:devices,id';
+        }
+
+        $request->validate($validationRules);
+
+        $deviceData = $request->all();
+
+        // Additional validation to ensure parent device is not of 'device' level
+        if (isset($deviceData['parent_id']) && $deviceData['parent_id']) {
+            $parentDevice = Device::find($deviceData['parent_id']);
+            if ($parentDevice && $parentDevice->hierarchy_level === 'device') {
+                return redirect()->back()->withErrors(['parent_id' => 'Perangkat induk harus berupa perangkat utama atau sub, bukan perangkat biasa.'])->withInput();
+            }
+        }
+
+        $device->update($deviceData);
 
         return redirect()->route('devices.index')->with('success', 'Device updated successfully.');
     }

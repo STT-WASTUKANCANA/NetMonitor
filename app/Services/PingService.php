@@ -30,8 +30,8 @@ class PingService
             $output = [];
             $returnCode = 0;
             
-            // Execute ping command
-            exec($command, $output, $returnCode);
+            // Execute ping command and capture any errors
+            exec($command . ' 2>&1', $output, $returnCode);
             
             $endTime = microtime(true);
             $responseTime = round(($endTime - $startTime) * 1000, 2); // Convert to milliseconds
@@ -60,7 +60,8 @@ class PingService
         } catch (\Exception $e) {
             Log::error('Error pinging device: ' . $e->getMessage(), [
                 'device_id' => $device->id,
-                'ip_address' => $ipAddress
+                'ip_address' => $ipAddress,
+                'trace' => $e->getTraceAsString()
             ]);
             
             return [
@@ -86,6 +87,7 @@ class PingService
             'device_id' => $device->id,
             'status' => $result['status'],
             'response_time' => $result['response_time'],
+            'message' => $result['message'],
             'checked_at' => now(),
             'is_manual_check' => true, // Mark this as a manual check
         ]);
@@ -99,8 +101,8 @@ class PingService
         // Check if an alert needs to be created based on status change
         $this->checkForAlert($device, $result['status']);
 
-        // If device is down and it's a 'utama' level device, mark all children as down too
-        if ($result['status'] === 'down' && $device->hierarchy_level === 'utama') {
+        // If device is down and it's a 'utama' or 'sub' level device, mark all children as down too
+        if ($result['status'] === 'down' && in_array($device->hierarchy_level, ['utama', 'sub'])) {
             $this->markChildrenAsDown($device);
         }
 
@@ -173,6 +175,7 @@ class PingService
                 'device_id' => $child->id,
                 'status' => 'down',
                 'response_time' => null,
+                'message' => "Device went down due to parent device failure ({$parent->name})",
                 'checked_at' => now(),
                 'is_manual_check' => true, // Mark as manual check
             ]);

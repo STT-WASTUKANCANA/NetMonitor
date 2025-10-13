@@ -113,14 +113,14 @@
                                 <div>
                                     <label for="parent_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Perangkat Induk</label>
                                     <select name="parent_id" id="parent_id" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                                        <option value="" {{ old('parent_id') ? '' : 'selected' }}>Tidak ada (Perangkat Utama)</option>
+                                        <option value="" {{ old('hierarchy_level') == 'utama' ? 'selected' : '' }} {{ in_array(old('hierarchy_level'), ['sub', 'device']) ? '' : 'selected' }}>Tidak ada (Perangkat Utama)</option>
                                         @foreach($parentDevices as $parentDevice)
                                             <option value="{{ $parentDevice->id }}" {{ old('parent_id') == $parentDevice->id ? 'selected' : '' }}>
                                                 {{ $parentDevice->name }} ({{ $parentDevice->ip_address }}) - {{ ucfirst($parentDevice->hierarchy_level) }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Pilih perangkat induk jika ini adalah sub-device</p>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Pilih perangkat induk jika ini adalah sub-device atau device</p>
                                 </div>
 
                                 <div>
@@ -150,6 +150,32 @@
                                 </div>
                             </div>
                         </div>
+
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const hierarchyLevelSelect = document.getElementById('hierarchy_level');
+                                const parentSelect = document.getElementById('parent_id');
+                                const parentDiv = parentSelect.closest('div');
+                                
+                                function updateParentRequirement() {
+                                    const selectedLevel = hierarchyLevelSelect.value;
+                                    
+                                    if (selectedLevel === 'utama') {
+                                        // For 'utama', parent is optional
+                                        parentSelect.required = false;
+                                    } else if (selectedLevel === 'sub' || selectedLevel === 'device') {
+                                        // For 'sub' and 'device', parent is required
+                                        parentSelect.required = true;
+                                    }
+                                }
+                                
+                                // Initial setup
+                                updateParentRequirement();
+                                
+                                // Add event listener
+                                hierarchyLevelSelect.addEventListener('change', updateParentRequirement);
+                            });
+                        </script>
 
                         <div class="mt-8 flex justify-end space-x-3">
                             <a href="{{ route('devices.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600">
