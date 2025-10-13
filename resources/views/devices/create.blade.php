@@ -112,11 +112,11 @@
                             <div class="space-y-6">
                                 <div>
                                     <label for="parent_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Perangkat Induk</label>
-                                    <select name="parent_id" id="parent_id" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                    <select name="parent_id" id="parent_id" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                                         <option value="" {{ old('parent_id') ? '' : 'selected' }}>Tidak ada (Perangkat Utama)</option>
                                         @foreach($parentDevices as $parentDevice)
                                             <option value="{{ $parentDevice->id }}" {{ old('parent_id') == $parentDevice->id ? 'selected' : '' }}>
-                                                {{ $parentDevice->name }} ({{ $parentDevice->ip_address }})
+                                                {{ $parentDevice->name }} ({{ $parentDevice->ip_address }}) - {{ ucfirst($parentDevice->hierarchy_level) }}
                                             </option>
                                         @endforeach
                                     </select>

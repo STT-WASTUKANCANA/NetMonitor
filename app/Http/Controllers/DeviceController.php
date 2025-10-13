@@ -20,9 +20,10 @@ class DeviceController extends Controller
     {
         $this->authorize('view devices');
         
-        $devices = Device::with(['children', 'logs', 'alerts'])
+        $devices = Device::with(['children', 'logs', 'alerts', 'parent'])
             ->whereNull('parent_id')
-            ->orderBy('created_at')
+            ->orderBy('hierarchy_level')
+            ->orderBy('name')
             ->get();
             
         return view('devices.index', compact('devices'));
@@ -35,7 +36,11 @@ class DeviceController extends Controller
     {
         $this->authorize('create devices');
         
-        $parentDevices = Device::where('type', 'Utama')->orWhere('type', 'Sub-Utama')->get();
+        // Get all active devices that can be parents (any device can potentially be a parent)
+        $parentDevices = Device::active()
+            ->orderBy('hierarchy_level')
+            ->orderBy('name')
+            ->get();
         return view('devices.create', compact('parentDevices'));
     }
 
@@ -79,9 +84,11 @@ class DeviceController extends Controller
     {
         $this->authorize('edit devices');
         
-        $parentDevices = Device::where('type', 'Utama')
-            ->orWhere('type', 'Sub-Utama')
+        // Get all active devices that can be parents (excluding the current device to prevent circular reference)
+        $parentDevices = Device::active()
             ->where('id', '!=', $device->id)
+            ->orderBy('hierarchy_level')
+            ->orderBy('name')
             ->get();
             
         return view('devices.edit', compact('device', 'parentDevices'));

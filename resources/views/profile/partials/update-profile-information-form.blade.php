@@ -132,5 +132,63 @@
                 reader.readAsDataURL(file);
             }
         }
+        
+        // Override the form submission to handle profile photo API separately
+        document.addEventListener('DOMContentLoaded', function() {
+            const profileForm = document.querySelector('form[method="post"][action="{{ route('profile.update') }}"]');
+            const avatarInput = document.getElementById('avatar');
+            
+            if (profileForm && avatarInput) {
+                const originalSubmit = profileForm.onsubmit || function(e) {};
+                
+                profileForm.onsubmit = async function(e) {
+                    e.preventDefault();
+                    
+                    let photoUpdated = false;
+                    
+                    // Check if avatar field has been changed
+                    if (avatarInput.files.length > 0) {
+                        // Upload the photo using the API
+                        const result = await window.ProfilePhotoManager.uploadPhoto(avatarInput.files[0]);
+                        
+                        if (result.success) {
+                            // Update the avatar preview
+                            document.getElementById('avatar-preview').src = result.profile_photo_url;
+                            photoUpdated = true;
+                        } else {
+                            window.ProfilePhotoManager.showToast(result.message, 'error');
+                            return; // Stop if photo upload failed
+                        }
+                    }
+                    
+                    // Submit the rest of the form normally if photo update was successful or not needed
+                    if (photoUpdated || avatarInput.files.length === 0) {
+                        // Temporarily remove avatar field to avoid conflicts since it's handled via API
+                        avatarInput.remove();
+                        this.submit();
+                    }
+                };
+            }
+            
+            // Update remove button to use API
+            const removeButtons = document.querySelectorAll('button[form][action="{{ route('profile.photo.destroy') }}"]');
+            removeButtons.forEach(button => {
+                const form = button.closest('form');
+                if (form) {
+                    form.onsubmit = async function(e) {
+                        e.preventDefault();
+                        const result = await window.ProfilePhotoManager.removePhoto();
+                        if (result.success) {
+                            // Update the preview to the default avatar
+                            const defaultAvatar = 'https://ui-avatars.com/api/?name=' + encodeURIComponent('{{ $user->name }}') + '&color=ffffff&background=3b82f6';
+                            document.getElementById('avatar-preview').src = result.profile_photo_url;
+                            window.ProfilePhotoManager.showToast(result.message, 'success');
+                        } else {
+                            window.ProfilePhotoManager.showToast(result.message, 'error');
+                        }
+                    };
+                }
+            });
+        });
     </script>
-</section>  
+</section>

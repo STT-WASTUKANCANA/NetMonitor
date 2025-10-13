@@ -3,7 +3,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\DeviceController;
-use App\Http\Controllers\Api\ProfilePhotoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,9 +23,4 @@ Route::prefix('devices')->group(function () {
     Route::post('/{id}/ping', [DeviceController::class, 'pingDevice'])->name('api.devices.ping');
 });
 
-// Profile photo API routes
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/profile/photo', [ProfilePhotoController::class, 'show'])->name('api.profile.photo.show');
-    Route::post('/profile/photo', [ProfilePhotoController::class, 'store'])->name('api.profile.photo.store');
-    Route::delete('/profile/photo', [ProfilePhotoController::class, 'destroy'])->name('api.profile.photo.destroy');
-});
+// Note: Profile photo routes moved to web.php to support session authentication

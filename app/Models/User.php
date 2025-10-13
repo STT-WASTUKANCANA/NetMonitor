@@ -77,8 +77,9 @@ class User extends Authenticatable
      */
     public function getProfilePhotoUrlAttribute(): string
     {
-        if ($this->profile_photo_path) {
-            return asset('storage/' . $this->profile_photo_path);
+        // Ensure we have a valid profile photo path and it's not just whitespace
+        if ($this->profile_photo_path && trim($this->profile_photo_path) !== '') {
+            return asset('storage/' . trim($this->profile_photo_path));
         }
         
         // Return default avatar if no profile photo is set

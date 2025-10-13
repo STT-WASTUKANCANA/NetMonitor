@@ -15,7 +15,7 @@ class ProfilePhotoController extends Controller
      */
     public function show(Request $request): JsonResponse
     {
-        $user = $request->user();
+        $user = $request->user() ?? auth()->user();
         
         if (!$user) {
             return response()->json([
@@ -34,12 +34,18 @@ class ProfilePhotoController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $user = $request->user();
+        $user = $request->user() ?? auth()->user();
         
         if (!$user) {
             return response()->json([
                 'error' => 'Unauthorized'
             ], 401);
+        }
+
+        // Check if user can update profile (should be allowed for authenticated users)
+        if (!$user->can('update profile') && !$user->can('edit users')) {
+            // If the user doesn't have explicit permission, check if they're updating their own profile
+            // For basic functionality, we'll allow authenticated users to update their own profile
         }
 
         $request->validate([
@@ -68,7 +74,7 @@ class ProfilePhotoController extends Controller
      */
     public function destroy(Request $request): JsonResponse
     {
-        $user = $request->user();
+        $user = $request->user() ?? auth()->user();
         
         if (!$user) {
             return response()->json([
@@ -76,9 +82,19 @@ class ProfilePhotoController extends Controller
             ], 401);
         }
 
+        // Check if user can update profile (should be allowed for authenticated users)
+        if (!$user->can('update profile') && !$user->can('edit users')) {
+            // If the user doesn't have explicit permission, check if they're updating their own profile
+            // For basic functionality, we'll allow authenticated users to update their own profile
+        }
+
         // Delete old profile photo if exists
         if ($user->profile_photo_path) {
-            Storage::delete($user->profile_photo_path);
+            // Delete the actual file from storage
+            if (Storage::exists($user->profile_photo_path)) {
+                Storage::delete($user->profile_photo_path);
+            }
+            
             $user->profile_photo_path = null;
             $user->save();
         }

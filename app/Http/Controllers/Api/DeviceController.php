@@ -46,7 +46,14 @@ class DeviceController extends Controller
      */
     public function show(string $id)
     {
-        $device = Device::with(['parent', 'children', 'logs', 'alerts'])->findOrFail($id);
+        $device = Device::with([
+            'parent', 
+            'children' => function($query) {
+                $query->orderBy('hierarchy_level')->orderBy('name');
+            }, 
+            'logs', 
+            'alerts'
+        ])->findOrFail($id);
         
         return response()->json(new DeviceResource($device));
     }
@@ -89,8 +96,8 @@ class DeviceController extends Controller
         // Check if an alert needs to be created based on status change
         $this->checkForAlert($device, $validated['status']);
 
-        // If device is down and it's a 'utama' level device, mark all children as down too
-        if ($validated['status'] === 'down' && $device->hierarchy_level === 'utama') {
+        // If device is down, mark all children as down too
+        if ($validated['status'] === 'down') {
             $this->markChildrenAsDown($device);
         }
 

@@ -118,46 +118,94 @@
     </div>
 
     <!-- Global Toast Notifications -->
-    <div id="toast-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-[80] space-y-2"></div>
+    <div id="toast-container" class="fixed top-4 right-4 z-[9999] space-y-2 max-w-sm w-full md:max-w-md lg:max-w-lg px-4 pointer-events-none"></div>
 
     <script>
         // Toast notification function
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 transition duration-300 ease-in-out transform translate-y-0 opacity-100`;
+            
+            // Determine toast styling based on type
+            let bgColor, textColor, iconColor, icon;
+            switch(type) {
+                case 'success':
+                    bgColor = 'bg-green-50 border-green-200';
+                    textColor = 'text-green-800';
+                    iconColor = 'text-green-500';
+                    icon = '<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>';
+                    break;
+                case 'error':
+                    bgColor = 'bg-red-50 border-red-200';
+                    textColor = 'text-red-800';
+                    iconColor = 'text-red-500';
+                    icon = '<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>';
+                    break;
+                case 'info':
+                case 'warning':
+                default:
+                    bgColor = 'bg-blue-50 border-blue-200';
+                    textColor = 'text-blue-800';
+                    iconColor = 'text-blue-500';
+                    icon = '<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>';
+                    break;
+            }
+            
+            toast.className = `max-w-full w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 border-l-4 ${bgColor} transform transition-transform duration-300 ease-out translate-x-0 opacity-100`;
             toast.innerHTML = `
-                    <div class="p-4">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                ${type === 'success' ?
-                    '<svg class="h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>' :
-                    (type === 'info' ?
-                    '<svg class="h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>' :
-                    '<svg class="h-6 w-6 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>')
-                }
-                            </div>
-                            <div class="ml-3 w-0 flex-1 pt-0.5">
-                                <p class="text-sm font-medium text-gray-900">${message}</p>
-                            </div>
-                            <div class="ml-4 flex-shrink-0 flex">
-                                <button onclick="this.parentElement.parentElement.parentElement.parentElement.remove()" class="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none">
-                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                            </div>
+                <div class="p-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 ${iconColor} self-start">
+                            ${icon}
+                        </div>
+                        <div class="ml-3 flex-1 min-w-0">
+                            <p class="text-sm font-medium ${textColor} break-words">${message}</p>
+                        </div>
+                        <div class="ml-4 flex-shrink-0 flex">
+                            <button onclick="this.closest('.max-w-full').remove()" aria-label="Close" class="inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-md">
+                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
-                `;
+                </div>
+            `;
+            
+            // Add the toast to the container
             container.appendChild(toast);
+            
+            // Trigger enter animation
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 10);
 
             // Auto remove after 5 seconds
+            const timeout = setTimeout(() => {
+                if (toast.parentElement) {
+                    removeToast(toast);
+                }
+            }, 5000);
+            
+            // Add click event to dismiss toast when clicked anywhere on it
+            toast.addEventListener('click', function(e) {
+                if (e.target !== toast && e.target.closest('button') !== null) return;
+                removeToast(toast, timeout);
+            });
+        }
+        
+        function removeToast(toast, timeout = null) {
+            if (timeout) clearTimeout(timeout);
+            
+            // Apply exit animation
+            toast.style.transform = 'translateX(100%)';
+            toast.style.opacity = '0';
+            
             setTimeout(() => {
                 if (toast.parentElement) {
                     toast.remove();
                 }
-            }, 5000);
+            }, 300);
         }
 
         // Show flash messages
@@ -167,6 +215,14 @@
 
         @if(session('error'))
             showToast("{{ session('error') }}", 'error');
+        @endif
+        
+        @if(session('warning'))
+            showToast("{{ session('warning') }}", 'warning');
+        @endif
+        
+        @if(session('info'))
+            showToast("{{ session('info') }}", 'info');
         @endif
     </script>
 </body>
