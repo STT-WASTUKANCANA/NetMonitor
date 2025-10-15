@@ -31,25 +31,27 @@
 
 <div {{ $attributes->merge(['class' => 'flex items-center']) }}>
     @if($showName && $namePosition === 'top')
-        <span class="mr-2 text-sm font-medium text-gray-700">{{ $userName }}</span>
+        <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">{{ $userName }}</span>
     @endif
     
     @if($showName && $namePosition === 'left')
-        <span class="mr-2 text-sm font-medium text-gray-700">{{ $userName }}</span>
+        <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">{{ $userName }}</span>
     @endif
     
     <img 
         src="{{ $photoUrl }}" 
         alt="{{ $userName }}'s profile photo"
-        class="{{ $sizeClasses }} {{ $roundedClasses }} object-cover border border-gray-200 shadow-sm"
+        class="{{ $sizeClasses }} {{ $roundedClasses }} object-cover border-2 border-gray-200 dark:border-gray-700 shadow-sm"
         onerror="this.onerror=null; this.src='{{ asset('images/default-profile.png') }}';"
     />
     
     @if($showName && $namePosition === 'right')
-        <span class="ml-2 text-sm font-medium text-gray-700">{{ $userName }}</span>
+        <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">{{ $userName }}</span>
     @endif
     
     @if($showName && $namePosition === 'bottom')
-        <span class="mt-1 text-sm font-medium text-gray-700">{{ $userName }}</span>
+        <div class="mt-2 text-center">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 block">{{ $userName }}</span>
+        </div>
     @endif
 </div>

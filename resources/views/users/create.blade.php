@@ -1,163 +1,92 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div class="mb-2">
-                <!-- Judul Halaman -->
-                <div class="flex items-center justify-between">
-                    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                        {{ __('Create User') }}
-                    </h2>
-                </div>
-
-                <!-- Breadcrumb -->
-                <nav class="flex mt-2" aria-label="Breadcrumb">
-                    <ol class="inline-flex items-center space-x-1 md:space-x-2">
-                        <li class="inline-flex items-center">
-                            <a href="{{ route('dashboard') }}"
-                                class="inline-flex items-center text-sm font-medium text-gray-400 hover:text-blue-600 transition-colors">
-                                <svg class="w-4 h-4 mr-2 text-gray-400 hover:text-blue-500 transition-colors"
-                                    fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z">
-                                    </path>
-                                </svg>
-                                Dashboard
-                            </a>
-                        </li>
-                        <li>
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-black mx-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                        clip-rule="evenodd"></path>
-                                </svg>
-                                <a href="{{ route('users.index') }}"
-                                    class="inline-flex items-center text-sm font-medium text-gray-400 hover:text-blue-600 transition-colors">
-                                    User Management
-                                </a>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-black mx-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                        clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="text-sm font-medium text-black">Create User</span>
-                            </div>
-                        </li>
-                    </ol>
-                </nav>
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
+                    {{ __('Create User') }}
+                </h2>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                    Add a new user to the system
+                </p>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm rounded-2xl transition-all duration-300 hover:shadow-md">
-                <div class="p-6 text-gray-900">
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h2 class="text-xl font-semibold text-gray-800">Create New User</h2>
-                            <p class="text-sm text-gray-600 mt-1">Fill in the details to create a new user account</p>
-                        </div>
-                        
-                        <a href="{{ route('users.index') }}" 
-                           class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
-                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                            </svg>
-                            Back to Users
-                        </a>
+    <div class="py-6">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                <form method="POST" action="{{ route('users.store') }}">
+                    @csrf
+
+                    <!-- Name -->
+                    <div class="mb-6">
+                        <x-input-label for="name" :value="__('Name')" class="text-gray-700 dark:text-gray-300 mb-2" />
+                        <x-text-input 
+                            id="name" 
+                            class="block w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" 
+                            type="text" 
+                            name="name" 
+                            :value="old('name')" 
+                            required 
+                            autofocus 
+                            placeholder="Enter user's full name"
+                        />
+                        <x-input-error :messages="$errors->get('name')" class="mt-2 text-red-500 text-sm" />
                     </div>
 
-                    <form method="POST" action="{{ route('users.store') }}">
-                        @csrf
+                    <!-- Email Address -->
+                    <div class="mb-6">
+                        <x-input-label for="email" :value="__('Email')" class="text-gray-700 dark:text-gray-300 mb-2" />
+                        <x-text-input 
+                            id="email" 
+                            class="block w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" 
+                            type="email" 
+                            name="email" 
+                            :value="old('email')" 
+                            required 
+                            placeholder="user@example.com"
+                        />
+                        <x-input-error :messages="$errors->get('email')" class="mt-2 text-red-500 text-sm" />
+                    </div>
 
-                        <div class="grid grid-cols-1 gap-6 mb-6">
-                            <div>
-                                <x-input-label for="name" :value="__('Name')" class="block text-sm font-medium text-gray-700" />
-                                <x-text-input 
-                                    id="name" 
-                                    type="text" 
-                                    name="name" 
-                                    value="{{ old('name') }}" 
-                                    required 
-                                    autofocus 
-                                    autocomplete="name"
-                                    class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition duration-200" 
-                                />
-                                <x-input-error class="mt-2" :messages="$errors->get('name')" />
-                            </div>
+                    <!-- Password -->
+                    <div class="mb-6">
+                        <x-input-label for="password" :value="__('Password')" class="text-gray-700 dark:text-gray-300 mb-2" />
+                        <x-text-input 
+                            id="password" 
+                            class="block w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" 
+                            type="password" 
+                            name="password" 
+                            required 
+                            autocomplete="new-password" 
+                        />
+                        <x-input-error :messages="$errors->get('password')" class="mt-2 text-red-500 text-sm" />
+                    </div>
 
-                            <div>
-                                <x-input-label for="email" :value="__('Email')" class="block text-sm font-medium text-gray-700" />
-                                <x-text-input 
-                                    id="email" 
-                                    type="email" 
-                                    name="email" 
-                                    value="{{ old('email') }}" 
-                                    required 
-                                    autocomplete="username"
-                                    class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition duration-200" 
-                                />
-                                <x-input-error class="mt-2" :messages="$errors->get('email')" />
-                            </div>
+                    <!-- Confirm Password -->
+                    <div class="mb-8">
+                        <x-input-label for="password_confirmation" :value="__('Confirm Password')" class="text-gray-700 dark:text-gray-300 mb-2" />
+                        <x-text-input 
+                            id="password_confirmation" 
+                            class="block w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" 
+                            type="password" 
+                            name="password_confirmation" 
+                            required 
+                            autocomplete="new-password" 
+                        />
+                        <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2 text-red-500 text-sm" />
+                    </div>
 
-                            <div>
-                                <x-input-label for="password" :value="__('Password')" class="block text-sm font-medium text-gray-700" />
-                                <x-text-input 
-                                    id="password" 
-                                    type="password" 
-                                    name="password" 
-                                    required 
-                                    autocomplete="new-password"
-                                    class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition duration-200" 
-                                />
-                                <x-input-error class="mt-2" :messages="$errors->get('password')" />
-                            </div>
-
-                            <div>
-                                <x-input-label for="password_confirmation" :value="__('Confirm Password')" class="block text-sm font-medium text-gray-700" />
-                                <x-text-input 
-                                    id="password_confirmation" 
-                                    type="password" 
-                                    name="password_confirmation" 
-                                    required 
-                                    autocomplete="new-password"
-                                    class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition duration-200" 
-                                />
-                                <x-input-error class="mt-2" :messages="$errors->get('password_confirmation')" />
-                            </div>
-
-                            <div>
-                                <x-input-label for="role" :value="__('Role')" class="block text-sm font-medium text-gray-700" />
-                                <select 
-                                    id="role" 
-                                    name="role" 
-                                    required 
-                                    class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition duration-200">
-                                    <option value="">Select Role</option>
-                                    <option value="Admin" {{ old('role') === 'Admin' ? 'selected' : '' }}>Admin</option>
-                                    <option value="Petugas" {{ old('role') === 'Petugas' ? 'selected' : '' }}>Petugas</option>
-                                </select>
-                                <x-input-error class="mt-2" :messages="$errors->get('role')" />
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-end gap-4">
-                            <a href="{{ route('users.index') }}" 
-                               class="px-4 py-2 border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:border-gray-300 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
-                                Cancel
-                            </a>
-                            
-                            <x-primary-button class="px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
-                                {{ __('Create User') }}
-                            </x-primary-button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="flex items-center justify-end gap-4">
+                        <a href="{{ route('users.index') }}" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium rounded-lg transition duration-200">
+                            {{ __('Cancel') }}
+                        </a>
+                        
+                        <x-primary-button class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-md transition duration-300 transform hover:scale-105">
+                            {{ __('Create User') }}
+                        </x-primary-button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

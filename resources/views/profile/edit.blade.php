@@ -1,141 +1,213 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div class="mb-2">
-                <!-- Judul Halaman -->
-                <div class="flex items-center justify-between">
-                    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                        {{ __('Profile') }}
-                    </h2>
-                </div>
-
-                <!-- Breadcrumb -->
-                <nav class="flex mt-2" aria-label="Breadcrumb">
-                    <ol class="inline-flex items-center space-x-1 md:space-x-2">
-                        <li class="inline-flex items-center">
-                            <a href="{{ route('dashboard') }}"
-                                class="inline-flex items-center text-sm font-medium text-gray-400 hover:text-blue-600 transition-colors">
-                                <svg class="w-4 h-4 mr-2 text-gray-400 hover:text-blue-500 transition-colors"
-                                    fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z">
-                                    </path>
-                                </svg>
-                                Dashboard
-                            </a>
-                        </li>
-                        <li>
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-black mx-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                        clip-rule="evenodd"></path>
-                                </svg>
-                                <svg class="w-4 h-4 inline mr-1 text-black" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 640 640"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
-                                    <path
-                                        d="M320 312C386.3 312 440 258.3 440 192C440 125.7 386.3 72 320 72C253.7 72 200 125.7 200 192C200 258.3 253.7 312 320 312zM290.3 368C191.8 368 112 447.8 112 546.3C112 562.7 125.3 576 141.7 576L498.3 576C514.7 576 528 562.7 528 546.3C528 447.8 448.2 368 349.7 368L290.3 368z" />
-                                </svg>
-                                <span class="text-sm font-medium text-black">Profile</span>
-                            </div>
-                        </li>
-                    </ol>
-                </nav>
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
+                    {{ __('Profile') }}
+                </h2>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                    Manage your account settings and preferences
+                </p>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <script>
-            @if (session('status') === 'profile-updated' || session('status') === 'password-updated')
-                document.addEventListener('DOMContentLoaded', function () {
-                    showToast("Profile updated successfully!", 'success');
-                });
-            @elseif (session('status') === 'verification-link-sent')
-                document.addEventListener('DOMContentLoaded', function () {
-                    showToast("Verification link sent!", 'info');
-                });
+    <div class="py-6">
+        <div class="max-w-4xl mx-auto">
+            <!-- Status Messages -->
+            @if(session('status') === 'profile-updated')
+                <div class="mb-6 rounded-lg bg-green-50 dark:bg-green-900/30 p-4 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800">
+                    {{ __('Profile updated successfully.') }}
+                </div>
             @endif
-        </script>
 
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm rounded-2xl transition-all duration-300 hover:shadow-md">
-                <div class="p-6 text-gray-900">
-                    <div class="space-y-8">
-                        <!-- Profile Information Card -->
-                        <div
-                            class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-md">
-                            <!-- Header -->
-                            <div class="flex items-center gap-4 mb-6">
-                                <div
-                                    class="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600">
-                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-semibold text-gray-900">Profile Information</h3>
-                                    <p class="text-sm text-gray-500">Update your account's profile information and email
-                                        address</p>
-                                </div>
-                            </div>
+            @if(session('status') === 'password-updated')
+                <div class="mb-6 rounded-lg bg-green-50 dark:bg-green-900/30 p-4 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800">
+                    {{ __('Password updated successfully.') }}
+                </div>
+            @endif
 
-                            <!-- Form -->
-                            @include('profile.partials.update-profile-information-form')
+            <!-- Profile Information Card -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Profile Information</h3>
+                
+                <form method="post" action="{{ route('profile.update') }}" class="space-y-6">
+                    @csrf
+                    @method('patch')
+
+                    <!-- Name Field -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <x-input-label for="name" :value="__('Name')" class="text-gray-700 dark:text-gray-300 mb-2" />
+                            <x-text-input 
+                                id="name" 
+                                name="name" 
+                                type="text" 
+                                class="block w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" 
+                                :value="old('name', $user->name)" 
+                                required 
+                                autofocus 
+                                autocomplete="name" 
+                            />
+                            <x-input-error class="mt-2 text-red-500 text-sm" :messages="$errors->get('name')" />
                         </div>
 
-                        <!-- Password Card -->
-                        <div
-                            class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-md">
-                            <!-- Header -->
-                            <div class="flex items-center gap-4 mb-6">
-                                <div
-                                    class="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-amber-500 to-orange-600">
-                                    <svg class="w-6 h-6 text-black" xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 640 640" fill="currentColor">
-                                        <path
-                                            d="M400 416C497.2 416 576 337.2 576 240C576 142.8 497.2 64 400 64C302.8 64 224 142.8 224 240C224 258.7 226.9 276.8 232.3 293.7L71 455C66.5 459.5 64 465.6 64 472L64 552C64 565.3 74.7 576 88 576L168 576C181.3 576 192 565.3 192 552L192 512L232 512C245.3 512 256 501.3 256 488L256 448L296 448C302.4 448 308.5 445.5 313 441L346.3 407.7C363.2 413.1 381.3 416 400 416zM440 160C462.1 160 480 177.9 480 200C480 222.1 462.1 240 440 240C417.9 240 400 222.1 400 200C400 177.9 417.9 160 440 160z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-semibold text-gray-900">Update Password</h3>
-                                    <p class="text-sm text-gray-500">Ensure your account is using a long, random
-                                        password</p>
-                                </div>
-                            </div>
-
-                            <!-- Form -->
-                            @include('profile.partials.update-password-form')
-                        </div>
-
-                        <!-- Delete Account Card -->
-                        <div
-                            class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md">
-                            <div class="flex items-center mb-6">
-                                <div class="flex-shrink-0 mr-4">
-                                    <div
-                                        class="w-12 h-12 rounded-full bg-gradient-to-r from-red-500 to-pink-600 flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                            </path>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-semibold text-gray-900">Delete Account</h3>
-                                    <p class="text-sm text-gray-400">Permanently delete your account and all associated
-                                        data</p>
-                                </div>
-                            </div>
-
-                            @include('profile.partials.delete-user-form')
+                        <!-- Email Field -->
+                        <div>
+                            <x-input-label for="email" :value="__('Email')" class="text-gray-700 dark:text-gray-300 mb-2" />
+                            <x-text-input 
+                                id="email" 
+                                name="email" 
+                                type="email" 
+                                class="block w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" 
+                                :value="old('email', $user->email)" 
+                                required 
+                                autocomplete="email" 
+                            />
+                            <x-input-error class="mt-2 text-red-500 text-sm" :messages="$errors->get('email')" />
                         </div>
                     </div>
+
+                    <!-- Email Verification -->
+                    @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail())
+                        <div class="mt-4">
+                            <p class="text-sm text-gray-800 dark:text-gray-200">
+                                {{ __('Your email address is unverified.') }}
+
+                                <form method="post" action="{{ route('verification.send') }}" class="inline">
+                                    @csrf
+                                    <button type="submit" class="ml-2 inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                        {{ __('Click here to re-send the verification email.') }}
+                                    </button>
+                                </form>
+                            </p>
+
+                            @if (session('status') === 'verification-link-sent')
+                                <p class="mt-2 font-medium text-sm text-green-600 dark:text-green-400">
+                                    {{ __('A new verification link has been sent to your email address.') }}
+                                </p>
+                            @endif
+                        </div>
+                    @endif
+
+                    <div class="flex items-center justify-end">
+                        <x-primary-button class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-md transition duration-300 transform hover:scale-105">
+                            {{ __('Save') }}
+                        </x-primary-button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Update Password Card -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Update Password</h3>
+                
+                <form method="post" action="{{ route('password.update') }}" class="space-y-6">
+                    @csrf
+                    @method('put')
+
+                    <!-- Current Password -->
+                    <div>
+                        <x-input-label for="update_password_current_password" :value="__('Current Password')" class="text-gray-700 dark:text-gray-300 mb-2" />
+                        <x-text-input 
+                            id="update_password_current_password" 
+                            name="current_password" 
+                            type="password" 
+                            class="block w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" 
+                            autocomplete="current-password" 
+                        />
+                        <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2 text-red-500 text-sm" />
+                    </div>
+
+                    <!-- New Password -->
+                    <div>
+                        <x-input-label for="update_password_password" :value="__('New Password')" class="text-gray-700 dark:text-gray-300 mb-2" />
+                        <x-text-input 
+                            id="update_password_password" 
+                            name="password" 
+                            type="password" 
+                            class="block w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" 
+                            autocomplete="new-password" 
+                        />
+                        <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2 text-red-500 text-sm" />
+                    </div>
+
+                    <!-- Confirm New Password -->
+                    <div>
+                        <x-input-label for="update_password_password_confirmation" :value="__('Confirm Password')" class="text-gray-700 dark:text-gray-300 mb-2" />
+                        <x-text-input 
+                            id="update_password_password_confirmation" 
+                            name="password_confirmation" 
+                            type="password" 
+                            class="block w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" 
+                            autocomplete="new-password" 
+                        />
+                        <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2 text-red-500 text-sm" />
+                    </div>
+
+                    <div class="flex items-center justify-end">
+                        <x-primary-button class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-md transition duration-300 transform hover:scale-105">
+                            {{ __('Update Password') }}
+                        </x-primary-button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Delete Account Card -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-red-600 dark:text-red-400 mb-4">Delete Account</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">
+                    {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
+                </p>
+                
+                <div class="flex items-center justify-end">
+                    <x-danger-button
+                        x-data=""
+                        x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
+                        class="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-medium rounded-lg shadow-md transition duration-300 transform hover:scale-105"
+                    >
+                        {{ __('Delete Account') }}
+                    </x-danger-button>
                 </div>
+
+                <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
+                    <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
+                        @csrf
+                        @method('delete')
+
+                        <h2 class="text-lg font-medium text-gray-900 dark:text-white">
+                            {{ __('Are you sure you want to delete your account?') }}
+                        </h2>
+
+                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                            {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
+                        </p>
+
+                        <div class="mt-6">
+                            <x-input-label for="password" value="{{ __('Password') }}" class="sr-only" />
+
+                            <x-text-input
+                                id="password"
+                                name="password"
+                                type="password"
+                                class="mt-1 block w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-200"
+                                placeholder="{{ __('Password') }}"
+                            />
+
+                            <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2 text-red-500 text-sm" />
+                        </div>
+
+                        <div class="mt-6 flex justify-end space-x-4">
+                            <x-secondary-button x-on:click="$dispatch('close')">
+                                {{ __('Cancel') }}
+                            </x-secondary-button>
+
+                            <x-danger-button class="ms-3">
+                                {{ __('Delete Account') }}
+                            </x-danger-button>
+                        </div>
+                    </form>
+                </x-modal>
             </div>
         </div>
     </div>
