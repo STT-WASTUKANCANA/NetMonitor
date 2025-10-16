@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Services\DeviceMonitoringService;
+use App\Jobs\CheckDeviceStatuses;
 
 class MonitorDevices extends Command
 {
@@ -24,22 +24,17 @@ class MonitorDevices extends Command
     /**
      * Execute the console command.
      */
-    public function handle(DeviceMonitoringService $monitoringService)
+    public function handle()
     {
         $this->info('Starting device monitoring...');
 
         try {
-            $results = $monitoringService->checkAllDevices();
+            // Dispatch the job to check device statuses
+            $job = new CheckDeviceStatuses();
+            $job->handle(); // Execute immediately rather than queuing for cron
             
-            $upCount = collect($results)->where('status', 'up')->count();
-            $downCount = collect($results)->where('status', 'down')->count();
+            $this->info('Device monitoring completed.');
             
-            $this->info("Monitoring completed:");
-            $this->info("- {$upCount} devices are UP");
-            $this->info("- {$downCount} devices are DOWN");
-            
-            // Log to Laravel's log system
-            \Log::info("Device monitoring completed. {$upCount} up, {$downCount} down.");
         } catch (\Exception $e) {
             $this->error('Error during monitoring: ' . $e->getMessage());
             \Log::error('Device monitoring error: ' . $e->getMessage());

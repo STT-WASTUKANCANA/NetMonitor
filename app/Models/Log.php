@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DeviceLog extends Model
+class Log extends Model
 {
     use HasFactory;
 
@@ -14,19 +14,17 @@ class DeviceLog extends Model
         'device_id',
         'response_time',
         'status',
-        'message',
         'checked_at',
-        'is_manual_check',
     ];
 
     protected $casts = [
         'checked_at' => 'datetime',
-        'response_time' => 'float',
+        'response_time' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
-    protected $table = 'device_logs';
+    protected $table = 'logs';
 
     /**
      * The attributes that should be mutated to dates.

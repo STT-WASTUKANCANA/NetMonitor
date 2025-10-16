@@ -10,6 +10,14 @@
                     <h1 class="text-2xl font-semibold text-gray-900">Alert Notifications</h1>
                     <p class="mt-1 text-sm text-gray-500">Monitor system alerts and notifications</p>
                 </div>
+                <div class="mt-4 sm:mt-0">
+                    <button id="refresh-alerts-btn" class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg shadow-sm transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
             </div>
         </div>
     </header>
@@ -20,18 +28,15 @@
     <!-- Status Filters -->
     <div class="p-6 border-b border-gray-200">
         <div class="flex flex-wrap gap-2">
-            <a href="{{ route('alerts.index', ['status' => 'all']) }}" 
-               class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ request('status', 'all') === 'all' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                All ({{ \App\Models\Alert::count() }})
-            </a>
-            <a href="{{ route('alerts.index', ['status' => 'active']) }}" 
-               class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ request('status') === 'active' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                Active ({{ \App\Models\Alert::where('status', 'active')->count() }})
-            </a>
-            <a href="{{ route('alerts.index', ['status' => 'resolved']) }}" 
-               class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ request('status') === 'resolved' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                Resolved ({{ \App\Models\Alert::where('status', 'resolved')->count() }})
-            </a>
+            <button data-status="all" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors status-btn {{ request('status', 'all') === 'all' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                All (<span id="all-count">{{ \App\Models\Alert::count() }}</span>)
+            </button>
+            <button data-status="active" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors status-btn {{ request('status') === 'active' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                Active (<span id="active-count">{{ \App\Models\Alert::where('status', 'active')->count() }}</span>)
+            </button>
+            <button data-status="resolved" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors status-btn {{ request('status') === 'resolved' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                Resolved (<span id="resolved-count">{{ \App\Models\Alert::where('status', 'resolved')->count() }}</span>)
+            </button>
         </div>
     </div>
 
@@ -45,9 +50,19 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                     </div>
-                    <input type="text" placeholder="Search alerts..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    <input type="text" placeholder="Search alerts..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" id="alert-search">
                 </div>
             </div>
+            <div class="flex items-center space-x-3">
+                <select class="block px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" id="device-filter">
+                    <option value="">All Devices</option>
+                    @foreach(\App\Models\Device::all() as $device)
+                        <option value="{{ $device->id }}">{{ $device->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+    </div>
             <div class="flex items-center space-x-3">
                 <select class="block px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                     <option>All Devices</option>

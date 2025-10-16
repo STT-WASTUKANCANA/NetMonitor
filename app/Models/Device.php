@@ -18,15 +18,14 @@ class Device extends Model
         'hierarchy_level',
         'parent_id',
         'location',
-        'description',
         'status',
+        'response_time',
         'last_checked_at',
-        'is_active',
     ];
 
     protected $casts = [
         'last_checked_at' => 'datetime',
-        'is_active' => 'boolean',
+        'response_time' => 'decimal:2',
     ];
 
     /**
@@ -112,7 +111,7 @@ class Device extends Model
 
     public function logs(): HasMany
     {
-        return $this->hasMany(DeviceLog::class, 'device_id');
+        return $this->hasMany(Log::class, 'device_id');
     }
 
     public function alerts(): HasMany

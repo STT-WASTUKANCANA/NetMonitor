@@ -3,6 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\DeviceController;
+use App\Http\Controllers\Api\NetworkMetricsController;
+use App\Http\Controllers\Api\AlertController;
+use App\Http\Controllers\Api\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,12 +18,23 @@ use App\Http\Controllers\Api\DeviceController;
 |
 */
 
-// Device monitoring API routes
-Route::prefix('devices')->group(function () {
-    Route::get('/', [DeviceController::class, 'index'])->name('api.devices.index');
-    Route::get('/{id}', [DeviceController::class, 'show'])->name('api.devices.show');
-    Route::post('/{id}/status', [DeviceController::class, 'recordStatus'])->name('api.devices.recordStatus');
-    Route::post('/{id}/ping', [DeviceController::class, 'pingDevice'])->name('api.devices.ping');
-});
+// Network monitoring routes for Python agent
+Route::get('/devices', [DeviceController::class, 'index']);
+Route::post('/device/status', [DeviceController::class, 'updateStatus']);
+Route::post('/device/scan', [DeviceController::class, 'scanDevice']);
+Route::post('/device/batch-status', [DeviceController::class, 'batchUpdateStatus']);
+
+// Network metrics and historical data
+Route::get('/metrics/network', [NetworkMetricsController::class, 'getNetworkMetrics']);
+Route::get('/metrics/device/{device}', [NetworkMetricsController::class, 'getDeviceMetrics']);
+
+// Alerts management
+Route::get('/alerts', [AlertController::class, 'index']);
+Route::put('/alerts/{alert}/resolve', [AlertController::class, 'resolve']);
+Route::get('/alerts/unresolved', [AlertController::class, 'getUnresolved']);
+
+// Reports
+Route::get('/reports/overview', [ReportController::class, 'getOverview']);
+Route::post('/reports/generate', [ReportController::class, 'generate']);
 
 // Note: Profile photo routes moved to web.php to support session authentication

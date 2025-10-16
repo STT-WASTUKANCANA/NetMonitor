@@ -332,7 +332,7 @@ namespace App\Models {
      *
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
-     * @property boolean $is_active
+     * @property bool $is_active
      * @property \Illuminate\Support\Carbon|null $last_checked_at
      * @property mixed $status
      * @property string|null $description
@@ -351,7 +351,7 @@ namespace App\Models {
      * @property-read \App\Models\Device $parent
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Device> $children
      * @property-read int|null $children_count
-     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\DeviceLog> $logs
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Log> $logs
      * @property-read int|null $logs_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Alert> $alerts
      * @property-read int|null $alerts_count
@@ -673,35 +673,17 @@ namespace App\Models {
     }
 
     /**
-     * App\Models\DeviceLog
+     * App\Models\Log
      *
-     * @property \Illuminate\Support\Carbon|null $updated_at
-     * @property \Illuminate\Support\Carbon|null $created_at
-     * @property bool $is_manual_check
-     * @property string|null $message
-     * @property \Illuminate\Support\Carbon $checked_at
-     * @property mixed $status
-     * @property float|null $response_time
-     * @property mixed $device_id
-     * @property int $id
      * @property-read mixed $checked_formatted
      * @property-read mixed $checked_short
      * @property-read mixed $checked_day
      * @property-read mixed $created_formatted
      * @property-read mixed $updated_formatted
      * @property-read \App\Models\Device $device
-     * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereDeviceId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereResponseTime($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereStatus($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereCheckedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereMessage($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereIsManualCheck($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereCreatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog whereUpdatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog newModelQuery()
-     * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog newQuery()
-     * @method static \Illuminate\Database\Eloquent\Builder<DeviceLog>|DeviceLog query()
+     * @method static \Illuminate\Database\Eloquent\Builder<Log>|Log newModelQuery()
+     * @method static \Illuminate\Database\Eloquent\Builder<Log>|Log newQuery()
+     * @method static \Illuminate\Database\Eloquent\Builder<Log>|Log query()
      * @method static mixed select($columns)
      * @method static mixed selectSub($query, $as)
      * @method static mixed selectRaw($expression, array $bindings)
@@ -994,7 +976,7 @@ namespace App\Models {
      * @method static mixed macroCall($method, $parameters)
      * @mixin \Illuminate\Database\Query\Builder
      */
-    class DeviceLog extends \Illuminate\Database\Eloquent\Model
+    class Log extends \Illuminate\Database\Eloquent\Model
     {
         //
     }
