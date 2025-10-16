@@ -15,7 +15,7 @@
     <div class="py-6">
         <div class="max-w-2xl mx-auto">
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
-                <form method="POST" action="{{ route('users.update', $user) }}">
+                <form method="POST" action="{{ route('users.update', $user) }}" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -75,6 +75,45 @@
                             autocomplete="new-password" 
                         />
                         <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2 text-red-500 text-sm" />
+                    </div>
+                    
+                    <!-- Profile Photo -->
+                    <div class="mb-8">
+                        <x-input-label :value="__('Profile Photo')" class="text-gray-700 dark:text-gray-300 mb-2" />
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                            <x-avatar :user="$user" size="xl" :interactive="true" :showName="false" class="cursor-pointer" />
+                            <div class="flex-1 w-full">
+                                <x-text-input 
+                                    id="profile_photo" 
+                                    class="block w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" 
+                                    type="file" 
+                                    name="profile_photo" 
+                                    accept="image/*"
+                                />
+                                <x-input-error :messages="$errors->get('profile_photo')" class="mt-2 text-red-500 text-sm" />
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">JPG, PNG, or GIF (max 2MB)</p>
+                                
+                                @if($user->profile_photo_path)
+                                <div class="mt-3">
+                                    <form id="remove-photo-form" 
+                                          action="{{ route('users.photo.remove', $user) }}" 
+                                          method="POST" 
+                                          class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" 
+                                           class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm flex items-center"
+                                           onclick="return confirm('Are you sure you want to remove the profile photo?')">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                            Remove Current Photo
+                                        </button>
+                                    </form>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-end gap-4">

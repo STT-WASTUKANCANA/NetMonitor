@@ -87,7 +87,7 @@
                     <div class="grid grid-cols-1 gap-6">
                         <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200">
                             <div class="flex items-center mb-4">
-                                <x-avatar :user="$user" size="xl" :showName="false" class="mr-4" />
+                                <x-avatar :user="$user" size="xl" :interactive="true" :showName="false" class="mr-4 cursor-pointer" />
                                 <div>
                                     <h3 class="text-xl font-semibold text-gray-800">{{ $user->name }}</h3>
                                     <p class="text-gray-600">{{ $user->email }}</p>

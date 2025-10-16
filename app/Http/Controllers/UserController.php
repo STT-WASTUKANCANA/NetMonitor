@@ -50,11 +50,23 @@ class UserController extends Controller
             'role' => 'required|in:Admin,Petugas',
         ]);
 
-        $user = User::create([
+        $userData = [
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-        ]);
+        ];
+
+        // Handle profile photo upload if provided
+        if ($request->hasFile('profile_photo')) {
+            $request->validate([
+                'profile_photo' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ]);
+
+            $path = $request->file('profile_photo')->store('profile-photos', 'public');
+            $userData['profile_photo_path'] = $path;
+        }
+
+        $user = User::create($userData);
 
         $user->assignRole($request->role);
 
@@ -114,6 +126,22 @@ class UserController extends Controller
             ]);
         }
 
+        // Handle profile photo upload if provided
+        if ($request->hasFile('profile_photo')) {
+            $request->validate([
+                'profile_photo' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ]);
+
+            // Delete old profile photo if exists
+            if ($user->profile_photo_path) {
+                \Illuminate\Support\Facades\Storage::delete($user->profile_photo_path);
+            }
+
+            // Store new profile photo
+            $path = $request->file('profile_photo')->store('profile-photos', 'public');
+            $user->profile_photo_path = $path;
+        }
+
         // Sync the user's role (remove old and assign new)
         $user->syncRoles([$request->role]);
 
@@ -143,5 +171,46 @@ class UserController extends Controller
         $user->delete();
 
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+    }
+    
+    /**
+     * Update the specified user's profile photo.
+     */
+    public function updatePhoto(Request $request, User $user)
+    {
+        $this->authorize('edit users');
+        
+        $request->validate([
+            'profile_photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        // Delete old profile photo if exists
+        if ($user->profile_photo_path) {
+            \Illuminate\Support\Facades\Storage::delete($user->profile_photo_path);
+        }
+
+        // Store new profile photo
+        $path = $request->file('profile_photo')->store('profile-photos', 'public');
+        $user->profile_photo_path = $path;
+        $user->save();
+
+        return redirect()->back()->with('success', 'Profile photo updated successfully.');
+    }
+    
+    /**
+     * Remove the specified user's profile photo.
+     */
+    public function removePhoto(Request $request, User $user)
+    {
+        $this->authorize('edit users');
+        
+        // Delete old profile photo if exists
+        if ($user->profile_photo_path) {
+            \Illuminate\Support\Facades\Storage::delete($user->profile_photo_path);
+            $user->profile_photo_path = null;
+            $user->save();
+        }
+
+        return redirect()->back()->with('success', 'Profile photo removed successfully.');
     }
 }

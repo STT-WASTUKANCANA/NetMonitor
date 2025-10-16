@@ -31,6 +31,9 @@ Route::middleware('auth')->group(function () {
     
     // User management routes (Admin only)
     Route::resource('users', UserController::class);
+    // Separate routes for user photo management
+    Route::post('/users/{user}/photo', [UserController::class, 'updatePhoto'])->name('users.photo.update');
+    Route::delete('/users/{user}/photo', [UserController::class, 'removePhoto'])->name('users.photo.remove');
     
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

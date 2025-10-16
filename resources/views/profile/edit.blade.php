@@ -48,6 +48,58 @@
         </div>
     @endif
 
+    <!-- Profile Photo Card -->
+    <div class="bg-white rounded-xl shadow-card border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Profile Photo</h2>
+        
+        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
+            <x-avatar :user="$user" size="xl" :interactive="true" class="cursor-pointer" />
+            
+            <div class="flex-1 w-full">
+                <form method="post" action="{{ route('profile.update') }}" class="space-y-4" enctype="multipart/form-data">
+                    @csrf
+                    @method('patch')
+                    
+                    <div class="mt-2">
+                        <x-input-label for="photo" :value="__('Upload New Photo')" class="block text-sm font-medium text-gray-700 mb-1" />
+                        <div class="flex items-center space-x-3">
+                            <x-text-input id="photo" 
+                                         name="avatar" 
+                                         type="file" 
+                                         class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                         accept="image/*" />
+                        </div>
+                        <x-input-error class="mt-1 text-sm text-red-600" :messages="$errors->get('avatar')" />
+                        <p class="mt-1 text-xs text-gray-500">JPG, PNG, or GIF (max 2MB)</p>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-3">
+                        <x-primary-button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors">
+                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            {{ __('Upload Photo') }}
+                        </x-primary-button>
+                        
+                        @if($user->profile_photo_path)
+                        <form method="post" action="{{ route('profile.photo.destroy') }}" class="inline">
+                            @csrf
+                            @method('delete')
+                            <x-danger-button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-sm transition-colors flex items-center" 
+                                            onclick="return confirm('Are you sure you want to delete your profile photo?')">
+                                <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                {{ __('Remove Photo') }}
+                            </x-danger-button>
+                        </form>
+                        @endif
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Profile Information Card -->
     <div class="bg-white rounded-xl shadow-card border border-gray-200 p-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">Profile Information</h2>

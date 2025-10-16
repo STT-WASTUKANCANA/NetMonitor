@@ -83,6 +83,6 @@ class User extends Authenticatable
         }
         
         // Return default avatar if no profile photo is set
-        return asset('images/default-profile.svg');
+        return asset('images/default-profile.png');
     }
 }

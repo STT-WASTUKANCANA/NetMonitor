@@ -15,7 +15,7 @@
     <div class="py-6">
         <div class="max-w-2xl mx-auto">
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
-                <form method="POST" action="{{ route('users.store') }}">
+                <form method="POST" action="{{ route('users.store') }}" enctype="multipart/form-data">
                     @csrf
 
                     <!-- Name -->
@@ -75,6 +75,25 @@
                             autocomplete="new-password" 
                         />
                         <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2 text-red-500 text-sm" />
+                    </div>
+                    
+                    <!-- Profile Photo -->
+                    <div class="mb-8">
+                        <x-input-label for="profile_photo" :value="__('Profile Photo (Optional)')" class="text-gray-700 dark:text-gray-300 mb-2" />
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                            <x-avatar :user="null" size="xl" :interactive="true" :showName="false" class="cursor-pointer" />
+                            <div class="flex-1 w-full">
+                                <x-text-input 
+                                    id="profile_photo" 
+                                    class="block w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" 
+                                    type="file" 
+                                    name="profile_photo" 
+                                    accept="image/*"
+                                />
+                                <x-input-error :messages="$errors->get('profile_photo')" class="mt-2 text-red-500 text-sm" />
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">JPG, PNG, or GIF (max 2MB)</p>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-end gap-4">

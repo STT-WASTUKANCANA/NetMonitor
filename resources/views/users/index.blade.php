@@ -66,12 +66,10 @@
                 <tr class="hover:bg-gray-50 transition-colors">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
-                                <span class="text-gray-800 font-medium">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
-                                <div class="text-sm text-gray-500">{{ $user->email }}</div>
+                            <x-avatar :user="$user" size="md" :interactive="true" class="mr-3" />
+                            <div class="min-w-0">
+                                <div class="text-sm font-medium text-gray-900 truncate">{{ $user->name }}</div>
+                                <div class="text-sm text-gray-500 truncate">{{ $user->email }}</div>
                             </div>
                         </div>
                     </td>
