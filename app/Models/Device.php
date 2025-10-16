@@ -111,7 +111,7 @@ class Device extends Model
 
     public function logs(): HasMany
     {
-        return $this->hasMany(Log::class, 'device_id');
+        return $this->hasMany(DeviceLog::class, 'device_id');
     }
 
     public function alerts(): HasMany
@@ -137,5 +137,57 @@ class Device extends Model
     public function scopeDevice($query)
     {
         return $query->where('hierarchy_level', 'device');
+    }
+    
+    /**
+     * Get all descendants of this device recursively
+     */
+    public function descendants()
+    {
+        return $this->children()->with('descendants');
+    }
+    
+    /**
+     * Get the full hierarchy path from root to this device
+     */
+    public function ancestors()
+    {
+        return $this->parent()->with('ancestors');
+    }
+    
+    /**
+     * Update status of all children recursively when parent status changes
+     */
+    public function updateChildrenStatus($status, $responseTime = null)
+    {
+        $this->children()->update(['status' => $status, 'response_time' => $responseTime]);
+        
+        foreach ($this->children as $child) {
+            $child->updateChildrenStatus($status, $responseTime);
+        }
+    }
+    
+    /**
+     * Get all related devices in the hierarchy
+     */
+    public function getHierarchyData()
+    {
+        $data = [
+            'id' => $this->id,
+            'name' => $this->name,
+            'ip_address' => $this->ip_address,
+            'type' => $this->type,
+            'hierarchy_level' => $this->hierarchy_level,
+            'status' => $this->status,
+            'response_time' => $this->response_time,
+            'location' => $this->location,
+            'children' => []
+        ];
+        
+        foreach ($this->children as $child) {
+            $data['children'][] = $child->getHierarchyData();
+        }
+        
+        return $data;
     }
 }

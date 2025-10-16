@@ -61,6 +61,7 @@ class DeviceController extends Controller
             'description' => 'nullable|string',
         ];
 
+        // Validation for parent requirement
         if ($request->hierarchy_level !== 'utama') {
             $validationRules['parent_id'] = 'required|exists:devices,id';
         }
@@ -69,7 +70,31 @@ class DeviceController extends Controller
 
         $deviceData = $request->all();
 
-        // Additional validation to ensure parent device is not of 'device' level
+        // Validation: Hanya satu utama - Only one device can have hierarchy_level = 'utama'
+        if ($deviceData['hierarchy_level'] === 'utama') {
+            $existingUtama = Device::where('hierarchy_level', 'utama')->first();
+            if ($existingUtama) {
+                return redirect()->back()->withErrors(['hierarchy_level' => 'Hanya boleh ada satu perangkat utama.'])->withInput();
+            }
+        }
+
+        // Validation: sub harus punya induk - If hierarchy_level = 'sub', parent_id must point to 'utama'
+        if ($deviceData['hierarchy_level'] === 'sub' && isset($deviceData['parent_id'])) {
+            $parentDevice = Device::find($deviceData['parent_id']);
+            if (!$parentDevice || $parentDevice->hierarchy_level !== 'utama') {
+                return redirect()->back()->withErrors(['parent_id' => 'Perangkat sub harus memiliki induk berupa perangkat utama.'])->withInput();
+            }
+        }
+
+        // Validation: device punya induk - If hierarchy_level = 'device', parent_id must point to 'sub' or 'utama'
+        if ($deviceData['hierarchy_level'] === 'device' && isset($deviceData['parent_id'])) {
+            $parentDevice = Device::find($deviceData['parent_id']);
+            if (!$parentDevice || !in_array($parentDevice->hierarchy_level, ['utama', 'sub'])) {
+                return redirect()->back()->withErrors(['parent_id' => 'Perangkat device harus memiliki induk berupa perangkat utama atau sub.'])->withInput();
+            }
+        }
+
+        // Additional validation to ensure parent device is not of 'device' level (legacy check)
         if (isset($deviceData['parent_id']) && $deviceData['parent_id']) {
             $parentDevice = Device::find($deviceData['parent_id']);
             if ($parentDevice && $parentDevice->hierarchy_level === 'device') {
@@ -135,7 +160,31 @@ class DeviceController extends Controller
 
         $deviceData = $request->all();
 
-        // Additional validation to ensure parent device is not of 'device' level
+        // Validation: Hanya satu utama - Only one device can have hierarchy_level = 'utama'
+        if ($deviceData['hierarchy_level'] === 'utama') {
+            $existingUtama = Device::where('hierarchy_level', 'utama')->where('id', '!=', $device->id)->first();
+            if ($existingUtama) {
+                return redirect()->back()->withErrors(['hierarchy_level' => 'Hanya boleh ada satu perangkat utama.'])->withInput();
+            }
+        }
+
+        // Validation: sub harus punya induk - If hierarchy_level = 'sub', parent_id must point to 'utama'
+        if ($deviceData['hierarchy_level'] === 'sub' && isset($deviceData['parent_id'])) {
+            $parentDevice = Device::find($deviceData['parent_id']);
+            if (!$parentDevice || $parentDevice->hierarchy_level !== 'utama') {
+                return redirect()->back()->withErrors(['parent_id' => 'Perangkat sub harus memiliki induk berupa perangkat utama.'])->withInput();
+            }
+        }
+
+        // Validation: device punya induk - If hierarchy_level = 'device', parent_id must point to 'sub' or 'utama'
+        if ($deviceData['hierarchy_level'] === 'device' && isset($deviceData['parent_id'])) {
+            $parentDevice = Device::find($deviceData['parent_id']);
+            if (!$parentDevice || !in_array($parentDevice->hierarchy_level, ['utama', 'sub'])) {
+                return redirect()->back()->withErrors(['parent_id' => 'Perangkat device harus memiliki induk berupa perangkat utama atau sub.'])->withInput();
+            }
+        }
+
+        // Additional validation to ensure parent device is not of 'device' level (legacy check)
         if (isset($deviceData['parent_id']) && $deviceData['parent_id']) {
             $parentDevice = Device::find($deviceData['parent_id']);
             if ($parentDevice && $parentDevice->hierarchy_level === 'device') {

@@ -16,11 +16,13 @@ return new class extends Migration
             $table->unsignedBigInteger('device_id');
             $table->text('message');
             $table->enum('status', ['active', 'resolved'])->default('active');
-            $table->timestamp('created_at')->useCurrent();
             $table->timestamp('resolved_at')->nullable();
             $table->timestamps();
-            
-            $table->foreign('device_id')->references('id')->on('devices')->onDelete('cascade');
+
+            $table->foreign('device_id')
+                ->references('id')
+                ->on('devices')
+                ->onDelete('cascade');
         });
     }
 

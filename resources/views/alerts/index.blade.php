@@ -60,19 +60,9 @@
                         <option value="{{ $device->id }}">{{ $device->name }}</option>
                     @endforeach
                 </select>
-            </div>
-        </div>
-    </div>
-            <div class="flex items-center space-x-3">
-                <select class="block px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                    <option>All Devices</option>
-                    @foreach(\App\Models\Device::all() as $device)
-                        <option value="{{ $device->id }}">{{ $device->name }}</option>
-                    @endforeach
-                </select>
-                <select class="block px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                    <option>Latest First</option>
-                    <option>Oldest First</option>
+                <select class="block px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" id="sort-order">
+                    <option value="desc">Latest First</option>
+                    <option value="asc">Oldest First</option>
                 </select>
             </div>
         </div>
@@ -168,4 +158,269 @@
     </div>
     @endif
 </div>
+
+@push('scripts')
+<script src="https://cdn.pusher.com/js/7.0.3/pusher.min.js"></script>
+<script>
+    // Alert management class
+    class AlertManager {
+        constructor() {
+            this.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            this.init();
+        }
+        
+        init() {
+            this.initEventListeners();
+            this.initBroadcasting();
+            this.startAutoRefresh();
+        }
+        
+        initEventListeners() {
+            // Status filter buttons
+            document.querySelectorAll('.status-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const status = e.currentTarget.dataset.status;
+                    this.filterByStatus(status);
+                });
+            });
+            
+            // Search functionality
+            document.getElementById('alert-search').addEventListener('input', this.filterAlerts.bind(this));
+            
+            // Device filter
+            document.getElementById('device-filter').addEventListener('change', this.filterAlerts.bind(this));
+            
+            // Sort order
+            document.getElementById('sort-order').addEventListener('change', this.sortAlerts.bind(this));
+            
+            // Refresh button
+            document.getElementById('refresh-alerts-btn').addEventListener('click', this.refreshAlerts.bind(this));
+        }
+        
+        filterByStatus(status) {
+            // Update active button
+            document.querySelectorAll('.status-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-100', 'text-blue-800', 'bg-red-100', 'text-red-800', 'bg-green-100', 'text-green-800');
+                btn.classList.add('bg-gray-100', 'text-gray-700');
+            });
+            
+            const activeBtn = document.querySelector(`[data-status="${status}"]`);
+            if (activeBtn) {
+                if (status === 'active') {
+                    activeBtn.classList.remove('bg-gray-100', 'text-gray-700');
+                    activeBtn.classList.add('bg-red-100', 'text-red-800');
+                } else if (status === 'resolved') {
+                    activeBtn.classList.remove('bg-gray-100', 'text-gray-700');
+                    activeBtn.classList.add('bg-green-100', 'text-green-800');
+                } else {
+                    activeBtn.classList.remove('bg-gray-100', 'text-gray-700');
+                    activeBtn.classList.add('bg-blue-100', 'text-blue-800');
+                }
+            }
+            
+            // Filter alerts by status
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                if (status === 'all') {
+                    row.style.display = '';
+                } else {
+                    const statusTag = row.querySelector('.bg-red-100, .bg-green-100');
+                    const statusText = statusTag ? statusTag.textContent.trim().toLowerCase() : '';
+                    if (statusText === status) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+        }
+        
+        filterAlerts() {
+            const searchTerm = document.getElementById('alert-search').value.toLowerCase();
+            const deviceFilter = document.getElementById('device-filter').value;
+            
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const deviceName = row.querySelector('td:first-child .text-gray-900').textContent.toLowerCase();
+                const message = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                
+                const matchesSearch = deviceName.includes(searchTerm) || message.includes(searchTerm);
+                const matchesDevice = !deviceFilter || deviceName.includes(deviceFilter.toLowerCase());
+                
+                if (matchesSearch && matchesDevice) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        sortAlerts() {
+            // This would require re-rendering the table, so for now we'll just refresh
+            this.refreshAlerts();
+        }
+        
+        initBroadcasting() {
+            try {
+                const pusher = new Pusher('{{ config("broadcasting.connections.pusher.key") }}', {
+                    cluster: '{{ config("broadcasting.connections.pusher.options.cluster") }}',
+                    authEndpoint: '/broadcasting/auth',
+                    auth: {
+                        headers: {
+                            'X-CSRF-Token': this.csrfToken
+                        }
+                    }
+                });
+                
+                // Listen for device status updates (to update counters)
+                const statusChannel = pusher.subscribe('device-status');
+                statusChannel.bind('DeviceStatusUpdated', (data) => {
+                    // Refresh the alert counts
+                    this.refreshAlertCounts();
+                });
+                
+                // Listen for alerts
+                const alertChannel = pusher.subscribe('device-alerts');
+                alertChannel.bind('DeviceAlertCreated', (data) => {
+                    this.addAlertToTable(data);
+                });
+                
+            } catch (e) {
+                console.log('Pusher not configured, using polling fallback');
+            }
+            
+            // Fallback to polling every 15 seconds
+            setInterval(() => {
+                this.refreshAlerts();
+            }, 15000);
+        }
+        
+        startAutoRefresh() {
+            // Refresh data every 30 seconds
+            setInterval(() => {
+                this.refreshAlerts();
+            }, 30000);
+        }
+        
+        async refreshAlerts() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const status = urlParams.get('status') || 'all';
+                
+                const response = await fetch(`/api/alerts?status=${status}`, {
+                    headers: {
+                        'X-CSRF-TOKEN': this.csrfToken,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    this.updateAlertTable(result.data || result);
+                }
+            } catch (error) {
+                console.error('Error refreshing alerts:', error);
+            }
+        }
+        
+        async refreshAlertCounts() {
+            try {
+                const response = await fetch('/api/alerts/unresolved', {
+                    headers: {
+                        'X-CSRF-TOKEN': this.csrfToken,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    document.getElementById('active-count').textContent = result.count || 0;
+                    document.getElementById('all-count').textContent = result.total || 0;
+                }
+            } catch (error) {
+                console.error('Error refreshing alert counts:', error);
+            }
+        }
+        
+        updateAlertTable(alerts) {
+            // For now, we'll just refresh the page
+            // In a production system, we would dynamically update the table
+            location.reload();
+        }
+        
+        addAlertToTable(alert) {
+            // Create new table row for the alert
+            const newRow = document.createElement('tr');
+            newRow.className = 'hover:bg-gray-50 transition-colors animate-pulse';
+            newRow.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+                            <span class="text-red-800 font-medium">
+                                ${alert.device_name ? alert.device_name.charAt(0).toUpperCase() : 'N'}
+                            </span>
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">
+                                ${alert.device_name || 'Unknown Device'}
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                ${alert.device_ip || 'N/A'}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title="${alert.message}">
+                    ${alert.message}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                        Active
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    Just now
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div class="flex items-center space-x-2">
+                        <a href="/alerts/${alert.id}" class="text-blue-600 hover:text-blue-900">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </a>
+                        <form method="POST" action="/alerts/${alert.id}/resolve" class="inline">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="text-green-600 hover:text-green-900" title="Resolve Alert">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            `;
+            
+            // Add to the beginning of the table
+            const tableBody = document.querySelector('tbody');
+            if (tableBody) {
+                tableBody.insertBefore(newRow, tableBody.firstChild);
+                
+                // Remove animation after it completes
+                setTimeout(() => {
+                    newRow.classList.remove('animate-pulse');
+                }, 1000);
+            }
+        }
+    }
+    
+    // Initialize alert manager when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        new AlertManager();
+    });
+</script>
+@endpush
 @endsection

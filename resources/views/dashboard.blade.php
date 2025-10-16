@@ -213,6 +213,22 @@
             </div>
         </div>
     </div>
+    
+    <!-- Device Hierarchy Tree -->
+    <div class="bg-white rounded-xl shadow-card p-6 border border-gray-200">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900">Device Hierarchy</h3>
+            <button id="refresh-hierarchy-btn" class="px-3 py-1 text-sm rounded-lg bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors">
+                Refresh Hierarchy
+            </button>
+        </div>
+        <div id="hierarchy-container" class="p-4 bg-gray-50 rounded-lg min-h-96">
+            <div class="text-center py-20">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+                <p class="text-gray-600">Loading device hierarchy...</p>
+            </div>
+        </div>
+    </div>
 </div>
 
 @push('scripts')
@@ -234,6 +250,7 @@
         init() {
             this.initCharts();
             this.initEventListeners();
+            this.initHierarchyEventListeners();
             this.initBroadcasting();
             this.startAutoRefresh();
         }
@@ -348,6 +365,13 @@
             });
         }
         
+        initHierarchyEventListeners() {
+            // Refresh hierarchy button
+            document.getElementById('refresh-hierarchy-btn').addEventListener('click', () => {
+                this.loadInitialHierarchy();
+            });
+        }
+        
         initBroadcasting() {
             // Set up Pusher or fallback to polling
             try {
@@ -367,10 +391,22 @@
                     this.updateDeviceStatus(data);
                 });
                 
+                // Listen for device hierarchy updates
+                const hierarchyChannel = pusher.subscribe('device-hierarchy');
+                hierarchyChannel.bind('device.hierarchy.updated', (data) => {
+                    this.updateHierarchyTree(data.hierarchyData);
+                });
+                
                 // Listen for alerts
                 const alertChannel = pusher.subscribe('device-alerts');
                 alertChannel.bind('DeviceAlertCreated', (data) => {
                     this.addAlertToDashboard(data);
+                });
+                
+                // Listen for network metrics updates
+                const metricsChannel = pusher.subscribe('network-metrics');
+                metricsChannel.bind('NetworkMetricUpdated', (data) => {
+                    this.updateResponseTimeChart(data);
                 });
                 
             } catch (e) {
@@ -381,6 +417,43 @@
             setInterval(() => {
                 this.refreshData();
             }, 10000);
+            
+            // Load initial hierarchy data
+            this.loadInitialHierarchy();
+        }
+        
+        initHierarchyEventListeners() {
+            // Refresh hierarchy button
+            document.getElementById('refresh-hierarchy-btn').addEventListener('click', () => {
+                this.loadInitialHierarchy();
+            });
+        }
+        
+        // Load initial hierarchy data
+        async loadInitialHierarchy() {
+            try {
+                const response = await fetch('/api/devices/hierarchy', {
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.updateHierarchyTree(data.hierarchy);
+                } else {
+                    console.error('Failed to load hierarchy data:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error fetching hierarchy data:', error);
+            }
+        }
+        
+        // Update hierarchy tree from real-time event
+        updateHierarchyTree(hierarchyData) {
+            this.renderHierarchyTree(hierarchyData);
         }
         
         startAutoRefresh() {
@@ -431,9 +504,7 @@
                 document.getElementById('total-device-count').textContent = data.summary.total_devices;
                 document.getElementById('online-count').textContent = data.summary.online_devices;
                 document.getElementById('offline-count').textContent = data.summary.offline_devices;
-                document.getElementById('alert-count').textContent = data.summary.online_devices + data.summary.offline_devices > 0 
-                    ? Math.round((data.summary.offline_devices / (data.summary.online_devices + data.summary.offline_devices)) * 100) + '% Down' 
-                    : '0% Down';
+                document.getElementById('alert-count').textContent = data.summary.offline_devices; // Show number of down devices as alert count
             }
             
             // Update charts
@@ -557,6 +628,34 @@
             }
         }
         
+        updateResponseTimeChart(data) {
+            if (this.responseTimeChart && data.response_time_data && data.response_time_data.length > 0) {
+                // Add the new data point to the chart
+                const avgResponseTime = data.average_response_time;
+                const timestamp = new Date().toLocaleTimeString();
+                
+                // Keep only the last 20 points to prevent chart overcrowding
+                if (this.responseTimeChart.data.labels.length >= 20) {
+                    this.responseTimeChart.data.labels.shift(); // Remove the first element
+                    this.responseTimeChart.data.datasets[0].data.shift(); // Remove the first data point
+                }
+                
+                // Add the new data point
+                this.responseTimeChart.data.labels.push(timestamp);
+                this.responseTimeChart.data.datasets[0].data.push(avgResponseTime);
+                
+                this.responseTimeChart.update();
+            }
+            
+            // Update summary cards if new data is available
+            if (data.total_devices !== undefined) {
+                document.getElementById('total-device-count').textContent = data.total_devices;
+                document.getElementById('online-count').textContent = data.online_devices;
+                document.getElementById('offline-count').textContent = data.offline_devices;
+                document.getElementById('alert-count').textContent = data.offline_devices; // Show number of down devices as alert count
+            }
+        }
+        
         timeAgo(date) {
             const now = new Date();
             const diffInSeconds = Math.floor((now - date) / 1000);
@@ -565,6 +664,76 @@
             if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
             if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
             return `${Math.floor(diffInSeconds / 86400)} days ago`;
+        }
+        
+        // Render device hierarchy tree
+        renderHierarchyTree(hierarchyData) {
+            const container = document.getElementById('hierarchy-container');
+            
+            if (!hierarchyData || hierarchyData.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-10">No devices found in hierarchy</p>';
+                return;
+            }
+            
+            let html = '<ul class="space-y-4">';
+            hierarchyData.forEach(rootDevice => {
+                html += this.renderDeviceNode(rootDevice, 0);
+            });
+            html += '</ul>';
+            
+            container.innerHTML = html;
+        }
+        
+        // Render individual device node in hierarchy
+        renderDeviceNode(device, level) {
+            const indent = level * 20; // Add indentation for each level
+            const statusClass = device.status === 'up' ? 'text-green-600' : 'text-red-600';
+            const statusIcon = device.status === 'up' ? '✅' : '❌';
+            const hasChildren = device.children && device.children.length > 0;
+            
+            let html = `
+                <li class="ml-${indent}" style="margin-left: ${indent}px;">
+                    <div class="p-3 bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mr-3 mt-1">
+                                <span class="${statusClass}">${statusIcon}</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900">${device.name}</h4>
+                                        <p class="text-sm text-gray-500">
+                                            ${device.ip_address} | ${device.type} | ${device.hierarchy_level}
+                                        </p>
+                                        <p class="text-xs text-gray-400 mt-1">
+                                            Status: ${device.status} | Response: ${device.response_time || 'N/A'}ms
+                                        </p>
+                                    </div>
+                                    <div class="text-right">
+                                        ${device.last_checked_at ? 
+                                            `<p class="text-xs text-gray-400">${new Date(device.last_checked_at).toLocaleTimeString()}</p>` : 
+                                            '<p class="text-xs text-gray-400">Never checked</p>'
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+            `;
+            
+            // Render children if any
+            if (hasChildren) {
+                html += '<div class="mt-3 pl-4 border-l-2 border-gray-200">';
+                html += '<ul class="space-y-2">';
+                device.children.forEach(child => {
+                    html += this.renderDeviceNode(child, level + 1);
+                });
+                html += '</ul>';
+                html += '</div>';
+            }
+            
+            html += '</div></li>';
+            
+            return html;
         }
     }
     

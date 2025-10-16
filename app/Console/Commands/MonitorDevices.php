@@ -31,7 +31,8 @@ class MonitorDevices extends Command
         try {
             // Dispatch the job to check device statuses
             $job = new CheckDeviceStatuses();
-            $job->handle(); // Execute immediately rather than queuing for cron
+            // Execute immediately rather than queuing for cron - this is for cron scheduling
+            $job->handle();
             
             $this->info('Device monitoring completed.');
             

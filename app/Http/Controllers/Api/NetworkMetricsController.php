@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Device;
-use App\Models\Log;
+use App\Models\DeviceLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -48,11 +48,11 @@ class NetworkMetricsController extends Controller
         $offlineDevices = Device::where('status', 'down')->count();
         
         // Calculate average response time
-        $avgResponseTime = Log::whereBetween('checked_at', [$startDate, $endDate])
+        $avgResponseTime = DeviceLog::whereBetween('checked_at', [$startDate, $endDate])
             ->avg('response_time') ?? 0;
         
         // Get device status timeline
-        $statusTimeline = Log::selectRaw(
+        $statusTimeline = DeviceLog::selectRaw(
             'DATE_FORMAT(checked_at, "%Y-%m-%d %H:00:00") as time_bucket, 
             AVG(response_time) as avg_response_time,
             COUNT(CASE WHEN status = "up" THEN 1 END) as up_count,
@@ -74,10 +74,10 @@ class NetworkMetricsController extends Controller
         });
 
         // Get top devices by response time
-        $topResponseTimes = Log::join('devices', 'logs.device_id', '=', 'devices.id')
-            ->selectRaw('devices.name, AVG(logs.response_time) as avg_response_time')
-            ->whereBetween('logs.checked_at', [$startDate, $endDate])
-            ->whereNotNull('logs.response_time')
+        $topResponseTimes = DeviceLog::join('devices', 'device_logs.device_id', '=', 'devices.id')
+            ->selectRaw('devices.name, AVG(device_logs.response_time) as avg_response_time')
+            ->whereBetween('device_logs.checked_at', [$startDate, $endDate])
+            ->whereNotNull('device_logs.response_time')
             ->groupBy('devices.id', 'devices.name')
             ->orderByDesc('avg_response_time')
             ->limit(10)
@@ -131,7 +131,7 @@ class NetworkMetricsController extends Controller
         }
 
         // Get device logs for the period
-        $logs = Log::where('device_id', $device->id)
+        $logs = DeviceLog::where('device_id', $device->id)
             ->whereBetween('checked_at', [$startDate, $endDate])
             ->orderBy('checked_at')
             ->get();
@@ -201,6 +201,32 @@ class NetworkMetricsController extends Controller
                 'end_date' => $endDate->toISOString(),
             ],
             'chart_data' => $chartData->values(),
+        ]);
+    }
+
+    /**
+     * Get real-time response time data for the dashboard chart
+     */
+    public function getRealTimeResponseTimeData(Request $request): JsonResponse
+    {
+        // Get the last 60 seconds of data for the chart
+        $startDate = Carbon::now()->subMinutes(1);
+        $logs = DeviceLog::where('checked_at', '>=', $startDate)
+            ->select('checked_at', 'response_time', 'status')
+            ->orderBy('checked_at')
+            ->get();
+
+        $timeline = $logs->where('status', 'up')->map(function ($log) {
+            return [
+                'timestamp' => $log->checked_at->format('H:i:s'),
+                'response_time' => $log->response_time,
+            ];
+        })->values();
+
+        return response()->json([
+            'timeline' => $timeline,
+            'current_timestamp' => Carbon::now()->toISOString(),
+            'total_points' => count($timeline),
         ]);
     }
 }

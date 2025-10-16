@@ -38,7 +38,67 @@ class DeviceController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'ip_address' => 'required|ip',
+            'type' => 'required|in:router,switch,access_point,server,other',
+            'hierarchy_level' => 'required|in:utama,sub,device',
+            'location' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $deviceData = $request->all();
+
+        // Validation: Hanya satu utama - Only one device can have hierarchy_level = 'utama'
+        if ($deviceData['hierarchy_level'] === 'utama') {
+            $existingUtama = Device::where('hierarchy_level', 'utama')->first();
+            if ($existingUtama) {
+                return response()->json([
+                    'message' => 'Hanya boleh ada satu perangkat utama.',
+                    'error' => true
+                ], 422);
+            }
+        }
+
+        // Validation: sub harus punya induk - If hierarchy_level = 'sub', parent_id must point to 'utama'
+        if ($deviceData['hierarchy_level'] === 'sub' && isset($deviceData['parent_id'])) {
+            $parentDevice = Device::find($deviceData['parent_id']);
+            if (!$parentDevice || $parentDevice->hierarchy_level !== 'utama') {
+                return response()->json([
+                    'message' => 'Perangkat sub harus memiliki induk berupa perangkat utama.',
+                    'error' => true
+                ], 422);
+            }
+        }
+
+        // Validation: device punya induk - If hierarchy_level = 'device', parent_id must point to 'sub' or 'utama'
+        if ($deviceData['hierarchy_level'] === 'device' && isset($deviceData['parent_id'])) {
+            $parentDevice = Device::find($deviceData['parent_id']);
+            if (!$parentDevice || !in_array($parentDevice->hierarchy_level, ['utama', 'sub'])) {
+                return response()->json([
+                    'message' => 'Perangkat device harus memiliki induk berupa perangkat utama atau sub.',
+                    'error' => true
+                ], 422);
+            }
+        }
+
+        // Additional validation to ensure parent device is not of 'device' level
+        if (isset($deviceData['parent_id']) && $deviceData['parent_id']) {
+            $parentDevice = Device::find($deviceData['parent_id']);
+            if ($parentDevice && $parentDevice->hierarchy_level === 'device') {
+                return response()->json([
+                    'message' => 'Perangkat induk harus berupa perangkat utama atau sub, bukan perangkat biasa.',
+                    'error' => true
+                ], 422);
+            }
+        }
+
+        $device = Device::create($deviceData);
+
+        return response()->json([
+            'message' => 'Device created successfully.',
+            'device' => new DeviceResource($device)
+        ], 201);
     }
 
     /**
@@ -63,7 +123,70 @@ class DeviceController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $device = Device::findOrFail($id);
+        
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'ip_address' => 'required|ip',
+            'type' => 'required|in:router,switch,access_point,server,other',
+            'hierarchy_level' => 'required|in:utama,sub,device',
+            'parent_id' => 'nullable|exists:devices,id',
+            'location' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $deviceData = $request->all();
+
+        // Validation: Hanya satu utama - Only one device can have hierarchy_level = 'utama'
+        if ($deviceData['hierarchy_level'] === 'utama') {
+            $existingUtama = Device::where('hierarchy_level', 'utama')->where('id', '!=', $device->id)->first();
+            if ($existingUtama) {
+                return response()->json([
+                    'message' => 'Hanya boleh ada satu perangkat utama.',
+                    'error' => true
+                ], 422);
+            }
+        }
+
+        // Validation: sub harus punya induk - If hierarchy_level = 'sub', parent_id must point to 'utama'
+        if ($deviceData['hierarchy_level'] === 'sub' && isset($deviceData['parent_id'])) {
+            $parentDevice = Device::find($deviceData['parent_id']);
+            if (!$parentDevice || $parentDevice->hierarchy_level !== 'utama') {
+                return response()->json([
+                    'message' => 'Perangkat sub harus memiliki induk berupa perangkat utama.',
+                    'error' => true
+                ], 422);
+            }
+        }
+
+        // Validation: device punya induk - If hierarchy_level = 'device', parent_id must point to 'sub' or 'utama'
+        if ($deviceData['hierarchy_level'] === 'device' && isset($deviceData['parent_id'])) {
+            $parentDevice = Device::find($deviceData['parent_id']);
+            if (!$parentDevice || !in_array($parentDevice->hierarchy_level, ['utama', 'sub'])) {
+                return response()->json([
+                    'message' => 'Perangkat device harus memiliki induk berupa perangkat utama atau sub.',
+                    'error' => true
+                ], 422);
+            }
+        }
+
+        // Additional validation to ensure parent device is not of 'device' level
+        if (isset($deviceData['parent_id']) && $deviceData['parent_id']) {
+            $parentDevice = Device::find($deviceData['parent_id']);
+            if ($parentDevice && $parentDevice->hierarchy_level === 'device') {
+                return response()->json([
+                    'message' => 'Perangkat induk harus berupa perangkat utama atau sub, bukan perangkat biasa.',
+                    'error' => true
+                ], 422);
+            }
+        }
+
+        $device->update($deviceData);
+
+        return response()->json([
+            'message' => 'Device updated successfully.',
+            'device' => new DeviceResource($device)
+        ], 200);
     }
 
     /**
@@ -114,7 +237,29 @@ class DeviceController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $device = Device::findOrFail($id);
+        
+        // Prevent deletion of the main device if it's the only utama
+        if ($device->hierarchy_level === 'utama' && Device::where('hierarchy_level', 'utama')->count() <= 1) {
+            return response()->json([
+                'message' => 'Tidak dapat menghapus perangkat utama. Setidaknya harus ada satu perangkat utama.',
+                'error' => true
+            ], 422);
+        }
+        
+        // Prevent deletion if this device has children
+        if ($device->children()->exists()) {
+            return response()->json([
+                'message' => 'Tidak dapat menghapus perangkat yang memiliki anak. Hapus anak terlebih dahulu.',
+                'error' => true
+            ], 422);
+        }
+
+        $device->delete();
+
+        return response()->json([
+            'message' => 'Device deleted successfully.'
+        ], 200);
     }
 
     /**
@@ -177,7 +322,7 @@ class DeviceController extends Controller
             ]);
 
             // Create a log entry for the child
-            \App\Models\Log::create([
+            \App\Models\DeviceLog::create([
                 'device_id' => $child->id,
                 'status' => 'down',
                 'response_time' => null,
@@ -218,7 +363,7 @@ class DeviceController extends Controller
         $device = Device::findOrFail($validated['device_id']);
 
         // Create a new log entry
-        $log = \App\Models\Log::create([
+        $log = \App\Models\DeviceLog::create([
             'device_id' => $validated['device_id'],
             'status' => $validated['status'],
             'response_time' => $validated['response_time'] ?? null,
@@ -274,7 +419,7 @@ class DeviceController extends Controller
             $device = Device::findOrFail($deviceData['device_id']);
 
             // Create a new log entry
-            $log = \App\Models\Log::create([
+            $log = \App\Models\DeviceLog::create([
                 'device_id' => $deviceData['device_id'],
                 'status' => $deviceData['status'],
                 'response_time' => $deviceData['response_time'] ?? null,
@@ -392,5 +537,155 @@ class DeviceController extends Controller
                 'error' => true
             ], 500);
         }
+    }
+    
+    /**
+     * Bulk ping all devices to update their status
+     */
+    public function bulkPing(Request $request): JsonResponse
+    {
+        // Authorize the action - user must have permission to view or edit devices
+        if (!$request->user()->can('view devices') && !$request->user()->can('edit devices')) {
+            return response()->json([
+                'message' => 'Unauthorized to bulk ping devices',
+                'error' => true
+            ], 403);
+        }
+
+        try {
+            $devices = Device::all();
+            $results = [];
+            
+            foreach ($devices as $device) {
+                $pingResult = $this->pingService->pingAndRecord($device);
+                
+                $results[] = [
+                    'device_id' => $device->id,
+                    'device_name' => $device->name,
+                    'status' => $pingResult['result']['status'],
+                    'response_time' => $pingResult['result']['response_time'],
+                ];
+            }
+
+            return response()->json([
+                'message' => 'All devices pinged successfully',
+                'total_devices' => $devices->count(),
+                'results' => $results,
+                'timestamp' => now()->toISOString(),
+                'datetime_info' => [
+                    'current' => now()->format('l, d F Y H:i:s'),
+                    'date' => now()->format('d/m/Y'),
+                    'time' => now()->format('H:i:s'),
+                    'day' => now()->format('l')
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error during bulk ping: ' . $e->getMessage(),
+                'error' => true
+            ], 500);
+        }
+    }
+    
+    /**
+     * Get device hierarchy - shows parent and children in a tree structure
+     */
+    public function getHierarchy(Request $request): JsonResponse
+    {
+        try {
+            // Get all devices with their relationships
+            $devices = Device::with(['parent', 'children'])->get();
+            
+            // Build hierarchy tree
+            $hierarchy = $this->buildHierarchy($devices);
+            
+            return response()->json([
+                'message' => 'Device hierarchy retrieved successfully',
+                'hierarchy' => $hierarchy,
+                'timestamp' => now()->toISOString()
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error retrieving device hierarchy: ' . $e->getMessage(),
+                'error' => true
+            ], 500);
+        }
+    }
+    
+    /**
+     * Get a specific device's children
+     */
+    public function getChildren(Request $request, string $id): JsonResponse
+    {
+        try {
+            $device = Device::with('children')->findOrFail($id);
+            
+            return response()->json([
+                'message' => 'Device children retrieved successfully',
+                'device' => new DeviceResource($device),
+                'children' => DeviceResource::collection($device->children),
+                'timestamp' => now()->toISOString()
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error retrieving device children: ' . $e->getMessage(),
+                'error' => true
+            ], 500);
+        }
+    }
+    
+    /**
+     * Get a specific device's parent and siblings
+     */
+    public function getFamily(Request $request, string $id): JsonResponse
+    {
+        try {
+            $device = Device::with(['parent', 'parent.children', 'children'])->findOrFail($id);
+            
+            return response()->json([
+                'message' => 'Device family retrieved successfully',
+                'device' => new DeviceResource($device),
+                'parent' => $device->parent ? new DeviceResource($device->parent) : null,
+                'siblings' => $device->parent ? DeviceResource::collection($device->parent->children->where('id', '!=', $device->id)) : [],
+                'children' => DeviceResource::collection($device->children),
+                'timestamp' => now()->toISOString()
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error retrieving device family: ' . $e->getMessage(),
+                'error' => true
+            ], 500);
+        }
+    }
+    
+    /**
+     * Build hierarchy tree from flat device collection
+     */
+    private function buildHierarchy($devices, $parentId = null)
+    {
+        $branch = [];
+        
+        foreach ($devices as $device) {
+            if ($device->parent_id == $parentId) {
+                $children = $this->buildHierarchy($devices, $device->id);
+                
+                $deviceData = [
+                    'id' => $device->id,
+                    'name' => $device->name,
+                    'ip_address' => $device->ip_address,
+                    'type' => $device->type,
+                    'hierarchy_level' => $device->hierarchy_level,
+                    'status' => $device->status,
+                    'response_time' => $device->response_time,
+                    'location' => $device->location,
+                    'last_checked_at' => $device->last_checked_at,
+                    'children' => $children
+                ];
+                
+                $branch[] = $deviceData;
+            }
+        }
+        
+        return $branch;
     }
 }

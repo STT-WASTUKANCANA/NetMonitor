@@ -37,4 +37,13 @@ Route::get('/alerts/unresolved', [AlertController::class, 'getUnresolved']);
 Route::get('/reports/overview', [ReportController::class, 'getOverview']);
 Route::post('/reports/generate', [ReportController::class, 'generate']);
 
+    // Real-time data endpoint for dashboard charts
+    Route::get('/metrics/realtime', [NetworkMetricsController::class, 'getRealTimeResponseTimeData']);
+
+// Additional device management routes
+Route::post('/devices/bulk-ping', [DeviceController::class, 'bulkPing']);
+Route::get('/devices/hierarchy', [DeviceController::class, 'getHierarchy']);
+Route::get('/devices/{id}/children', [DeviceController::class, 'getChildren']);
+Route::get('/devices/{id}/family', [DeviceController::class, 'getFamily']);
+
 // Note: Profile photo routes moved to web.php to support session authentication

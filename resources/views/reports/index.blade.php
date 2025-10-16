@@ -146,6 +146,7 @@
         init() {
             this.initCharts();
             this.initEventListeners();
+            this.initBroadcasting();
             this.loadDefaultReport();
         }
         
@@ -266,6 +267,44 @@
             });
         }
         
+        initBroadcasting() {
+            try {
+                const pusher = new Pusher('{{ config("broadcasting.connections.pusher.key") }}', {
+                    cluster: '{{ config("broadcasting.connections.pusher.options.cluster") }}',
+                    authEndpoint: '/broadcasting/auth',
+                    auth: {
+                        headers: {
+                            'X-CSRF-Token': this.csrfToken
+                        }
+                    }
+                });
+                
+                // Listen for device status updates to refresh report data
+                const statusChannel = pusher.subscribe('device-status');
+                statusChannel.bind('DeviceStatusUpdated', (data) => {
+                    // Only update report if currently viewing the same time period
+                    // For real-time reports, we can update the charts with new data
+                    this.updateReportWithRealtimeData(data);
+                });
+                
+                // Listen for network metrics updates
+                const metricsChannel = pusher.subscribe('network-metrics');
+                metricsChannel.bind('NetworkMetricUpdated', (data) => {
+                    this.updateReportSummary(data);
+                });
+                
+            } catch (e) {
+                console.log('Pusher not configured, using polling fallback');
+            }
+            
+            // Fallback to polling every 30 seconds
+            setInterval(() => {
+                if (document.visibilityState === 'visible') {
+                    this.generateReport(); // Refresh the current report
+                }
+            }, 30000);
+        }
+        
         loadDefaultReport() {
             // Load a default report (last 7 days)
             this.generateReport('7d');
@@ -300,12 +339,20 @@
                     params.set('end_date', endDate);
                 }
                 
-                const response = await fetch(`/api/reports/generate?${params}`, {
+                const response = await fetch(`/api/reports/generate`, {
+                    method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': this.csrfToken,
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    body: JSON.stringify({
+                        report_type: 'detailed',
+                        period: reportPeriod,
+                        device_id: deviceId,
+                        start_date: document.getElementById('start_date')?.value,
+                        end_date: document.getElementById('end_date')?.value
+                    })
                 });
                 
                 if (response.ok) {
@@ -415,13 +462,117 @@
                     params.set('end_date', endDate);
                 }
                 
-                // For PDF export, we'll use a direct download approach
-                const url = `/api/reports/generate?${params}&format=pdf`;
-                window.open(url, '_blank');
+                // For PDF export, we'll submit a form to handle the file download
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/api/reports/generate';
+                form.target = '_blank'; // Open in new tab/window
+                
+                // Add CSRF token
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = this.csrfToken;
+                form.appendChild(csrfInput);
+                
+                // Add other parameters
+                const reportTypeInput = document.createElement('input');
+                reportTypeInput.type = 'hidden';
+                reportTypeInput.name = 'report_type';
+                reportTypeInput.value = 'detailed';
+                form.appendChild(reportTypeInput);
+                
+                const periodInput = document.createElement('input');
+                periodInput.type = 'hidden';
+                periodInput.name = 'period';
+                periodInput.value = reportPeriod;
+                form.appendChild(periodInput);
+                
+                const deviceInput = document.createElement('input');
+                deviceInput.type = 'hidden';
+                deviceInput.name = 'device_id';
+                deviceInput.value = deviceId;
+                form.appendChild(deviceInput);
+                
+                const formatInput = document.createElement('input');
+                formatInput.type = 'hidden';
+                formatInput.name = 'format';
+                formatInput.value = 'pdf';
+                form.appendChild(formatInput);
+                
+                // Add custom date range if applicable
+                if (reportPeriod === 'custom') {
+                    const startDateInput = document.createElement('input');
+                    startDateInput.type = 'hidden';
+                    startDateInput.name = 'start_date';
+                    startDateInput.value = document.getElementById('start_date').value;
+                    form.appendChild(startDateInput);
+                    
+                    const endDateInput = document.createElement('input');
+                    endDateInput.type = 'hidden';
+                    endDateInput.name = 'end_date';
+                    endDateInput.value = document.getElementById('end_date').value;
+                    form.appendChild(endDateInput);
+                }
+                
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
                 
             } catch (error) {
                 console.error('Error generating PDF:', error);
                 alert('Error generating PDF: ' + error.message);
+            }
+        }
+        
+        updateReportWithRealtimeData(data) {
+            // Update report in real-time based on device status changes
+            // For now, just refresh summary numbers
+            this.refreshReportSummary();
+        }
+        
+        updateReportSummary(data) {
+            // Update the summary cards with real-time data
+            if (data.total_devices !== undefined) {
+                const currentTotal = parseInt(document.getElementById('total-devices').textContent) || 0;
+                document.getElementById('total-devices').textContent = data.total_devices;
+            }
+            
+            if (data.average_response_time !== undefined) {
+                document.getElementById('avg-response').textContent = data.average_response_time + ' ms';
+            }
+            
+            // Update alerts count if available
+            if (data.offline_devices !== undefined) {
+                document.getElementById('total-alerts').textContent = data.offline_devices;
+            }
+        }
+        
+        async refreshReportSummary() {
+            // Get current filter parameters
+            const reportPeriod = document.getElementById('report-period').value;
+            const deviceId = document.getElementById('device-select').value;
+            
+            try {
+                const response = await fetch('/api/reports/overview', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': this.csrfToken,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        period: reportPeriod,
+                        device_id: deviceId
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    this.updateReportSummary(result.summary);
+                }
+            } catch (error) {
+                console.error('Error refreshing report summary:', error);
             }
         }
     }
@@ -432,205 +583,5 @@
     });
 </script>
 @endpush
-@endsection
-    </div>
 
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-white rounded-xl shadow-card p-6 border border-gray-200">
-            <div class="flex items-center">
-                <div class="p-3 rounded-lg bg-blue-100 text-blue-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Total Devices</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ \App\Models\Device::count() }}</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-card p-6 border border-gray-200">
-            <div class="flex items-center">
-                <div class="p-3 rounded-lg bg-green-100 text-green-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Uptime</p>
-                    <p class="text-2xl font-bold text-gray-900">99.9%</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-card p-6 border border-gray-200">
-            <div class="flex items-center">
-                <div class="p-3 rounded-lg bg-purple-100 text-purple-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Avg. Response</p>
-                    <p class="text-2xl font-bold text-gray-900">45ms</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-card p-6 border border-gray-200">
-            <div class="flex items-center">
-                <div class="p-3 rounded-lg bg-yellow-100 text-yellow-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Total Alerts</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ \App\Models\Alert::count() }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Charts Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Uptime Chart -->
-        <div class="bg-white rounded-xl shadow-card p-6 border border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Uptime Overview</h3>
-            <div class="h-80">
-                <canvas id="uptimeChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Response Time Chart -->
-        <div class="bg-white rounded-xl shadow-card p-6 border border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Response Time Trend</h3>
-            <div class="h-80">
-                <canvas id="responseTimeChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Device Performance Table -->
-    <div class="bg-white rounded-xl shadow-card border border-gray-200 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900">Device Performance Summary</h3>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uptime</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg. Response</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alerts</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse(\App\Models\Device::all() as $device)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                    <span class="text-blue-800 font-medium">{{ strtoupper(substr($device->name, 0, 1)) }}</span>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">{{ $device->name }}</div>
-                                    <div class="text-sm text-gray-500">{{ $device->ip_address }}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">99.9%</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $device->response_time }}ms</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $device->alerts()->count() }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                {{ $device->status === 'up' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ ucfirst($device->status) }}
-                            </span>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No devices found</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Uptime Chart
-        const uptimeCtx = document.getElementById('uptimeChart').getContext('2d');
-        new Chart(uptimeCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                datasets: [{
-                    label: 'Uptime %',
-                    data: [99.8, 99.9, 100, 99.7, 99.9, 99.8, 100, 99.9, 99.8, 99.9, 99.7, 99.8],
-                    borderColor: 'rgb(59, 130, 246)',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        min: 99
-                    }
-                }
-            }
-        });
-
-        // Response Time Chart
-        const responseTimeCtx = document.getElementById('responseTimeChart').getContext('2d');
-        new Chart(responseTimeCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                datasets: [{
-                    label: 'Response Time (ms)',
-                    data: [45, 42, 38, 50, 47, 44, 39, 41, 43, 46, 48, 45],
-                    borderColor: 'rgb(16, 185, 129)',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    });
-</script>
-@endpush
 @endsection

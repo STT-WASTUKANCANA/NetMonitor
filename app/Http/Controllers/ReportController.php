@@ -42,17 +42,17 @@ class ReportController extends Controller
         
         if (empty($deviceIds)) {
             // If no specific devices selected, get data for all devices
-            $logs = DeviceLog::where('logged_at', '>=', $startDate)
-                ->select(DB::raw('DATE(logged_at) as date, AVG(response_time) as avg_response_time'))
-                ->groupBy(DB::raw('DATE(logged_at)'))
+            $logs = DeviceLog::where('checked_at', '>=', $startDate)
+                ->select(DB::raw('DATE(checked_at) as date, AVG(response_time) as avg_response_time'))
+                ->groupBy(DB::raw('DATE(checked_at)'))
                 ->orderBy('date')
                 ->get();
         } else {
             // Get data for specific devices
             $logs = DeviceLog::whereIn('device_id', $deviceIds)
-                ->where('logged_at', '>=', $startDate)
-                ->select(DB::raw('DATE(logged_at) as date, AVG(response_time) as avg_response_time'))
-                ->groupBy(DB::raw('DATE(logged_at)'))
+                ->where('checked_at', '>=', $startDate)
+                ->select(DB::raw('DATE(checked_at) as date, AVG(response_time) as avg_response_time'))
+                ->groupBy(DB::raw('DATE(checked_at)'))
                 ->orderBy('date')
                 ->get();
         }
@@ -85,27 +85,27 @@ class ReportController extends Controller
         
         if (empty($deviceIds)) {
             // Get status data for all devices
-            $logs = DeviceLog::where('logged_at', '>=', $startDate)
+            $logs = DeviceLog::where('checked_at', '>=', $startDate)
                 ->select(
-                    DB::raw('DATE(logged_at) as date'),
+                    DB::raw('DATE(checked_at) as date'),
                     DB::raw("SUM(CASE WHEN status = 'up' THEN 1 ELSE 0 END) as up_count"),
                     DB::raw("SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as down_count"),
                     DB::raw("COUNT(*) as total_count")
                 )
-                ->groupBy(DB::raw('DATE(logged_at)'))
+                ->groupBy(DB::raw('DATE(checked_at)'))
                 ->orderBy('date')
                 ->get();
         } else {
             // Get status data for specific devices
             $logs = DeviceLog::whereIn('device_id', $deviceIds)
-                ->where('logged_at', '>=', $startDate)
+                ->where('checked_at', '>=', $startDate)
                 ->select(
-                    DB::raw('DATE(logged_at) as date'),
+                    DB::raw('DATE(checked_at) as date'),
                     DB::raw("SUM(CASE WHEN status = 'up' THEN 1 ELSE 0 END) as up_count"),
                     DB::raw("SUM(CASE WHEN status = 'down' THEN 1 ELSE 0 END) as down_count"),
                     DB::raw("COUNT(*) as total_count")
                 )
-                ->groupBy(DB::raw('DATE(logged_at)'))
+                ->groupBy(DB::raw('DATE(checked_at)'))
                 ->orderBy('date')
                 ->get();
         }
@@ -143,7 +143,7 @@ class ReportController extends Controller
         // Get device information
         if (empty($deviceIds)) {
             $devices = Device::all();
-            $logs = DeviceLog::whereBetween('logged_at', [$startDate, $endDate])
+            $logs = DeviceLog::whereBetween('checked_at', [$startDate, $endDate])
                 ->with('device')
                 ->get();
             $alerts = Alert::whereBetween('created_at', [$startDate, $endDate])
@@ -152,7 +152,7 @@ class ReportController extends Controller
         } else {
             $devices = Device::whereIn('id', $deviceIds)->get();
             $logs = DeviceLog::whereIn('device_id', $deviceIds)
-                ->whereBetween('logged_at', [$startDate, $endDate])
+                ->whereBetween('checked_at', [$startDate, $endDate])
                 ->with('device')
                 ->get();
             $alerts = Alert::whereIn('device_id', $deviceIds)

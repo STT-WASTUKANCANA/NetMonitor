@@ -106,6 +106,10 @@ class PingService
             $this->markChildrenAsDown($device);
         }
 
+        // Broadcast the complete hierarchy data after device status update
+        $hierarchyData = $this->getCompleteHierarchyData();
+        event(new \App\Events\DeviceHierarchyUpdated($hierarchyData, $device->id, $result['status']));
+
         return [
             'device' => $device,
             'log' => $log,
@@ -201,5 +205,52 @@ class PingService
                 $this->markChildrenAsDown($child);
             }
         }
+    }
+    
+    /**
+     * Get complete hierarchy data for all devices
+     */
+    private function getCompleteHierarchyData()
+    {
+        $allDevices = Device::with(['parent', 'children'])->get();
+        
+        // Find root devices (those without parents)
+        $rootDevices = $allDevices->where('parent_id', null);
+        
+        $hierarchyData = [];
+        
+        foreach ($rootDevices as $rootDevice) {
+            $hierarchyData[] = $this->buildHierarchyForBroadcast($rootDevice, $allDevices);
+        }
+        
+        return $hierarchyData;
+    }
+    
+    /**
+     * Build hierarchy data for a single device and its children
+     */
+    private function buildHierarchyForBroadcast($device, $allDevices)
+    {
+        $deviceData = [
+            'id' => $device->id,
+            'name' => $device->name,
+            'ip_address' => $device->ip_address,
+            'type' => $device->type,
+            'hierarchy_level' => $device->hierarchy_level,
+            'status' => $device->status,
+            'response_time' => $device->response_time,
+            'location' => $device->location,
+            'last_checked_at' => $device->last_checked_at,
+            'children' => []
+        ];
+        
+        // Find direct children of this device
+        $children = $allDevices->where('parent_id', $device->id);
+        
+        foreach ($children as $child) {
+            $deviceData['children'][] = $this->buildHierarchyForBroadcast($child, $allDevices);
+        }
+        
+        return $deviceData;
     }
 }

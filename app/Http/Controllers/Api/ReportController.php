@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Device;
-use App\Models\Log;
+use App\Models\DeviceLog;
 use App\Models\Alert;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -50,7 +50,7 @@ class ReportController extends Controller
         $uptimePercentage = $totalDevices > 0 ? round(($activeDevices / $totalDevices) * 100, 2) : 0;
         
         // Get log statistics for the period
-        $logsForPeriod = Log::whereBetween('checked_at', [$startDate, $endDate])->get();
+        $logsForPeriod = DeviceLog::whereBetween('checked_at', [$startDate, $endDate])->get();
         $totalChecks = $logsForPeriod->count();
         $successfulChecks = $logsForPeriod->where('status', 'up')->count();
         
@@ -74,7 +74,7 @@ class ReportController extends Controller
             ->get();
         
         // Status distribution over time
-        $statusTrend = Log::selectRaw(
+        $statusTrend = DeviceLog::selectRaw(
             'DATE(checked_at) as date, 
             COUNT(CASE WHEN status = "up" THEN 1 END) as up_count,
             COUNT(CASE WHEN status = "down" THEN 1 END) as down_count,
@@ -141,7 +141,7 @@ class ReportController extends Controller
             };
         
         // Base query for logs
-        $logsQuery = Log::whereBetween('checked_at', [$startDate, $endDate]);
+        $logsQuery = DeviceLog::whereBetween('checked_at', [$startDate, $endDate]);
         if ($deviceId) {
             $logsQuery->where('device_id', $deviceId);
         }
@@ -198,13 +198,58 @@ class ReportController extends Controller
      */
     private function generatePDF(array $reportData)
     {
+        // Map the API report data to match the expected PDF view format
+        $startDate = Carbon::parse($reportData['start_date'])->format('Y-m-d');
+        $endDate = Carbon::parse($reportData['end_date'])->format('Y-m-d');
+        
+        // Get devices based on report data
+        $deviceIds = [];
+        if (isset($reportData['device_id']) && $reportData['device_id']) {
+            $deviceIds = [$reportData['device_id']];
+            $devices = Device::whereIn('id', $deviceIds)->get();
+        } else {
+            $devices = Device::all();
+        }
+        
+        $dateRange = [
+            'start' => $startDate,
+            'end' => $endDate,
+            'range' => $reportData['period']
+        ];
+        
+        // Query logs based on the date range and device ID
+        $logsQuery = DeviceLog::whereBetween('checked_at', [$startDate, $endDate]);
+        if (isset($reportData['device_id']) && $reportData['device_id']) {
+            $logsQuery->where('device_id', $reportData['device_id']);
+        }
+        $logs = $logsQuery->get();
+        
+        $alertsQuery = Alert::whereBetween('created_at', [$startDate, $endDate]);
+        if (isset($reportData['device_id']) && $reportData['device_id']) {
+            $alertsQuery->where('device_id', $reportData['device_id']);
+        }
+        $alerts = $alertsQuery->get();
+        
+        // Calculate statistics
+        $totalLogs = $logs->count();
+        $upLogs = $logs->where('status', 'up')->count();
+        $downLogs = $logs->where('status', 'down')->count();
+        $avgResponseTime = $logs->avg('response_time') ?? 0;
+        
         // Create the PDF using Laravel's view functionality
         $pdf = app('dompdf.wrapper');
         
-        // Get view with report data
+        // Get view with properly formatted data for the PDF template
         $pdfContent = view('reports.pdf', [
-            'reportData' => $reportData,
-            'title' => 'Network Monitoring Report'
+            'dateRange' => $dateRange,
+            'devices' => $devices,
+            'logs' => $logs,
+            'alerts' => $alerts,
+            'totalLogs' => $totalLogs,
+            'upLogs' => $upLogs,
+            'downLogs' => $downLogs,
+            'avgResponseTime' => round($avgResponseTime, 2),
+            'generatedAt' => now()->format('Y-m-d H:i:s')
         ])->render();
         
         $pdf->loadHTML($pdfContent);
@@ -240,7 +285,7 @@ class ReportController extends Controller
      */
     private function getUptimeTrend(Carbon $startDate, Carbon $endDate, ?int $deviceId = null): array
     {
-        $query = Log::selectRaw(
+        $query = DeviceLog::selectRaw(
             'DATE(checked_at) as date, 
             COUNT(CASE WHEN status = "up" THEN 1 END) as up_count,
             COUNT(CASE WHEN status = "down" THEN 1 END) as down_count,

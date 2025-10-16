@@ -3,10 +3,11 @@
 namespace App\Jobs;
 
 use App\Models\Device;
-use App\Models\Log;
+use App\Models\DeviceLog;
 use App\Models\Alert;
 use App\Events\DeviceStatusUpdated;
 use App\Events\DeviceAlertCreated;
+use App\Events\NetworkMetricUpdated;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -14,6 +15,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log as Logger;
+use App\Services\PingService;
 
 class CheckDeviceStatuses implements ShouldQueue
 {
@@ -35,15 +37,16 @@ class CheckDeviceStatuses implements ShouldQueue
         Logger::info('Starting device status check job');
         
         $devices = Device::all();
+        $responseTimeData = [];
         
         foreach ($devices as $device) {
             try {
-                // Perform ping to the device
-                $startTime = microtime(true);
-                $response = Http::timeout(10)->get("http://{$device->ip_address}");
-                $responseTime = round((microtime(true) - $startTime) * 1000, 2); // Convert to milliseconds
+                // Use the PingService instead of HTTP calls for more reliable network monitoring
+                $pingService = new PingService();
+                $result = $pingService->ping($device);
                 
-                $status = $response->successful() ? 'up' : 'down';
+                $status = $result['status'];
+                $responseTime = $result['response_time'];
             } catch (\Exception $e) {
                 // Device is likely down if there's an exception during ping
                 $status = 'down';
@@ -51,11 +54,12 @@ class CheckDeviceStatuses implements ShouldQueue
             }
             
             // Create a new log entry
-            $log = Log::create([
+            $log = DeviceLog::create([
                 'device_id' => $device->id,
                 'status' => $status,
                 'response_time' => $responseTime,
                 'checked_at' => now(),
+                'is_manual_check' => false, // This is an automated check
             ]);
 
             // Update the device's status and response time
@@ -75,12 +79,90 @@ class CheckDeviceStatuses implements ShouldQueue
 
             // Broadcast the device status update
             event(new DeviceStatusUpdated($device, $status, $responseTime));
+            
+            // Collect response time data for overall network metrics
+            if ($responseTime !== null) {
+                $responseTimeData[] = [
+                    'device_id' => $device->id,
+                    'device_name' => $device->name,
+                    'response_time' => $responseTime,
+                    'timestamp' => now()->format('H:i:s'),
+                ];
+            }
 
             Logger::info("Device {$device->name} status: {$status}, response time: {$responseTime}ms");
-
         }
         
+        // After checking all devices, broadcast the complete hierarchy data
+        $hierarchyData = $this->getCompleteHierarchyData();
+        event(new \App\Events\DeviceHierarchyUpdated($hierarchyData));
+        
+        // Broadcast the network metrics update after checking all devices
+        if (!empty($responseTimeData)) {
+            $avgResponseTime = array_sum(array_column($responseTimeData, 'response_time')) / count($responseTimeData);
+            
+            event(new NetworkMetricUpdated([
+                'total_devices' => count($devices),
+                'online_devices' => $devices->where('status', 'up')->count(),
+                'offline_devices' => $devices->where('status', 'down')->count(),
+                'average_response_time' => round($avgResponseTime, 2),
+                'response_time_data' => $responseTimeData,
+                'timestamp' => now()->toISOString(),
+            ]));
+        }
+        
+        // After checking all devices, broadcast the complete hierarchy data
+        $hierarchyData = $this->getCompleteHierarchyData();
+        event(new \App\Events\DeviceHierarchyUpdated($hierarchyData));
+        
         Logger::info('Device status check job completed');
+    }
+
+    /**
+     * Get complete hierarchy data for all devices
+     */
+    private function getCompleteHierarchyData()
+    {
+        $allDevices = Device::with(['parent', 'children'])->get();
+        
+        // Find root devices (those without parents)
+        $rootDevices = $allDevices->where('parent_id', null);
+        
+        $hierarchyData = [];
+        
+        foreach ($rootDevices as $rootDevice) {
+            $hierarchyData[] = $this->buildHierarchyForBroadcast($rootDevice, $allDevices);
+        }
+        
+        return $hierarchyData;
+    }
+    
+    /**
+     * Build hierarchy data for a single device and its children
+     */
+    private function buildHierarchyForBroadcast($device, $allDevices)
+    {
+        $deviceData = [
+            'id' => $device->id,
+            'name' => $device->name,
+            'ip_address' => $device->ip_address,
+            'type' => $device->type,
+            'hierarchy_level' => $device->hierarchy_level,
+            'status' => $device->status,
+            'response_time' => $device->response_time,
+            'location' => $device->location,
+            'last_checked_at' => $device->last_checked_at,
+            'children' => []
+        ];
+        
+        // Find direct children of this device
+        $children = $allDevices->where('parent_id', $device->id);
+        
+        foreach ($children as $child) {
+            $deviceData['children'][] = $this->buildHierarchyForBroadcast($child, $allDevices);
+        }
+        
+        return $deviceData;
     }
 
     /**
@@ -143,11 +225,12 @@ class CheckDeviceStatuses implements ShouldQueue
             ]);
 
             // Create a log entry for the child
-            Log::create([
+            DeviceLog::create([
                 'device_id' => $child->id,
                 'status' => 'down',
                 'response_time' => null,
                 'checked_at' => now(),
+                'is_manual_check' => false, // This is an automated check
             ]);
 
             // Create alert for the child if needed
