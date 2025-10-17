@@ -4,7 +4,9 @@ Sistem monitoring jaringan berbasis web untuk memantau kesehatan dan performa pe
 
 ## 🚀 Fitur Utama
 
-- **Pemantauan Perangkat Real-Time:** Memeriksa status konektivitas perangkat melalui ping dan pengecekan port secara berkala
+- **Pemantauan Perangkat Real-Time:** Memeriksa status konektivitas perangkat melalui ping dengan pembaruan per-detik
+- **Status Tiga Kondisi:** Mendeteksi status UP (aktif), DOWN (tidak aktif), dan UNKNOWN (IP tidak valid)
+- **Pembaruan Manual:** Tombol "Scan" untuk refresh status perangkat secara langsung
 - **Peringatan Otomatis:** Mengirimkan notifikasi di dalam aplikasi ketika sebuah perangkat terdeteksi down atau memiliki latensi tinggi
 - **Visualisasi & Pelaporan Data:** Menampilkan grafik interaktif dan menghasilkan laporan performa dalam format PDF
 - **Manajemen Perangkat:** CRUD untuk data perangkat jaringan dengan struktur hirarkis

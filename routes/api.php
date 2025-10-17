@@ -43,6 +43,7 @@ Route::post('/reports/generate', [ReportController::class, 'generate']);
 // Additional device management routes
 Route::post('/devices/bulk-ping', [DeviceController::class, 'bulkPing']);
 Route::get('/devices/hierarchy', [DeviceController::class, 'getHierarchy']);
+Route::get('/devices/hierarchy/realtime', [DeviceController::class, 'getRealTimeHierarchy']);
 Route::get('/devices/{id}/children', [DeviceController::class, 'getChildren']);
 Route::get('/devices/{id}/family', [DeviceController::class, 'getFamily']);
 

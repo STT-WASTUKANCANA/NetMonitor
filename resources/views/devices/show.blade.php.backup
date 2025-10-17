@@ -84,10 +84,10 @@
                 </div>
                 
                 @if($device->parent)
-                <div class="mb-4">
-                    <h3 class="text-sm font-medium text-gray-500">Parent Device</h3>
-                    <p class="mt-1 text-lg font-medium text-gray-900">
-                        <a href="{{ route('devices.show', $device->parent) }}" class="text-indigo-600 hover:text-indigo-900">
+                <div class=\"mb-4\">
+                    <h3 class=\"text-sm font-medium text-gray-500\">Parent Device</h3>
+                    <p class=\"mt-1 text-lg font-medium text-gray-900\">
+                        <a href=\"{{ route('devices.show', $device->parent) }}\" class=\"text-indigo-600 hover:text-indigo-900\">
                             {{ $device->parent->name }}
                         </a>
                     </p>
@@ -103,13 +103,13 @@
         
         <div class="space-y-4">
             <div class="flex justify-between">
-                <span class="text-sm text-gray-600">Location</span>
-                <span class="text-sm font-medium text-gray-900">{{ $device->location ?: 'N/A' }}</span>
+                <span class="text-sm text-gray-600">Monitoring Interval</span>
+                <span class="text-sm font-medium text-gray-900">{{ $device->monitoring_interval }}s</span>
             </div>
             
             <div class="flex justify-between">
-                <span class="text-sm text-gray-600">Hierarchy Level</span>
-                <span class="text-sm font-medium text-gray-900">{{ ucfirst($device->hierarchy_level) }}</span>
+                <span class="text-sm text-gray-600">Port</span>
+                <span class="text-sm font-medium text-gray-900">{{ $device->port }}</span>
             </div>
             
             <div class="flex justify-between">

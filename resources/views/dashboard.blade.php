@@ -171,13 +171,14 @@
                         <tr>
                             <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device</th>
                             <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Address</th>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent</th>
                             <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Response Time</th>
                             <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Check</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200" id="devices-table-body">
-                        @forelse(\App\Models\Device::latest()->take(5)->get() as $device)
+                        @forelse(\App\Models\Device::with('parent')->latest()->take(5)->get() as $device)
                         <tr class="hover:bg-gray-50" data-device-id="{{ $device->id }}">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
@@ -189,9 +190,18 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $device->ip_address }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                @if($device->parent)
+                                    <span class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800">
+                                        {{ $device->parent->name }}
+                                    </span>
+                                @else
+                                    <span class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600">No Parent</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    {{ $device->status === 'up' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} status-badge"
+                                    {{ $device->status === 'up' ? 'bg-green-100 text-green-800' : ($device->status === 'down' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800') }} status-badge"
                                     data-status="{{ $device->status }}">
                                     {{ ucfirst($device->status) }}
                                 </span>
@@ -205,7 +215,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No devices found</td>
+                            <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No devices found</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -226,6 +236,48 @@
             <div class="text-center py-20">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
                 <p class="text-gray-600">Loading device hierarchy...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Real-time Hierarchy Status Bars -->
+    <div class="bg-white rounded-xl shadow-card p-6 border border-gray-200">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900">Real-time Hierarchy Status</h3>
+            <div class="text-sm text-gray-500" id="last-update-time">Updating...</div>
+        </div>
+        <div class="space-y-6">
+            <!-- Utama Level Status -->
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="font-medium text-gray-900">Main Devices (Utama)</h4>
+                    <span class="text-sm text-gray-500" id="utama-stats">0 devices</span>
+                </div>
+                <div class="space-y-3" id="utama-status-bars">
+                    <!-- Utama status bars will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Sub Level Status -->
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="font-medium text-gray-900">Sub Devices</h4>
+                    <span class="text-sm text-gray-500" id="sub-stats">0 devices</span>
+                </div>
+                <div class="space-y-3" id="sub-status-bars">
+                    <!-- Sub status bars will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Device Level Status -->
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="font-medium text-gray-900">Regular Devices</h4>
+                    <span class="text-sm text-gray-500" id="device-stats">0 devices</span>
+                </div>
+                <div class="space-y-3" id="device-status-bars">
+                    <!-- Device status bars will be populated here -->
+                </div>
             </div>
         </div>
     </div>
@@ -253,6 +305,7 @@
             this.initHierarchyEventListeners();
             this.initBroadcasting();
             this.startAutoRefresh();
+            this.startRealTimeUpdates(); // Start real-time updates every minute
         }
         
         initCharts() {
@@ -359,10 +412,68 @@
                 });
             });
             
-            // Refresh button
+            // Refresh button - triggers manual refresh of all devices
             document.getElementById('refresh-btn').addEventListener('click', () => {
-                this.refreshData();
+                this.manualRefreshAllDevices();
             });
+        }
+        
+        // Manually refresh all devices immediately
+        async manualRefreshAllDevices() {
+            try {
+                // Show loading indicator
+                const refreshBtn = document.getElementById('refresh-btn');
+                const originalHTML = refreshBtn.innerHTML;
+                refreshBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>';
+                refreshBtn.disabled = true;
+                
+                // Call the API to manually ping all devices
+                const response = await fetch('/api/devices/bulk-ping', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.showNotification(`Manual refresh completed: ${data.results.length} devices checked`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    this.showNotification(`Error during manual refresh: ${errorData.message}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error during manual refresh:', error);
+                this.showNotification('Error during manual refresh', 'error');
+            } finally {
+                // Restore the button
+                const refreshBtn = document.getElementById('refresh-btn');
+                refreshBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>';
+                refreshBtn.disabled = false;
+            }
+        }
+        
+        // Show notification to user
+        showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+                type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+                'bg-blue-100 text-blue-800 border border-blue-200'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
         }
         
         initHierarchyEventListeners() {
@@ -413,6 +524,9 @@
                 console.log('Pusher not configured, using polling fallback');
             }
             
+            // Real-time updates per second for critical metrics
+            this.startRealTimeUpdates();
+            
             // Fallback to polling every 10 seconds
             setInterval(() => {
                 this.refreshData();
@@ -420,6 +534,66 @@
             
             // Load initial hierarchy data
             this.loadInitialHierarchy();
+        }
+        
+        startRealTimeUpdates() {
+            // Update timestamp every second
+            setInterval(() => {
+                document.getElementById('current-date').textContent = new Date().toLocaleString();
+            }, 1000);
+            
+            // Update response time chart every 2 seconds for more frequent updates (since per-second is too intensive for charts)
+            setInterval(() => {
+                this.updateResponseTimeChartRealTime();
+            }, 2000);
+            
+            // For critical metrics, we rely on WebSocket events which provide per-second updates
+            // The UI will update automatically when DeviceStatusUpdated events are received
+        }
+        
+        async updateResponseTimeChartRealTime() {
+            try {
+                // Fetch real-time network metrics
+                const response = await fetch('/api/metrics/realtime', {
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (this.responseTimeChart && data.response_time_data && data.response_time_data.length > 0) {
+                        // Add the new data point to the chart
+                        const avgResponseTime = data.average_response_time;
+                        const timestamp = new Date().toLocaleTimeString();
+                        
+                        // Keep only the last 20 points to prevent chart overcrowding
+                        if (this.responseTimeChart.data.labels.length >= 20) {
+                            this.responseTimeChart.data.labels.shift(); // Remove the first element
+                            this.responseTimeChart.data.datasets[0].data.shift(); // Remove the first data point
+                        }
+                        
+                        // Add the new data point
+                        this.responseTimeChart.data.labels.push(timestamp);
+                        this.responseTimeChart.data.datasets[0].data.push(avgResponseTime);
+                        
+                        this.responseTimeChart.update();
+                    }
+                    
+                    // Update summary cards if new data is available
+                    if (data.total_devices !== undefined) {
+                        document.getElementById('total-device-count').textContent = data.total_devices;
+                        document.getElementById('online-count').textContent = data.online_devices;
+                        document.getElementById('offline-count').textContent = data.offline_devices;
+                        document.getElementById('alert-count').textContent = data.offline_devices; // Show number of down devices as alert count
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating real-time chart:', error);
+            }
         }
         
         initHierarchyEventListeners() {
@@ -535,8 +709,15 @@
                 const statusBadge = deviceRow.querySelector('.status-badge');
                 if (statusBadge) {
                     statusBadge.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
-                    statusBadge.className = `px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${data.status === 'up' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} status-badge`;
+                    let statusClass = '';
+                    if (data.status === 'up') {
+                        statusClass = 'bg-green-100 text-green-800';
+                    } else if (data.status === 'down') {
+                        statusClass = 'bg-red-100 text-red-800';
+                    } else { // unknown
+                        statusClass = 'bg-gray-100 text-gray-800';
+                    }
+                    statusBadge.className = `px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass} status-badge`;
                     statusBadge.dataset.status = data.status;
                 }
                 
@@ -547,8 +728,33 @@
                 }
             }
             
-            // Update the top counters
-            this.refreshData(); // Refresh all data to keep counters accurate
+            // Update the top counters immediately without full refresh
+            this.updateCounters();
+        }
+        
+        async updateCounters() {
+            try {
+                const response = await fetch('/api/devices', {
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const devices = await response.json();
+                    const onlineCount = devices.filter(d => d.status === 'up').length;
+                    const offlineCount = devices.filter(d => d.status === 'down').length;
+                    
+                    document.getElementById('total-device-count').textContent = devices.length;
+                    document.getElementById('online-count').textContent = onlineCount;
+                    document.getElementById('offline-count').textContent = offlineCount;
+                    document.getElementById('alert-count').textContent = offlineCount; // Show number of down devices as alert count
+                }
+            } catch (error) {
+                console.error('Error updating counters:', error);
+            }
         }
         
         updateAlerts(alerts) {
@@ -687,8 +893,20 @@
         // Render individual device node in hierarchy
         renderDeviceNode(device, level) {
             const indent = level * 20; // Add indentation for each level
-            const statusClass = device.status === 'up' ? 'text-green-600' : 'text-red-600';
-            const statusIcon = device.status === 'up' ? '✅' : '❌';
+            let statusClass = '';
+            let statusIcon = '';
+            
+            if (device.status === 'up') {
+                statusClass = 'text-green-600';
+                statusIcon = '✅';
+            } else if (device.status === 'down') {
+                statusClass = 'text-red-600';
+                statusIcon = '❌';
+            } else { // unknown
+                statusClass = 'text-gray-600';
+                statusIcon = '❓';
+            }
+            
             const hasChildren = device.children && device.children.length > 0;
             
             let html = `
@@ -739,7 +957,15 @@
     
     // Initialize dashboard when page loads
     document.addEventListener('DOMContentLoaded', function() {
-        new NetworkDashboard();
+        const dashboard = new NetworkDashboard();
+        
+        // Start real-time updates
+        dashboard.startRealTimeUpdates();
+        
+        // Load initial real-time hierarchy data after a short delay
+        setTimeout(() => {
+            dashboard.loadRealTimeHierarchy();
+        }, 1000);
     });
 </script>
 @endpush

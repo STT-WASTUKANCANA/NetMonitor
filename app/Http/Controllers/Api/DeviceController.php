@@ -94,6 +94,16 @@ class DeviceController extends Controller
         }
 
         $device = Device::create($deviceData);
+        
+        // Immediately check the device status after creation
+        try {
+            $pingResult = $this->pingService->pingAndRecord($device);
+        } catch (\Exception $e) {
+            \Log::error('Error pinging newly created device: ' . $e->getMessage(), [
+                'device_id' => $device->id,
+                'ip_address' => $device->ip_address
+            ]);
+        }
 
         return response()->json([
             'message' => 'Device created successfully.',
@@ -182,6 +192,18 @@ class DeviceController extends Controller
         }
 
         $device->update($deviceData);
+        
+        // If IP address was changed, check the device status
+        if (isset($deviceData['ip_address']) && $device->wasChanged('ip_address')) {
+            try {
+                $pingResult = $this->pingService->pingAndRecord($device);
+            } catch (\Exception $e) {
+                \Log::error('Error pinging updated device: ' . $e->getMessage(), [
+                    'device_id' => $device->id,
+                    'ip_address' => $device->ip_address
+                ]);
+            }
+        }
 
         return response()->json([
             'message' => 'Device updated successfully.',
@@ -610,6 +632,99 @@ class DeviceController extends Controller
                 'error' => true
             ], 500);
         }
+    }
+    
+    /**
+     * Get real-time hierarchy data with current status and response times
+     */
+    public function getRealTimeHierarchy(Request $request): JsonResponse
+    {
+        try {
+            // Get all devices with their relationships and latest logs
+            $devices = Device::with(['parent', 'children', 'logs' => function($query) {
+                $query->latest()->limit(5);
+            }])->get();
+            
+            // Build hierarchy tree with real-time data
+            $hierarchy = $this->buildRealTimeHierarchy($devices);
+            
+            // Group devices by hierarchy level for dashboard visualization
+            $levelStats = [
+                'utama' => [],
+                'sub' => [],
+                'device' => []
+            ];
+            
+            foreach ($devices as $device) {
+                if (isset($levelStats[$device->hierarchy_level])) {
+                    $levelStats[$device->hierarchy_level][] = [
+                        'id' => $device->id,
+                        'name' => $device->name,
+                        'ip_address' => $device->ip_address,
+                        'type' => $device->type,
+                        'status' => $device->status,
+                        'response_time' => $device->response_time,
+                        'last_checked_at' => $device->last_checked_at,
+                        'location' => $device->location,
+                    ];
+                }
+            }
+            
+            return response()->json([
+                'message' => 'Real-time device hierarchy retrieved successfully',
+                'hierarchy' => $hierarchy,
+                'level_stats' => $levelStats,
+                'summary' => [
+                    'total_devices' => $devices->count(),
+                    'online_devices' => $devices->where('status', 'up')->count(),
+                    'offline_devices' => $devices->where('status', 'down')->count(),
+                    'utama_count' => $devices->where('hierarchy_level', 'utama')->count(),
+                    'sub_count' => $devices->where('hierarchy_level', 'sub')->count(),
+                    'device_count' => $devices->where('hierarchy_level', 'device')->count(),
+                ],
+                'timestamp' => now()->toISOString()
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error retrieving real-time device hierarchy: ' . $e->getMessage(),
+                'error' => true
+            ], 500);
+        }
+    }
+    
+    /**
+     * Build real-time hierarchy tree with current status and response times
+     */
+    private function buildRealTimeHierarchy($devices, $parentId = null)
+    {
+        $branch = [];
+        
+        foreach ($devices as $device) {
+            if ($device->parent_id == $parentId) {
+                $children = $this->buildRealTimeHierarchy($devices, $device->id);
+                
+                // Get the latest log for response time details
+                $latestLog = $device->logs->first();
+                
+                $deviceData = [
+                    'id' => $device->id,
+                    'name' => $device->name,
+                    'ip_address' => $device->ip_address,
+                    'type' => $device->type,
+                    'hierarchy_level' => $device->hierarchy_level,
+                    'status' => $device->status,
+                    'response_time' => $device->response_time,
+                    'location' => $device->location,
+                    'last_checked_at' => $device->last_checked_at,
+                    'latency_history' => $device->logs->pluck('response_time', 'checked_at'),
+                    'children' => $children
+                ];
+                
+                $branch[] = $deviceData;
+            }
+        }
+        
+        return $branch;
     }
     
     /**

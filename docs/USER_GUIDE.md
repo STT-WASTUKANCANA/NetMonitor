@@ -18,8 +18,11 @@ After logging in, you'll be directed to the dashboard which displays:
 - **Active Devices:** Devices currently online
 - **Inactive Devices:** Devices currently offline
 - **Active Alerts:** Current unresolved alerts
-- **Device Hierarchy:** Visual representation of network structure
+- **Device Hierarchy:** Visual representation of network structure with real-time updates
 - **Recent Alerts:** Latest system notifications
+- **Network Performance Charts:** Real-time response time trends with per-second updates
+- **Manual Refresh Button:** "Scan" icon button for immediate manual refresh of all devices
+- **Status Indicators:** Color-coded indicators showing UP (green), DOWN (red), or UNKNOWN (gray) status
 
 ## 🖥️ Navigation
 
@@ -120,6 +123,28 @@ The system supports both light and dark themes:
 1. Click the moon/sun icon in the top right corner
 2. Toggle between light and dark modes
 3. Your preference is saved automatically
+
+## ⚡ Real-time Monitoring and Manual Refresh
+
+The system provides true real-time monitoring with per-second updates:
+
+### Real-time Dashboard
+- Device statuses update automatically every second
+- Network performance charts update continuously
+- Hierarchy visualization shows live status changes
+- Status indicators use color coding:
+  - **Green (UP)**: Device responding normally
+  - **Red (DOWN)**: Device not responding
+  - **Gray (UNKNOWN)**: Invalid or missing IP address
+
+### Manual Refresh
+1. Click the circular "Scan" icon button at the top of the dashboard
+2. The button will show a spinning animation while refreshing
+3. All devices will be checked immediately
+4. Results update in real-time as checks complete
+5. A success notification will appear when complete
+
+This manual refresh is useful when you need immediate status information without waiting for the next automatic check.
 
 ## 👤 Profile Settings
 

@@ -115,6 +115,9 @@ class CheckDeviceStatuses implements ShouldQueue
         $hierarchyData = $this->getCompleteHierarchyData();
         event(new \App\Events\DeviceHierarchyUpdated($hierarchyData));
         
+        // Dispatch the real-time hierarchy update job
+        \App\Jobs\UpdateRealTimeHierarchy::dispatch();
+        
         Logger::info('Device status check job completed');
     }
 

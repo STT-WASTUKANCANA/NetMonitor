@@ -12,8 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Run the device monitoring command every 5 minutes
-        $schedule->command('monitor:devices')->everyFiveMinutes();
+        // Run the device monitoring command every minute for regular checks
+        $schedule->command('monitor:devices')->everyMinute();
+        
+        // Run the real-time hierarchy update command every minute
+        $schedule->command('hierarchy:update-realtime')->everyMinute();
     }
 
     /**

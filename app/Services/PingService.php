@@ -21,6 +21,11 @@ class PingService
     {
         $ipAddress = $device->ip_address;
         
+        Log::info("Attempting to ping device: " . $device->name . " at IP: " . $ipAddress, [
+            'device_id' => $device->id,
+            'ip_address' => $ipAddress
+        ]);
+        
         // Measure start time for response time calculation
         $startTime = microtime(true);
 
@@ -30,8 +35,15 @@ class PingService
             $output = [];
             $returnCode = 0;
             
+            Log::debug("Executing ping command: " . $command);
+            
             // Execute ping command and capture any errors
             exec($command . ' 2>&1', $output, $returnCode);
+            
+            Log::debug("Ping command output:", [
+                'output' => $output,
+                'return_code' => $returnCode
+            ]);
             
             $endTime = microtime(true);
             $responseTime = round(($endTime - $startTime) * 1000, 2); // Convert to milliseconds
@@ -41,9 +53,16 @@ class PingService
                 foreach ($output as $line) {
                     if (preg_match('/time=(\d+\.?\d*)\s*ms/', $line, $matches)) {
                         $responseTime = floatval($matches[1]);
+                        Log::debug("Parsed response time from output: " . $responseTime . "ms");
                         break;
                     }
                 }
+
+                Log::info("Device responded to ping: " . $device->name, [
+                    'device_id' => $device->id,
+                    'response_time' => $responseTime,
+                    'status' => 'up'
+                ]);
 
                 return [
                     'status' => 'up',
@@ -51,6 +70,11 @@ class PingService
                     'message' => 'Device responded to ping'
                 ];
             } else {
+                Log::info("Device did not respond to ping: " . $device->name, [
+                    'device_id' => $device->id,
+                    'status' => 'down'
+                ]);
+                
                 return [
                     'status' => 'down',
                     'response_time' => null,
@@ -80,7 +104,19 @@ class PingService
      */
     public function pingAndRecord(Device $device): array
     {
+        Log::info("Starting pingAndRecord for device: " . $device->name, [
+            'device_id' => $device->id,
+            'current_status' => $device->status,
+            'ip_address' => $device->ip_address
+        ]);
+        
         $result = $this->ping($device);
+        
+        Log::info("Ping result for device: " . $device->name, [
+            'device_id' => $device->id,
+            'result_status' => $result['status'],
+            'response_time' => $result['response_time']
+        ]);
         
         // Create a new log entry
         $log = DeviceLog::create([
@@ -96,6 +132,11 @@ class PingService
         $device->update([
             'status' => $result['status'],
             'last_checked_at' => now(), // This will use the application timezone
+        ]);
+
+        Log::info("Updated device status: " . $device->name, [
+            'device_id' => $device->id,
+            'new_status' => $result['status']
         ]);
 
         // Check if an alert needs to be created based on status change

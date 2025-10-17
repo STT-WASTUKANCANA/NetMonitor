@@ -117,6 +117,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uptime %</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Response</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Response</th>
@@ -297,12 +298,30 @@
                 console.log('Pusher not configured, using polling fallback');
             }
             
-            // Fallback to polling every 30 seconds
+            // Start real-time updates
+            this.startRealTimeUpdates();
+        }
+        
+        startRealTimeUpdates() {
+            // Update timestamp every second
+            setInterval(() => {
+                // Update any timestamps if needed
+            }, 1000);
+            
+            // Fallback to polling every 15 seconds for reports
             setInterval(() => {
                 if (document.visibilityState === 'visible') {
+                    // Only refresh if it's been more than 15 seconds since last refresh
                     this.generateReport(); // Refresh the current report
                 }
-            }, 30000);
+            }, 15000);
+            
+            // Poll summary data more frequently
+            setInterval(() => {
+                if (document.visibilityState === 'visible') {
+                    this.refreshReportSummary();
+                }
+            }, 10000);
         }
         
         loadDefaultReport() {
@@ -407,7 +426,7 @@
             if (!data.detailed || !data.detailed.top_issue_devices) {
                 // If no detailed data, show a message
                 const row = document.createElement('tr');
-                row.innerHTML = '<td colspan="6" class="px-6 py-4 text-center text-gray-500">No data available</td>';
+                row.innerHTML = '<td colspan="7" class="px-6 py-4 text-center text-gray-500">No data available</td>';
                 tbody.appendChild(row);
                 return;
             }
@@ -418,7 +437,10 @@
                 row.className = 'hover:bg-gray-50';
                 row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${device.name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${device.alert_count || 0} alerts</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${device.parent_name ? `<span class="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">${device.parent_name}</span>` : '<span class="px-2 py-1 rounded text-xs bg-gray-100 text-gray-600">No Parent</span>'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${device.uptime_percentage || 'N/A'}%</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${device.average_response_time || 'N/A'} ms</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${device.max_response_time || 'N/A'} ms</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${device.min_response_time || 'N/A'} ms</td>

@@ -3,14 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Device;
+use App\Services\PingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DeviceController extends Controller
 {
-    public function __construct()
+    private $pingService;
+    
+    public function __construct(PingService $pingService)
     {
         $this->middleware('auth');
+        $this->pingService = $pingService;
     }
 
     /**
@@ -102,7 +106,17 @@ class DeviceController extends Controller
             }
         }
 
-        Device::create($deviceData);
+        $device = Device::create($deviceData);
+        
+        // Immediately check the device status after creation
+        try {
+            $this->pingService->pingAndRecord($device);
+        } catch (\Exception $e) {
+            \Log::error('Error pinging newly created device: ' . $e->getMessage(), [
+                'device_id' => $device->id,
+                'ip_address' => $device->ip_address
+            ]);
+        }
 
         return redirect()->route('devices.index')->with('success', 'Device created successfully.');
     }
@@ -193,6 +207,18 @@ class DeviceController extends Controller
         }
 
         $device->update($deviceData);
+        
+        // If IP address was changed, check the device status
+        if (isset($deviceData['ip_address']) && $device->wasChanged('ip_address')) {
+            try {
+                $this->pingService->pingAndRecord($device);
+            } catch (\Exception $e) {
+                \Log::error('Error pinging updated device: ' . $e->getMessage(), [
+                    'device_id' => $device->id,
+                    'ip_address' => $device->ip_address
+                ]);
+            }
+        }
 
         return redirect()->route('devices.index')->with('success', 'Device updated successfully.');
     }
