@@ -1,19 +1,19 @@
-# 💻 Developer Documentation
+# 💻 Dokumentasi Pengembang
 
-Technical documentation for developers working on the Network Monitoring System.
+Dokumentasi teknis untuk pengembang yang bekerja pada Sistem Monitoring Jaringan.
 
-## 🏗️ System Architecture
+## 🏗️ Arsitektur Sistem
 
-### Technology Stack
+### Stack Teknologi
 - **Backend:** Laravel 12 (PHP 8.2)
-- **Frontend:** Blade templates with Tailwind CSS 4.0
+- **Frontend:** Template Blade dengan Tailwind CSS 4.0
 - **Database:** MySQL/MariaDB
-- **Monitoring:** Python 3.6+ script
-- **Authentication:** Laravel Breeze + Spatie Laravel Permission
-- **PDF Generation:** DomPDF
-- **Queue System:** Redis (recommended) or Database
+- **Monitoring:** Skrip Python 3.6+
+- **Autentikasi:** Laravel Breeze + Spatie Laravel Permission
+- **Pembuatan PDF:** DomPDF
+- **Sistem Antrian:** Redis (disarankan) atau Database
 
-### High-Level Architecture
+### Arsitektur Tingkat Tinggi
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   Web Browser   │◄──►│  Laravel (PHP)   │◄──►│    Database     │
@@ -27,42 +27,42 @@ Technical documentation for developers working on the Network Monitoring System.
                        └──────────────────┘
 ```
 
-## 📁 Project Structure
+## 📁 Struktur Proyek
 
 ```
 app/
-├── Console/Commands/        # Artisan commands
+├── Console/Commands/        # Perintah Artisan
 ├── Http/
-│   ├── Controllers/         # MVC controllers
-│   │   └── Api/            # API controllers
-│   └── Resources/          # API resources
-├── Models/                  # Eloquent models
-├── Services/               # Business logic services
-└── Providers/              # Service providers
+│   ├── Controllers/         # Controller MVC
+│   │   └── Api/            # Controller API
+│   └── Resources/          # Resource API
+├── Models/                  # Model Eloquent
+├── Services/               # Layanan logika bisnis
+└── Providers/              # Provider layanan
 
 database/
-├── migrations/             # Database schema changes
-└── seeders/                # Sample data generators
+├── migrations/             # Perubahan skema database
+└── seeders/                # Generator data sampel
 
 resources/
-├── views/                  # Blade templates
-├── css/                    # Compiled CSS
-└── js/                     # JavaScript files
+├── views/                  # Template Blade
+├── css/                    # CSS terkompilasi
+└── js/                     # File JavaScript
 
 routes/
-├── web.php                 # Web routes
-├── api.php                 # API routes
-└── console.php             # Console routes
+├── web.php                 # Rute web
+├── api.php                 # Rute API
+└── console.php             # Rute konsol
 
 scripts/
-└── monitor.py             # Python monitoring script
+└── monitor.py             # Skrip monitoring Python
 ```
 
-## 🧩 Core Components
+## 🧩 Komponen Inti
 
-### Models
+### Model
 
-#### Device Model
+#### Model Perangkat
 ```php
 // app/Models/Device.php
 class Device extends Model
@@ -73,7 +73,7 @@ class Device extends Model
         'status', 'last_checked_at', 'is_active'
     ];
     
-    // Relationships
+    // Relasi
     public function parent() { /* BelongsTo */ }
     public function children() { /* HasMany */ }
     public function logs() { /* HasMany */ }
@@ -81,7 +81,7 @@ class Device extends Model
 }
 ```
 
-#### DeviceLog Model
+#### Model DeviceLog
 ```php
 // app/Models/DeviceLog.php
 class DeviceLog extends Model
@@ -95,12 +95,12 @@ class DeviceLog extends Model
         'checked_at' => 'datetime'
     ];
     
-    // Relationships
+    // Relasi
     public function device() { /* BelongsTo */ }
 }
 ```
 
-#### Alert Model
+#### Model Peringatan
 ```php
 // app/Models/Alert.php
 class Alert extends Model
@@ -113,65 +113,65 @@ class Alert extends Model
         'resolved_at' => 'datetime'
     ];
     
-    // Relationships
+    // Relasi
     public function device() { /* BelongsTo */ }
 }
 ```
 
-### Services
+### Layanan
 
-#### DeviceMonitoringService
+#### Layanan DeviceMonitoringService
 ```php
 // app/Services/DeviceMonitoringService.php
 class DeviceMonitoringService
 {
-    public function checkDeviceStatus(Device $device) { /* Implementation */ }
-    public function checkAllDevices() { /* Implementation */ }
-    private function checkForAlert(Device $device, string $newStatus) { /* Implementation */ }
+    public function checkDeviceStatus(Device $device) { /* Implementasi */ }
+    public function checkAllDevices() { /* Implementasi */ }
+    private function checkForAlert(Device $device, string $newStatus) { /* Implementasi */ }
 }
 ```
 
-### Controllers
+### Controller
 
-#### API Device Controller
+#### Controller Perangkat API
 ```php
 // app/Http/Controllers/Api/DeviceController.php
 class DeviceController extends Controller
 {
-    public function index() { /* Get all devices */ }
-    public function show($id) { /* Get specific device */ }
-    public function recordStatus(Request $request, $id) { /* Record device status */ }
+    public function index() { /* Dapatkan semua perangkat */ }
+    public function show($id) { /* Dapatkan perangkat spesifik */ }
+    public function recordStatus(Request $request, $id) { /* Catat status perangkat */ }
 }
 ```
 
-## 🔄 Data Flow
+## 🔄 Alir Data
 
-### Device Monitoring Process
-1. **Scheduler Trigger:** `monitor:devices` command runs
-2. **Service Initialization:** DeviceMonitoringService instantiated
-3. **Device Retrieval:** Get all active devices from database
-4. **Connectivity Check:** Ping each device
-5. **Status Recording:** Store results in DeviceLog
-6. **Alert Generation:** Create alerts for status changes
-7. **Hierarchical Update:** Cascade status to child devices
-8. **Notification:** Send system notifications (future feature)
+### Proses Monitoring Perangkat
+1. **Pemicu Penjadwal:** perintah `monitor:devices` dijalankan
+2. **Inisialisasi Layanan:** DeviceMonitoringService diinstansiasi
+3. **Pengambilan Perangkat:** Dapatkan semua perangkat aktif dari database
+4. **Pemeriksaan Konektivitas:** Ping setiap perangkat
+5. **Pencatatan Status:** Simpan hasil di DeviceLog
+6. **Pembuatan Peringatan:** Buat peringatan untuk perubahan status
+7. **Pembaruan Hirarki:** Terapkan status ke perangkat anak
+8. **Notifikasi:** Kirim notifikasi sistem (fitur masa depan)
 
-### API Communication
-1. **Python Script:** Makes HTTP POST to `/api/devices/{id}/status`
-2. **API Route:** Routes to DeviceController@recordStatus
-3. **Validation:** Request data validated
-4. **Database Update:** Device and DeviceLog records updated
-5. **Alert Processing:** Check for status changes and create alerts
-6. **Response:** JSON response with success/failure
+### Komunikasi API
+1. **Skrip Python:** Membuat HTTP POST ke `/api/devices/{id}/status`
+2. **Rute API:** Diteruskan ke DeviceController@recordStatus
+3. **Validasi:** Data permintaan divalidasi
+4. **Pembaruan Database:** Catatan Device dan DeviceLog diperbarui
+5. **Pemrosesan Peringatan:** Periksa perubahan status dan buat peringatan
+6. **Respons:** Respons JSON dengan sukses/kegagalan
 
-## 🔐 Authentication & Authorization
+## 🔐 Otentikasi & Otorisasi
 
-### Roles
-- **Admin:** Full system access
-- **Petugas:** Limited operational access
+### Peran
+- **Admin:** Akses sistem penuh
+- **Petugas:** Akses operasional terbatas
 
-### Permissions
-Permissions are managed through Spatie Laravel Permission:
+### Izin
+Izin dikelola melalui Spatie Laravel Permission:
 - `view devices`
 - `create devices`
 - `edit devices`
@@ -180,25 +180,25 @@ Permissions are managed through Spatie Laravel Permission:
 - `resolve alerts`
 - `view reports`
 - `generate reports`
-- `view settings` (Admin only)
-- `edit settings` (Admin only)
+- `view settings` (Admin saja)
+- `edit settings` (Admin saja)
 
 ### Middleware
 ```php
-// Route protection examples
+// Contoh proteksi rute
 Route::middleware(['auth', 'role:Admin'])->group(function () {
-    // Admin-only routes
+    // Rute hanya untuk Admin
 });
 
 Route::middleware(['auth', 'permission:view devices'])->group(function () {
-    // Device management routes
+    // Rute manajemen perangkat
 });
 ```
 
-## 🎨 Frontend Development
+## 🎨 Pengembangan Frontend
 
-### Blade Templates
-Templates use Laravel Blade syntax with Tailwind CSS classes:
+### Template Blade
+Template menggunakan sintaks Blade Laravel dengan kelas Tailwind CSS:
 ```blade
 {{-- resources/views/devices/index.blade.php --}}
 @extends('layouts.app')
@@ -209,31 +209,31 @@ Templates use Laravel Blade syntax with Tailwind CSS classes:
         <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
             {{ __('Devices') }}
         </h2>
-        <!-- Device listing -->
+        <!-- Daftar perangkat -->
     </div>
 </div>
 @endsection
 ```
 
-### Dark Mode Support
-Dark mode is implemented with Tailwind's dark variant:
+### Dukungan Mode Gelap
+Mode gelap diimplementasikan dengan varian gelap Tailwind:
 ```html
-<!-- Toggle button -->
+<!-- Tombol toggle -->
 <button id="dark-mode-toggle">
     <svg class="dark:hidden">...</svg>
     <svg class="hidden dark:block">...</svg>
 </button>
 
-<!-- Dark mode enabled element -->
+<!-- Elemen dengan mode gelap diaktifkan -->
 <div class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
     Content
 </div>
 ```
 
-### JavaScript Enhancements
-Vanilla JavaScript and Alpine.js for interactivity:
+### Peningkatan JavaScript
+JavaScript Vanilla dan Alpine.js untuk interaktivitas:
 ```javascript
-// Real-time dashboard updates
+// Pembaruan dashboard real-time
 setInterval(() => {
     fetch('/dashboard/realtime')
         .then(response => response.json())
@@ -241,34 +241,34 @@ setInterval(() => {
 }, 30000);
 ```
 
-## 🐍 Python Monitoring Script
+## 🐍 Skrip Monitoring Python
 
-### Script Architecture
+### Arsitektur Skrip
 ```python
 class NetworkMonitor:
     def __init__(self, api_base_url, api_token=None):
         self.api_base_url = api_base_url
         self.headers = {'Content-Type': 'application/json'}
     
-    def get_devices(self):  # Fetch devices from API
-    def ping_device(self, ip_address):  # Ping connectivity check
-    def check_port(self, ip_address, port):  # Port availability check
-    def check_device(self, device):  # Combined device check
-    def report_status(self, device_id, status, response_time, message):  # Report to API
-    def run_monitoring_cycle(self):  # Execute complete monitoring
+    def get_devices(self):  # Ambil perangkat dari API
+    def ping_device(self, ip_address):  # Pemeriksaan konektivitas ping
+    def check_port(self, ip_address, port):  # Pemeriksaan ketersediaan port
+    def check_device(self, device):  # Pemeriksaan perangkat gabungan
+    def report_status(self, device_id, status, response_time, message):  # Laporkan ke API
+    def run_monitoring_cycle(self):  # Eksekusi monitoring lengkap
 ```
 
-### External Dependencies
+### Dependensi Eksternal
 ```python
-import requests      # HTTP client
-import subprocess    # System command execution
-import time          # Timing functions
-import json          # JSON processing
+import requests      # Klien HTTP
+import subprocess    # Eksekusi perintah sistem
+import time          # Fungsi waktu
+import json          # Pemrosesan JSON
 ```
 
-## 📊 Database Schema
+## 📊 Skema Database
 
-### Devices Table
+### Tabel Perangkat
 ```sql
 CREATE TABLE devices (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -288,7 +288,7 @@ CREATE TABLE devices (
 );
 ```
 
-### Device Logs Table
+### Tabel Log Perangkat
 ```sql
 CREATE TABLE device_logs (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -302,7 +302,7 @@ CREATE TABLE device_logs (
 );
 ```
 
-### Alerts Table
+### Tabel Peringatan
 ```sql
 CREATE TABLE alerts (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -316,9 +316,9 @@ CREATE TABLE alerts (
 );
 ```
 
-## 🧪 Testing
+## 🧪 Pengujian
 
-### PHPUnit Tests
+### Uji PHPUnit
 ```php
 // tests/Feature/DeviceApiTest.php
 class DeviceApiTest extends TestCase
@@ -341,7 +341,7 @@ class DeviceApiTest extends TestCase
 }
 ```
 
-### Python Script Tests
+### Uji Skrip Python
 ```python
 # tests/test_monitor.py
 import unittest
@@ -365,18 +365,18 @@ class TestNetworkMonitor(unittest.TestCase):
 
 ## 🚀 Deployment
 
-### Server Requirements
+### Persyaratan Server
 - PHP 8.2+
-- MySQL 5.7+ or MariaDB 10.2+
-- Apache 2.4+ or Nginx
+- MySQL 5.7+ atau MariaDB 10.2+
+- Apache 2.4+ atau Nginx
 - Composer
-- Node.js and npm
-- Python 3.6+ (for monitoring script)
+- Node.js dan npm
+- Python 3.6+ (untuk skrip monitoring)
 
-### Environment Configuration
-Create `.env` file:
+### Konfigurasi Lingkungan
+Buat file `.env`:
 ```env
-APP_NAME="Network Monitoring"
+APP_NAME="Monitoring Jaringan"
 APP_ENV=production
 APP_KEY=
 APP_DEBUG=false
@@ -396,113 +396,113 @@ SESSION_DRIVER=file
 SESSION_LIFETIME=120
 ```
 
-### Deployment Steps
-1. Clone repository
-2. Install PHP dependencies: `composer install --no-dev`
-3. Install Node dependencies: `npm install`
-4. Build assets: `npm run build`
-5. Generate application key: `php artisan key:generate`
-6. Run migrations: `php artisan migrate`
-7. Seed database: `php artisan db:seed`
-8. Set up cron job for monitoring
-9. Configure web server (Apache/Nginx)
+### Langkah Deployment
+1. Clone repositori
+2. Instal dependensi PHP: `composer install --no-dev`
+3. Instal dependensi Node: `npm install`
+4. Bangun aset: `npm run build`
+5. Generate kunci aplikasi: `php artisan key:generate`
+6. Jalankan migrasi: `php artisan migrate`
+7. Isi database: `php artisan db:seed`
+8. Siapkan cron job untuk monitoring
+9. Konfigurasikan server web (Apache/Nginx)
 
-### Cron Job Setup
+### Setup Cron Job
 ```bash
-# Add to crontab for monitoring every 5 minutes
+# Tambahkan ke crontab untuk monitoring setiap 5 menit
 */5 * * * * cd /path/to/project && php artisan monitor:devices >> /dev/null 2>&1
 ```
 
-## 🔧 Maintenance
+## 🔧 Pemeliharaan
 
-### Database Optimization
+### Optimasi Database
 ```bash
-# Optimize database tables
+# Optimalkan tabel database
 php artisan optimize
 
-# Clear caches
+# Bersihkan cache
 php artisan cache:clear
 php artisan config:clear
 php artisan route:clear
 php artisan view:clear
 
-# Database maintenance
+# Pemeliharaan database
 php artisan migrate:status
 php artisan migrate:fresh --seed
 ```
 
-### Log Management
+### Manajemen Log
 ```bash
-# Rotate logs
+# Putar log
 logrotate /etc/logrotate.d/laravel-monitoring
 
-# Monitor logs
+# Monitor log
 tail -f storage/logs/laravel.log
 ```
 
-### Performance Monitoring
-Key metrics to monitor:
-- Database query performance
-- API response times
-- Memory usage
-- Disk space utilization
-- CPU usage during monitoring cycles
+### Monitoring Kinerja
+Metrik kunci untuk dipantau:
+- Kinerja query database
+- Waktu respons API
+- Penggunaan memori
+- Pemanfaatan ruang disk
+- Penggunaan CPU selama siklus monitoring
 
-## 🆕 Future Enhancements
+## 🆕 Peningkatan Masa Depan
 
-### Planned Features
-1. **Real-time Notifications:** WebSocket-based live updates
-2. **Multi-tenancy:** Support for multiple organizations
-3. **Advanced Analytics:** Machine learning-based anomaly detection
-4. **Mobile App:** Native mobile application
-5. **SNMP Integration:** Protocol-based device monitoring
-6. **SLA Tracking:** Service level agreement compliance monitoring
-7. **Integration Hub:** Connectors for third-party systems
+### Fitur yang Direncanakan
+1. **Notifikasi Real-time:** Pembaruan langsung berbasis WebSocket
+2. **Multi-tenant:** Dukungan untuk banyak organisasi
+3. **Analitik Lanjutan:** Deteksi anomali berbasis machine learning
+4. **Aplikasi Mobile:** Aplikasi mobile asli
+5. **Integrasi SNMP:** Monitoring perangkat berbasis protokol
+6. **Pelacakan SLA:** Pemantauan kepatuhan kesepakatan tingkat layanan
+7. **Pusat Integrasi:** Konektor untuk sistem pihak ketiga
 
-### API Improvements
-1. **Versioning:** API version management
-2. **Rate Limiting:** Enhanced throttling controls
-3. **Pagination:** Standardized pagination across endpoints
-4. **Filtering:** Advanced query filtering capabilities
-5. **Webhooks:** Event-driven notification system
+### Peningkatan API
+1. **Pembuatan Versi:** Manajemen versi API
+2. **Pembatasan Laju:** Kontrol throttling yang ditingkatkan
+3. **Pagination:** Pagination terstandarisasi di seluruh endpoint
+4. **Filtering:** Kemampuan filter query lanjutan
+5. **Webhook:** Sistem notifikasi berbasis event
 
-### Security Enhancements
-1. **OAuth2:** Third-party authentication
-2. **Audit Logging:** Comprehensive system activity tracking
-3. **Data Encryption:** At-rest encryption for sensitive data
-4. **Compliance:** GDPR/HIPAA compliance features
+### Peningkatan Keamanan
+1. **OAuth2:** Otentikasi pihak ketiga
+2. **Logging Audit:** Pelacakan aktivitas sistem komprehensif
+3. **Enkripsi Data:** Enkripsi pada data sensitif di database
+4. **Kepatuhan:** Fitur kepatuhan GDPR/HIPAA
 
-## 🤝 Contributing
+## 🤝 Berkontribusi
 
-### Development Workflow
-1. Fork the repository
-2. Create feature branch
-3. Make changes
-4. Write/update tests
-5. Submit pull request
+### Alur Kerja Pengembangan
+1. Fork repositori
+2. Buat branch fitur
+3. Lakukan perubahan
+4. Tulis/perbarui uji
+5. Kirim pull request
 
-### Code Standards
-Follow PSR-12 coding standards:
+### Standar Kode
+Ikuti standar penulisan PSR-12:
 ```bash
-# Code formatting
+# Pemformatan kode
 ./vendor/bin/phpcs --standard=PSR12 app/
 
-# Code fixing
+# Perbaikan kode
 ./vendor/bin/phpcbf --standard=PSR12 app/
 ```
 
-### Pull Request Guidelines
-1. Include comprehensive description
-2. Reference related issues
-3. Include tests for new functionality
-4. Update documentation as needed
-5. Follow semantic versioning
+### Pedoman Pull Request
+1. Sertakan deskripsi komprehensif
+2. Referensikan isu terkait
+3. Sertakan uji untuk fungsionalitas baru
+4. Perbarui dokumentasi seperlunya
+5. Ikuti semantic versioning
 
-## 📞 Support
+## 📞 Dukungan
 
-For development questions or issues:
-1. Check existing documentation
-2. Search issue tracker
-3. Create new issue with detailed description
-4. Include steps to reproduce
-5. Provide system/environment information
+Untuk pertanyaan atau isu pengembangan:
+1. Periksa dokumentasi yang ada
+2. Cari di pelacak isu
+3. Buat isu baru dengan deskripsi terperinci
+4. Sertakan langkah-langkah untuk mereproduksi
+5. Sediakan informasi sistem/lingkungan

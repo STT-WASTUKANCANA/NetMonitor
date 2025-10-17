@@ -183,13 +183,13 @@ Menggunakan Laravel API Resources untuk transformasi data yang konsisten.
 - HTTP fallback for unreachable devices
 - RESTful API communication with Laravel backend
 
-### Laravel Command Scheduler & Real-time Monitoring
-- Artisan command scheduling untuk monitoring berkala
-- Per-second monitoring jobs for true real-time updates
-- Queue-based processing untuk scalability
-- WebSocket broadcasting untuk UI updates instan
-- Support untuk status UP/DOWN/UNKNOWN
-- Logging dan error handling yang komprehensif
+### Penjadwal Perintah Laravel & Pemantauan Real-time
+- Penjadwalan perintah Artisan untuk monitoring berkala
+- Pekerjaan monitoring per-detik untuk pembaruan real-time sejati
+- Pemrosesan berbasis antrian untuk skalabilitas
+- Broadcasting WebSocket untuk pembaruan UI instan
+- Dukungan untuk status UP/DOWN/UNKNOWN
+- Logging dan penanganan error yang komprehensif
 
 ## 📤 Reporting System
 

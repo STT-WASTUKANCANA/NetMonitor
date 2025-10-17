@@ -1,103 +1,103 @@
-# Network Monitoring System - IP Address Management
+# Sistem Monitoring Jaringan - Manajemen Alamat IP
 
-## Getting IP Addresses for Network Devices
+## Mendapatkan Alamat IP untuk Perangkat Jaringan
 
-This document explains how to properly obtain IP addresses for network devices (main, sub, and regular devices) to ensure they are not misidentified as "unknown" by the system.
+Dokumen ini menjelaskan cara yang tepat untuk mendapatkan alamat IP untuk perangkat jaringan (utama, sub, dan perangkat biasa) untuk memastikan mereka tidak disalahidentifikasi sebagai "unknown" oleh sistem.
 
-## Problem: Device Status "Unknown"
+## Masalah: Status Perangkat "Unknown"
 
-The NetMonitor system may display a device's status as "unknown" due to various reasons:
+Sistem NetMonitor mungkin menampilkan status perangkat sebagai "unknown" karena berbagai alasan:
 
-1. **Invalid or missing IP address** in the database
-2. **Device is offline** or not responding to monitoring requests
-3. **Network connectivity issues** between the monitoring system and the device
-4. **Incorrect IP configuration** on the device
+1. **Alamat IP tidak valid atau hilang** di database
+2. **Perangkat offline** atau tidak merespons terhadap permintaan pemantauan
+3. **Masalah konektivitas jaringan** antara sistem pemantauan dan perangkat
+4. **Konfigurasi IP salah** pada perangkat
 
-## Solution: Proper IP Address Acquisition
+## Solusi: Akuisisi Alamat IP yang Tepat
 
-### 1. Manual IP Assignment
+### 1. Penugasan IP Manual
 
-The most reliable method is to manually assign IP addresses based on your network architecture:
+Metode paling dapat diandalkan adalah menetapkan alamat IP secara manual berdasarkan arsitektur jaringan Anda:
 
 ```bash
-# Example network structure:
-# - Main Device (Gateway/Router): 192.168.1.1
-# - Sub Devices (Access Points, Switches): 192.168.1.2, 192.168.1.3, etc.
-# - Regular Devices (Servers, Workstations): 192.168.1.10, 192.168.1.11, etc.
+# Contoh struktur jaringan:
+# - Perangkat Utama (Gateway/Router): 192.168.1.1
+# - Perangkat Sub (Access Point, Switch): 192.168.1.2, 192.168.1.3, dll.
+# - Perangkat Biasa (Server, Workstation): 192.168.1.10, 192.168.1.11, dll.
 ```
 
-### 2. Network Scanning to Discover Active IPs
+### 2. Pemindaian Jaringan untuk Menemukan IP Aktif
 
-Use the included IP detection script to identify active devices on your network:
+Gunakan script deteksi IP yang disertakan untuk mengidentifikasi perangkat aktif di jaringan Anda:
 
 ```bash
-# First, make the script executable
+# Pertama, buat script dapat dieksekusi
 chmod +x scripts/detect_ip.py
 
-# Scan your network range (adjust subnet as needed)
+# Pindai rentang jaringan Anda (sesuaikan subnet sesuai kebutuhan)
 python3 scripts/detect_ip.py --network 192.168.1.0/24
 
-# Save results to a file
+# Simpan hasil ke file
 python3 scripts/detect_ip.py --network 192.168.1.0/24 --output detected_devices.json
 ```
 
-### 3. Using the Laravel Command to Audit Devices
+### 3. Menggunakan Perintah Laravel untuk Audit Perangkat
 
-The system includes a command to audit existing devices and identify those with unknown IPs:
+Sistem menyertakan perintah untuk mengaudit perangkat yang ada dan mengidentifikasi yang memiliki IP unknown:
 
 ```bash
-# Run the IP detection command
+# Jalankan perintah deteksi IP
 php artisan network:detect-ips
 
-# Specify a different network range
+# Tentukan rentang jaringan berbeda
 php artisan network:detect-ips --network 10.0.0.0/24
 
-# Adjust ping timeout
+# Sesuaikan timeout ping
 php artisan network:detect-ips --network 192.168.1.0/24 --timeout 3
 ```
 
-### 4. Best Practices for IP Management
+### 4. Praktik Terbaik untuk Manajemen IP
 
-1. **Use Static IPs for Critical Devices**: Assign static IP addresses to main and sub devices to ensure consistent monitoring.
+1. **Gunakan IP Statis untuk Perangkat Kritis**: Tetapkan alamat IP statis ke perangkat utama dan sub untuk memastikan pemantauan yang konsisten.
 
-2. **Document Network Architecture**: Maintain a map of your network with IP assignments:
+2. **Dokumentasikan Arsitektur Jaringan**: Jaga peta jaringan Anda dengan penugasan IP:
    ```
-   Main Router: 192.168.1.1
-   Sub Router 1: 192.168.1.2
-   Sub Router 2: 192.168.1.3
+   Router Utama: 192.168.1.1
+   Router Sub 1: 192.168.1.2
+   Router Sub 2: 192.168.1.3
    Switch 1: 192.168.1.10
    Server 1: 192.168.1.20
    ```
 
-3. **DHCP Reservation**: For devices that require dynamic IPs, use DHCP reservation to ensure they always get the same IP address.
+3. **Reservasi DHCP**: Untuk perangkat yang membutuhkan IP dinamis, gunakan reservasi DHCP untuk memastikan mereka selalu mendapatkan alamat IP yang sama.
 
-4. **Regular IP Audits**: Periodically run the IP detection command to identify and correct any IP address issues.
+4. **Audit IP Berkala**: Secara berkala jalankan perintah deteksi IP untuk mengidentifikasi dan memperbaiki masalah alamat IP.
 
-### 5. Troubleshooting Tips
+### 5. Tips Penyelesaian Masalah
 
-If devices still appear as "unknown":
+Jika perangkat masih muncul sebagai "unknown":
 
-1. **Check IP Connectivity**: Verify that the monitoring system can reach the device via ping:
+1. **Periksa Konektivitas IP**: Verifikasi bahwa sistem pemantauan dapat mengakses perangkat melalui ping:
    ```bash
    ping <device_ip_address>
    ```
 
-2. **Verify Device Status**: Ensure the device is powered on and connected to the network.
+2. **Verifikasi Status Perangkat**: Pastikan perangkat menyala dan terhubung ke jaringan.
 
-3. **Check Firewall Settings**: Some devices may have firewalls blocking ICMP ping requests.
+3. **Periksa Pengaturan Firewall**: Beberapa perangkat mungkin memiliki firewall yang memblokir permintaan ping ICMP.
 
-4. **Validate Configuration**: Confirm that the IP address in the NetMonitor system matches the device's actual IP.
+4. **Validasi Konfigurasi**: Konfirmasikan bahwa alamat IP di sistem NetMonitor cocok dengan IP sebenarnya perangkat.
 
-5. **Check Network Segmentation**: Ensure the monitoring system is on a network segment that can reach all monitored devices.
+5. **Periksa Segmentasi Jaringan**: Pastikan sistem pemantauan berada di segmen jaringan yang dapat mengakses semua perangkat yang dipantau.
 
-### 6. Adding Devices to the System
+### 6. Menambahkan Perangkat ke Sistem
 
-When adding new devices to NetMonitor:
+Saat menambahkan perangkat baru ke NetMonitor:
 
-1. Determine the device's IP address using network scanning or manual configuration
-2. Verify the IP is reachable from the monitoring system
-3. Add the device to NetMonitor with the correct IP address
-4. Set the appropriate hierarchy level (utama, sub, device)
-5. Verify the device appears as "up" in the monitoring dashboard
+1. Tentukan alamat IP perangkat menggunakan pemindaian jaringan atau konfigurasi manual
+2. Verifikasi IP dapat dijangkau dari sistem pemantauan
+3. Tambahkan perangkat ke NetMonitor dengan alamat IP yang benar
+4. Atur tingkat hirarki yang sesuai (utama, sub, perangkat)
+5. Verifikasi perangkat muncul sebagai "up" di dashboard pemantauan
 
-By following these practices, you can ensure that all network devices are properly identified and monitored, preventing the "unknown" status issue.
+Dengan mengikuti praktik ini, Anda dapat memastikan bahwa semua perangkat jaringan teridentifikasi dan dipantau dengan benar, mencegah masalah status "unknown".

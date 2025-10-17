@@ -1,291 +1,291 @@
-# 👤 User Guide
+# 👤 Panduan Pengguna
 
-Welcome to the Network Monitoring System User Guide. This guide will help you navigate and use all features of the system effectively.
+Selamat datang di Panduan Pengguna Sistem Monitoring Jaringan. Panduan ini akan membantu Anda menavigasi dan menggunakan semua fitur sistem secara efektif.
 
-## 🎯 Getting Started
+## 🎯 Memulai
 
 ### Login
-1. Navigate to the application URL (e.g., http://localhost:8000)
-2. Click "Login" in the top right corner
-3. Enter your credentials:
+1. Arahkan ke URL aplikasi (misalnya, http://localhost:8000)
+2. Klik "Login" di pojok kanan atas
+3. Masukkan kredensial Anda:
    - **Admin:** admin@sttwastukancana.ac.id / password
    - **Petugas:** petugas@sttwastukancana.ac.id / password
-4. Click "Sign in"
+4. Klik "Sign in"
 
-### Dashboard Overview
-After logging in, you'll be directed to the dashboard which displays:
-- **Total Devices:** Number of monitored devices
-- **Active Devices:** Devices currently online
-- **Inactive Devices:** Devices currently offline
-- **Active Alerts:** Current unresolved alerts
-- **Device Hierarchy:** Visual representation of network structure with real-time updates
-- **Recent Alerts:** Latest system notifications
-- **Network Performance Charts:** Real-time response time trends with per-second updates
-- **Manual Refresh Button:** "Scan" icon button for immediate manual refresh of all devices
-- **Status Indicators:** Color-coded indicators showing UP (green), DOWN (red), or UNKNOWN (gray) status
+### Ikhtisar Dashboard
+Setelah login, Anda akan diarahkan ke dashboard yang menampilkan:
+- **Total Perangkat:** Jumlah perangkat yang dipantau
+- **Perangkat Aktif:** Perangkat yang sedang online
+- **Perangkat Tidak Aktif:** Perangkat yang sedang offline
+- **Peringatan Aktif:** Peringatan yang belum diselesaikan
+- **Hirarki Perangkat:** Representasi visual struktur jaringan dengan pembaruan real-time
+- **Peringatan Terbaru:** Notifikasi sistem terbaru
+- **Grafik Kinerja Jaringan:** Tren waktu respons real-time dengan pembaruan per-detik
+- **Tombol Refresh Manual:** Tombol ikon "Scan" untuk refresh manual instan semua perangkat
+- **Indikator Status:** Indikator berwarna yang menunjukkan status UP (hijau), DOWN (merah), atau UNKNOWN (abu-abu)
 
-## 🖥️ Navigation
+## 🖥️ Navigasi
 
-The main navigation menu includes:
-- **Dashboard:** System overview and statistics
-- **Devices:** Device management section
-- **Alerts:** Notification management
-- **Reports:** Performance reports and analytics
-- **Settings:** (Admin only) System configuration
-- **Profile:** User account settings
+Menu navigasi utama mencakup:
+- **Dashboard:** Ikhtisar dan statistik sistem
+- **Devices:** Bagian manajemen perangkat
+- **Alerts:** Manajemen notifikasi
+- **Reports:** Laporan dan analitik kinerja
+- **Settings:** (Admin saja) Konfigurasi sistem
+- **Profile:** Pengaturan akun pengguna
 
-## 📱 Devices Management
+## 📱 Manajemen Perangkat
 
-### Viewing Devices
-Click "Devices" in the navigation menu to view all network devices organized in a hierarchical structure:
-- **Utama Level:** Main network infrastructure (routers, main switches)
-- **Sub Level:** Distribution devices (distribution switches)
-- **Device Level:** End devices (access points, servers, printers)
+### Melihat Perangkat
+Klik "Devices" di menu navigasi untuk melihat semua perangkat jaringan yang diorganisir dalam struktur hirarkis:
+- **Level Utama:** Infrastruktur jaringan utama (router, switch utama)
+- **Level Sub:** Perangkat distribusi (switch distribusi)
+- **Level Perangkat:** Perangkat akhir (access point, server, printer)
 
-Each device card shows:
-- Device name and IP address
-- Current status (Up/Down)
-- Location
-- Child devices (if any)
+Setiap kartu perangkat menampilkan:
+- Nama dan alamat IP perangkat
+- Status saat ini (Up/Down)
+- Lokasi
+- Perangkat anak (jika ada)
 
-### Adding New Devices
-1. Click "Devices" in navigation
-2. Click "Add Device" button
-3. Fill in device details:
-   - **Name:** Descriptive device name
-   - **IP Address:** Valid IPv4 address
-   - **Type:** Router, Switch, Access Point, Server, or Other
-   - **Hierarchy Level:** Utama, Sub, or Device
-   - **Parent Device:** Select parent if applicable
-   - **Location:** Physical location of device
-   - **Description:** Additional notes
-4. Toggle "Active" switch to enable monitoring
-5. Click "Save Device"
+### Menambahkan Perangkat Baru
+1. Klik "Devices" di navigasi
+2. Klik tombol "Add Device"
+3. Isi detail perangkat:
+   - **Name:** Nama perangkat deskriptif
+   - **IP Address:** Alamat IPv4 yang valid
+   - **Type:** Router, Switch, Access Point, Server, atau Lainnya
+   - **Hierarchy Level:** Utama, Sub, atau Perangkat
+   - **Parent Device:** Pilih induk jika berlaku
+   - **Location:** Lokasi fisik perangkat
+   - **Description:** Catatan tambahan
+4. Aktifkan saklar "Active" untuk mengaktifkan pemantauan
+5. Klik "Save Device"
 
-### Editing Devices
-1. Navigate to Devices section
-2. Find the device you want to edit
-3. Click the pencil icon next to the device
-4. Make necessary changes
-5. Click "Update Device"
+### Mengedit Perangkat
+1. Navigasi ke bagian Devices
+2. Temukan perangkat yang ingin diedit
+3. Klik ikon pensil di sebelah perangkat
+4. Lakukan perubahan yang diperlukan
+5. Klik "Update Device"
 
-### Deleting Devices
-1. Navigate to Devices section
-2. Find the device you want to delete
-3. Click the trash can icon next to the device
-4. Confirm deletion in the popup dialog
+### Menghapus Perangkat
+1. Navigasi ke bagian Devices
+2. Temukan perangkat yang ingin dihapus
+3. Klik ikon tempat sampah di sebelah perangkat
+4. Konfirmasi penghapusan di dialog popup
 
-## ⚠️ Alert Management
+## ⚠️ Manajemen Peringatan
 
-### Viewing Alerts
-Click "Alerts" in the navigation menu to view all system notifications:
-- **Active Alerts:** Currently unresolved issues
-- **Resolved Alerts:** Previously handled notifications
+### Melihat Peringatan
+Klik "Alerts" di menu navigasi untuk melihat semua notifikasi sistem:
+- **Peringatan Aktif:** Masalah yang belum diselesaikan
+- **Peringatan yang Diselesaikan:** Notifikasi yang sebelumnya ditangani
 
-Each alert shows:
-- Affected device name
-- Alert message
+Setiap peringatan menampilkan:
+- Nama perangkat yang terpengaruh
+- Pesan peringatan
 - Timestamp
-- Current status
+- Status saat ini
 
-### Resolving Alerts
-1. Navigate to Alerts section
-2. Find the alert you want to resolve
-3. Click "Resolve" button
-4. The alert status will change to "Resolved"
+### Menyelesaikan Peringatan
+1. Navigasi ke bagian Alerts
+2. Temukan peringatan yang ingin diselesaikan
+3. Klik tombol "Resolve"
+4. Status peringatan akan berubah menjadi "Resolved"
 
-## 📊 Reports and Analytics
+## 📊 Laporan dan Analitik
 
-### Performance Reports
-1. Click "Reports" in navigation menu
-2. Select date range and devices to include
-3. Choose report type:
-   - **Summary Report:** High-level overview
-   - **Detailed Report:** In-depth analysis
-   - **Custom Report:** Specific metrics
-4. Click "Generate Report"
+### Laporan Kinerja
+1. Klik "Reports" di menu navigasi
+2. Pilih rentang tanggal dan perangkat untuk disertakan
+3. Pilih jenis laporan:
+   - **Laporan Ringkasan:** Ikhtisar tingkat tinggi
+   - **Laporan Terperinci:** Analisis mendalam
+   - **Laporan Kustom:** Metrik spesifik
+4. Klik "Generate Report"
 
-### PDF Export
-1. After generating a report, click "Export to PDF"
-2. The report will download automatically
-3. Open with any PDF reader
+### Ekspor PDF
+1. Setelah membuat laporan, klik "Export to PDF"
+2. Laporan akan diunduh secara otomatis
+3. Buka dengan pembaca PDF apa pun
 
-### Filtering Options
-Reports can be filtered by:
-- **Date Range:** Daily, Weekly, Monthly, Yearly
-- **Device Type:** Routers, Switches, Access Points, etc.
-- **Status:** Up, Down, or Both
-- **Location:** Specific building or floor
+### Opsi Pemfilteran
+Laporan dapat difilter berdasarkan:
+- **Rentang Tanggal:** Harian, Mingguan, Bulanan, Tahunan
+- **Jenis Perangkat:** Router, Switch, Access Point, dll.
+- **Status:** Up, Down, atau Keduanya
+- **Lokasi:** Bangunan atau lantai spesifik
 
-## 🌙 Dark Mode
+## 🌙 Mode Gelap
 
-The system supports both light and dark themes:
-1. Click the moon/sun icon in the top right corner
-2. Toggle between light and dark modes
-3. Your preference is saved automatically
+Sistem mendukung tema terang dan gelap:
+1. Klik ikon bulan/matahari di pojok kanan atas
+2. Alihkan antara mode terang dan gelap
+3. Preferensi Anda disimpan secara otomatis
 
-## ⚡ Real-time Monitoring and Manual Refresh
+## ⚡ Pemantauan Real-time dan Refresh Manual
 
-The system provides true real-time monitoring with per-second updates:
+Sistem menyediakan pemantauan real-time sejati dengan pembaruan per-detik:
 
-### Real-time Dashboard
-- Device statuses update automatically every second
-- Network performance charts update continuously
-- Hierarchy visualization shows live status changes
-- Status indicators use color coding:
-  - **Green (UP)**: Device responding normally
-  - **Red (DOWN)**: Device not responding
-  - **Gray (UNKNOWN)**: Invalid or missing IP address
+### Dashboard Real-time
+- Status perangkat diperbarui secara otomatis setiap detik
+- Grafik kinerja jaringan diperbarui terus-menerus
+- Visualisasi hirarki menunjukkan perubahan status langsung
+- Indikator status menggunakan pewarnaan:
+  - **Hijau (UP)**: Perangkat merespons normal
+  - **Merah (DOWN)**: Perangkat tidak merespons
+  - **Abu-abu (UNKNOWN)**: Alamat IP tidak valid atau hilang
 
-### Manual Refresh
-1. Click the circular "Scan" icon button at the top of the dashboard
-2. The button will show a spinning animation while refreshing
-3. All devices will be checked immediately
-4. Results update in real-time as checks complete
-5. A success notification will appear when complete
+### Refresh Manual
+1. Klik tombol ikon "Scan" berbentuk lingkaran di bagian atas dashboard
+2. Tombol akan menampilkan animasi berputar saat menyegarkan
+3. Semua perangkat akan diperiksa segera
+4. Hasil diperbarui secara real-time saat pemeriksaan selesai
+5. Notifikasi sukses akan muncul saat selesai
 
-This manual refresh is useful when you need immediate status information without waiting for the next automatic check.
+Refresh manual ini berguna ketika Anda membutuhkan informasi status segera tanpa menunggu pemeriksaan otomatis berikutnya.
 
-## 👤 Profile Settings
+## 👤 Pengaturan Profil
 
-### Updating Profile Information
-1. Click your username in the top right corner
-2. Select "Profile" from dropdown
-3. Update your:
-   - Name
-   - Email address
-   - Profile photo (optional)
-4. Click "Save Changes"
+### Memperbarui Informasi Profil
+1. Klik nama pengguna Anda di pojok kanan atas
+2. Pilih "Profile" dari dropdown
+3. Perbarui:
+   - Nama
+   - Alamat email
+   - Foto profil (opsional)
+4. Klik "Save Changes"
 
-### Changing Password
-1. From Profile page, click "Change Password" tab
-2. Enter current password
-3. Enter new password twice for confirmation
-4. Click "Update Password"
+### Mengganti Password
+1. Dari halaman Profile, klik tab "Change Password"
+2. Masukkan password saat ini
+3. Masukkan password baru dua kali untuk konfirmasi
+4. Klik "Update Password"
 
-## 🔧 Admin Functions
+## 🔧 Fungsi Admin
 
-Administrators have additional capabilities:
+Administrator memiliki kemampuan tambahan:
 
-### User Management
-1. Click "Settings" in navigation menu
-2. Select "Users" tab
-3. View, add, edit, or delete user accounts
-4. Assign roles (Admin or Petugas)
+### Manajemen Pengguna
+1. Klik "Settings" di menu navigasi
+2. Pilih tab "Users"
+3. Lihat, tambah, edit, atau hapus akun pengguna
+4. Tetapkan peran (Admin atau Petugas)
 
-### System Configuration
-1. Click "Settings" in navigation menu
-2. Configure:
-   - Monitoring intervals
-   - Alert thresholds
-   - Email notifications
-   - System branding
+### Konfigurasi Sistem
+1. Klik "Settings" di menu navigasi
+2. Konfigurasikan:
+   - Interval pemantauan
+   - Ambang peringatan
+   - Notifikasi email
+   - Branding sistem
 
-### Role Management
-1. Click "Settings" in navigation menu
-2. Select "Roles" tab
-3. Create, edit, or delete roles
-4. Assign permissions to roles
+### Manajemen Peran
+1. Klik "Settings" di menu navigasi
+2. Pilih tab "Roles"
+3. Buat, edit, atau hapus peran
+4. Tetapkan izin ke peran
 
-## 🐍 Python Monitoring Script
+## 🐍 Script Pemantauan Python
 
-The system includes a Python monitoring script for automated device checking:
+Sistem mencakup script pemantauan Python untuk pemeriksaan perangkat otomatis:
 
-### Setup
-1. Install Python 3.6 or higher
-2. Install required packages:
+### Penyiapan
+1. Instal Python 3.6 atau lebih tinggi
+2. Instal paket yang diperlukan:
    ```bash
    pip install requests
    ```
 
-### Configuration
-Set environment variables:
+### Konfigurasi
+Atur variabel lingkungan:
 ```bash
 export API_BASE_URL="http://your-domain.com"
 export API_TOKEN="your-api-token"
 ```
 
-### Running the Script
+### Menjalankan Script
 ```bash
 cd scripts
 python3 monitor.py
 ```
 
-### Scheduling
-Add to crontab for automatic execution every 5 minutes:
+### Penjadwalan
+Tambahkan ke crontab untuk eksekusi otomatis setiap 5 menit:
 ```bash
 */5 * * * * cd /path/to/project/scripts && python3 monitor.py >> /var/log/monitor.log 2>&1
 ```
 
-## 🆘 Troubleshooting
+## 🆘 Penyelesaian Masalah
 
-### Common Issues
+### Masalah Umum
 
-**Cannot Login:**
-- Verify username and password
-- Check if account is active
-- Reset password if needed
+**Tidak Bisa Login:**
+- Verifikasi username dan password
+- Periksa apakah akun aktif
+- Reset password jika diperlukan
 
-**Device Shows Offline:**
-- Verify IP address is correct
-- Check physical device status
-- Ensure device allows ping requests
-- Test connectivity manually
+**Perangkat Muncul Offline:**
+- Verifikasi alamat IP benar
+- Periksa status perangkat fisik
+- Pastikan perangkat mengizinkan permintaan ping
+- Uji konektivitas secara manual
 
-**Alerts Not Clearing:**
-- Verify device is actually back online
-- Manually resolve persistent alerts
-- Check monitoring script logs
+**Peringatan Tidak Hapus:**
+- Verifikasi perangkat benar-benar online kembali
+- Selesaikan peringatan persisten secara manual
+- Periksa log script pemantauan
 
-**Reports Not Generating:**
-- Verify date range selection
-- Check device selection
-- Ensure sufficient data exists
+**Laporan Tidak Dibuat:**
+- Verifikasi pemilihan rentang tanggal
+- Periksa pemilihan perangkat
+- Pastikan data cukup tersedia
 
-### Contact Support
-If you continue to experience issues:
-1. Document the problem with screenshots
-2. Note the time and steps taken
-3. Contact system administrator
+### Hubungi Dukungan
+Jika Anda terus mengalami masalah:
+1. Dokumentasikan masalah dengan screenshot
+2. Catat waktu dan langkah-langkah yang diambil
+3. Hubungi administrator sistem
 
-## 📱 Mobile Usage
+## 📱 Penggunaan Mobile
 
-The system is fully responsive and works on mobile devices:
-- All navigation adapts to smaller screens
-- Touch-friendly controls
-- Optimized layouts for vertical viewing
-- Same functionality as desktop version
+Sistem sepenuhnya responsif dan bekerja di perangkat mobile:
+- Semua navigasi beradaptasi dengan layar lebih kecil
+- Kontrol yang ramah sentuhan
+- Tampilan yang dioptimalkan untuk tampilan vertikal
+- Fungsi yang sama dengan versi desktop
 
-## 🔒 Security Best Practices
+## 🔒 Praktik Terbaik Keamanan
 
-### Password Security
-- Use strong passwords with mixed characters
-- Change passwords regularly
-- Never share credentials
-- Enable two-factor authentication if available
+### Keamanan Password
+- Gunakan password kuat dengan karakter campuran
+- Ganti password secara berkala
+- Jangan pernah berbagi kredensial
+- Aktifkan otentikasi dua faktor jika tersedia
 
-### Session Management
-- Always log out when finished
-- Avoid using public computers
-- Clear browser cache periodically
-- Report suspicious activity
+### Manajemen Sesi
+- Selalu logout saat selesai
+- Hindari menggunakan komputer umum
+- Bersihkan cache browser secara berkala
+- Laporkan aktivitas mencurigakan
 
-## 🔄 Regular Maintenance
+## 🔄 Pemeliharaan Rutin
 
-For system administrators:
+Untuk administrator sistem:
 
-### Daily Checks
-- Review active alerts
-- Monitor system performance
-- Check disk space and backups
+### Pemeriksaan Harian
+- Tinjau peringatan aktif
+- Pantau kinerja sistem
+- Periksa ruang disk dan backup
 
-### Weekly Tasks
-- Update device inventory
-- Review user access
-- Clean up resolved alerts
+### Tugas Mingguan
+- Perbarui inventaris perangkat
+- Tinjau akses pengguna
+- Bersihkan peringatan yang diselesaikan
 
-### Monthly Reviews
-- Analyze performance reports
-- Audit user permissions
-- Review system logs
-- Update documentation
+### Tinjauan Bulanan
+- Analisis laporan kinerja
+- Audit izin pengguna
+- Tinjau log sistem
+- Perbarui dokumentasi

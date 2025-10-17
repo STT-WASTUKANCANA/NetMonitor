@@ -1,254 +1,254 @@
-# 📋 Project Summary
+# 📋 Ringkasan Proyek
 
-## 🎯 Project Overview
+## 🎯 Gambaran Proyek
 
-The Network Monitoring System is a comprehensive solution for monitoring and managing network infrastructure at STT Wastukancana. Built with modern web technologies, this system provides real-time visibility into network device status, automated alerting, and detailed performance reporting.
+Sistem Monitoring Jaringan adalah solusi komprehensif untuk memantau dan mengelola infrastruktur jaringan di STT Wastukancana. Dibangun dengan teknologi web modern, sistem ini menyediakan visibilitas real-time terhadap status perangkat jaringan, pemberitahuan otomatis, dan pelaporan kinerja terperinci.
 
-### Key Objectives
-1. **Real-time Monitoring:** Continuous monitoring of network device connectivity and performance
-2. **Automated Alerting:** Instant notifications for device status changes and performance issues
-3. **Hierarchical Management:** Organized device management with parent-child relationships
-4. **Comprehensive Reporting:** Detailed analytics and PDF report generation
-5. **Role-based Access:** Secure administration with distinct user roles (Admin/Petugas)
+### Tujuan Utama
+1. **Pemantauan Real-time:** Pemantauan berkelanjutan terhadap konektivitas dan kinerja perangkat jaringan
+2. **Pemberitahuan Otomatis:** Notifikasi instan untuk perubahan status perangkat dan masalah kinerja
+3. **Manajemen Hirarkis:** Pengelolaan perangkat yang terorganisir dengan hubungan induk-anak
+4. **Pelaporan Komprehensif:** Analitik terperinci dan pembuatan laporan PDF
+5. **Akses Berbasis Peran:** Administrasi yang aman dengan peran pengguna yang berbeda (Admin/Petugas)
 
-## 🏗️ Technical Architecture
+## 🏗️ Arsitektur Teknis
 
 ### Backend
 - **Framework:** Laravel 12 (PHP 8.2)
 - **Database:** MySQL/MariaDB
-- **Authentication:** Laravel Breeze + Spatie Laravel Permission
-- **API:** RESTful endpoints for external integrations
-- **Queues:** Background job processing (Redis/Database)
+- **Autentikasi:** Laravel Breeze + Spatie Laravel Permission
+- **API:** Endpoint RESTful untuk integrasi eksternal
+- **Antrian:** Pemrosesan tugas latar belakang (Redis/Database)
 
 ### Frontend
-- **Templating:** Blade with Tailwind CSS 4.0
-- **Interactivity:** Alpine.js for dynamic components
-- **Charts:** Chart.js for data visualization
-- **Responsive Design:** Mobile-first approach with dark/light mode support
+- **Template:** Blade dengan Tailwind CSS 4.0
+- **Interaktivitas:** Alpine.js untuk komponen dinamis
+- **Grafik:** Chart.js untuk visualisasi data
+- **Desain Responsif:** Pendekatan mobile-first dengan dukungan mode gelap/terang
 
-### Monitoring Engine
-- **Primary Script:** Python-based network monitoring
-- **Protocols:** ICMP ping and HTTP/HTTPS connectivity checks
-- **Scheduling:** Cron-based execution every 5 minutes
-- **API Integration:** RESTful communication with Laravel backend
+### Mesin Pemantauan
+- **Script Utama:** Pemantauan jaringan berbasis Python
+- **Protokol:** Pemeriksaan konektivitas ICMP ping dan HTTP/HTTPS
+- **Penjadwalan:** Eksekusi berbasis Cron setiap 5 menit
+- **Integrasi API:** Komunikasi RESTful dengan backend Laravel
 
-## 🗂️ Project Structure
+## 🗂️ Struktur Proyek
 
 ```
 monitoring-konektivitas/
-├── app/                    # Laravel application core
-├── bootstrap/              # Framework bootstrap files
-├── config/                 # Application configuration
-├── database/               # Migrations and seeders
-├── docs/                   # Comprehensive documentation
-├── public/                 # Public web assets
-├── resources/              # Views, languages, and assets
-├── routes/                 # Route definitions
-├── scripts/                # Python monitoring scripts
-├── storage/                # File storage and logs
-├── tests/                  # Automated tests
-└── vendor/                 # Composer dependencies
+├── app/                    # Inti aplikasi Laravel
+├── bootstrap/              # File bootstrap framework
+├── config/                 # Konfigurasi aplikasi
+├── database/               # Migrasi dan seeder
+├── docs/                   # Dokumentasi komprehensif
+├── public/                 # Aset web publik
+├── resources/              # View, bahasa, dan aset
+├── routes/                 # Definisi rute
+├── scripts/                # Script pemantauan Python
+├── storage/                # Penyimpanan file dan log
+├── tests/                  # Uji otomatis
+└── vendor/                 # Dependensi Composer
 ```
 
-## 🔧 Core Components
+## 🔧 Komponen Inti
 
-### 1. Device Management
-- **Hierarchical Structure:** Utama → Sub → Device relationships
-- **Device Types:** Routers, switches, access points, servers
-- **Status Tracking:** Real-time up/down status with response times
-- **CRUD Operations:** Full device lifecycle management
+### 1. Manajemen Perangkat
+- **Struktur Hirarkis:** Hubungan Utama → Sub → Perangkat
+- **Jenis Perangkat:** Router, switch, access point, server
+- **Pelacakan Status:** Status up/down real-time dengan waktu respons
+- **Operasi CRUD:** Manajemen siklus hidup perangkat lengkap
 
-### 2. Monitoring System
-- **Connectivity Checks:** Ping-based device status verification
-- **Performance Metrics:** Response time measurements
-- **Historical Logging:** Comprehensive status history
-- **Cascading Effects:** Parent device down affects children automatically
+### 2. Sistem Pemantauan
+- **Pemeriksaan Konektivitas:** Verifikasi status perangkat berbasis ping
+- **Metrik Kinerja:** Pengukuran waktu respons
+- **Pencatatan Historis:** Riwayat status komprehensif
+- **Efek Berjenjang:** Perangkat induk down mempengaruhi anak-anaknya secara otomatis
 
-### 3. Alert Management
-- **Automatic Generation:** Alerts created on status changes
-- **Resolution Tracking:** Mark alerts as resolved
-- **Priority Levels:** Critical, warning, and informational alerts
-- **Notification System:** Dashboard indicators and future email/SMS
+### 3. Manajemen Peringatan
+- **Pembuatan Otomatis:** Peringatan dibuat pada perubahan status
+- **Pelacakan Resolusi:** Menandai peringatan sebagai selesai
+- **Tingkat Prioritas:** Peringatan kritis, peringatan, dan informasi
+- **Sistem Notifikasi:** Indikator dashboard dan email/SMS di masa mendatang
 
-### 4. Reporting Engine
-- **Dashboard Analytics:** Real-time statistics and trends
-- **Performance Charts:** Interactive data visualization
-- **PDF Generation:** Printable reports with customizable date ranges
-- **Export Capabilities:** Data export in multiple formats
+### 4. Mesin Pelaporan
+- **Analitik Dashboard:** Statistik dan tren real-time
+- **Grafik Kinerja:** Visualisasi data interaktif
+- **Pembuatan PDF:** Laporan yang dapat dicetak dengan rentang tanggal yang dapat disesuaikan
+- **Kemampuan Ekspor:** Ekspor data dalam berbagai format
 
-### 5. User Management
-- **Role-based Access:** Admin and Petugas roles with distinct permissions
-- **Authentication:** Secure login with password reset
-- **Profile Management:** User account customization
-- **Activity Logging:** Audit trails for administrative actions
+### 5. Manajemen Pengguna
+- **Akses Berbasis Peran:** Peran Admin dan Petugas dengan izin berbeda
+- **Autentikasi:** Login aman dengan reset password
+- **Manajemen Profil:** Kustomisasi akun pengguna
+- **Pencatatan Aktivitas:** Jejak audit untuk tindakan administratif
 
-## 📊 Data Models
+## 📊 Model Data
 
-### Device Model
-Stores information about network devices:
-- Name, IP address, type, and location
-- Hierarchical parent-child relationships
-- Current status and last check timestamp
-- Active/inactive flag for monitoring control
+### Model Perangkat
+Menyimpan informasi tentang perangkat jaringan:
+- Nama, alamat IP, tipe, dan lokasi
+- Hubungan induk-anak hirarkis
+- Status saat ini dan timestamp pemeriksaan terakhir
+- Flag aktif/tidak aktif untuk kontrol pemantauan
 
-### DeviceLog Model
-Records historical device status:
-- Response time measurements
-- Status (up/down) with timestamps
-- Linked to parent device for reporting
+### Model DeviceLog
+Mencatat status historis perangkat:
+- Pengukuran waktu respons
+- Status (up/down) dengan timestamp
+- Terhubung ke perangkat induk untuk pelaporan
 
-### Alert Model
-Tracks system notifications:
-- Associated device and status change
-- Active/resolved state tracking
-- Creation and resolution timestamps
+### Model Peringatan
+Melacak notifikasi sistem:
+- Perangkat terkait dan perubahan status
+- Pelacakan status aktif/selesai
+- Timestamp pembuatan dan resolusi
 
-## 🔐 Security Features
+## 🔐 Fitur Keamanan
 
-### Authentication
-- Secure password hashing with bcrypt
-- Session management with CSRF protection
-- Rate limiting for brute force prevention
+### Autentikasi
+- Hashing password aman dengan bcrypt
+- Manajemen sesi dengan perlindungan CSRF
+- Pembatasan kecepatan untuk pencegahan brute force
 
-### Authorization
-- Role-based access control with Spatie Laravel Permission
-- Fine-grained permissions for specific actions
-- Policy-based resource protection
+### Otorisasi
+- Kontrol akses berbasis peran dengan Spatie Laravel Permission
+- Izin terperinci untuk tindakan spesifik
+- Perlindungan sumber daya berbasis kebijakan
 
-### Data Protection
-- Database encryption for sensitive fields
-- Input validation and sanitization
-- SQL injection prevention through Eloquent ORM
+### Perlindungan Data
+- Enkripsi database untuk bidang sensitif
+- Validasi dan sanitasi input
+- Pencegahan injeksi SQL melalui Eloquent ORM
 
-## 🎨 User Experience
+## 🎨 Pengalaman Pengguna
 
 ### Dashboard
-Central hub displaying:
-- Network status overview with key metrics
-- Device hierarchy visualization
-- Recent alerts and notifications
-- Performance trend charts
+Pusat utama yang menampilkan:
+- Ikhtisar status jaringan dengan metrik kunci
+- Visualisasi hirarki perangkat
+- Peringatan dan notifikasi terbaru
+- Grafik tren kinerja
 
-### Responsive Design
-- Mobile-optimized interfaces
-- Tablet and desktop layouts
-- Dark/light mode toggle with preference saving
+### Desain Responsif
+- Antarmuka yang dioptimalkan untuk mobile
+- Tampilan tablet dan desktop
+- Toggle mode gelap/terang dengan penyimpanan preferensi
 
-### Interactive Elements
-- Real-time data updates with AJAX
-- Dynamic charts with hover effects
-- Collapsible sections for information density
-- Contextual tooltips and help text
+### Elemen Interaktif
+- Pembaruan data real-time dengan AJAX
+- Grafik dinamis dengan efek hover
+- Bagian yang dapat diciutkan untuk kepadatan informasi
+- Tooltip dan teks bantuan kontekstual
 
-## 🔄 Integration Points
+## 🔄 Titik Integrasi
 
-### Python Monitoring Script
-- Communicates via RESTful API endpoints
-- Reports device status and performance metrics
-- Handles connection timeouts and errors gracefully
-- Supports extensible protocol checking
+### Script Pemantauan Python
+- Berkomunikasi melalui endpoint API RESTful
+- Melaporkan status perangkat dan metrik kinerja
+- Menangani timeout koneksi dan kesalahan secara elegan
+- Mendukung pemeriksaan protokol yang dapat diperluas
 
-### External Systems
-- API endpoints for third-party integrations
-- Webhook support for real-time notifications (planned)
-- Export formats for data analysis tools
+### Sistem Eksternal
+- Endpoint API untuk integrasi pihak ketiga
+- Dukungan webhook untuk notifikasi real-time (rencana)
+- Format ekspor untuk alat analisis data
 
-## 📈 Performance Considerations
+## 📈 Pertimbangan Kinerja
 
-### Scalability
-- Database indexing for query optimization
-- Pagination for large dataset handling
-- Caching strategies for frequently accessed data
-- Background job processing for intensive tasks
+### Skalabilitas
+- Pengindeksan database untuk optimalisasi kueri
+- Pagination untuk penanganan dataset besar
+- Strategi caching untuk data yang sering diakses
+- Pemrosesan tugas latar belakang untuk tugas intensif
 
-### Resource Management
-- Efficient database queries with eager loading
-- Asset compression and minification
-- Lazy loading for non-critical components
-- Database connection pooling
+### Manajemen Sumber Daya
+- Kueri database efisien dengan eager loading
+- Kompresi dan minifikasi aset
+- Lazy loading untuk komponen non-kritis
+- Pooling koneksi database
 
-## 🧪 Quality Assurance
+## 🧪 Jaminan Kualitas
 
-### Testing Strategy
-- Unit tests for business logic
-- Feature tests for user workflows
-- API tests for integration points
-- End-to-end tests for critical paths
+### Strategi Pengujian
+- Uji unit untuk logika bisnis
+- Uji fitur untuk alur kerja pengguna
+- Uji API untuk titik integrasi
+- Uji end-to-end untuk jalur kritis
 
-### Code Quality
-- PSR-12 coding standards compliance
-- Static analysis with PHPStan
-- Code style enforcement with PHP-CS-Fixer
-- Security scanning with Enlightn
+### Kualitas Kode
+- Kepatuhan terhadap standar penulisan PSR-12
+- Analisis statis dengan PHPStan
+- Pemaksaan gaya penulisan kode dengan PHP-CS-Fixer
+- Pemindaian keamanan dengan Enlightn
 
-## 🚀 Deployment and Operations
+## 🚀 Deployment dan Operasi
 
-### Infrastructure
-- Docker support for containerized deployment
-- CI/CD pipeline configuration
-- Environment-specific configuration management
-- Health check endpoints for monitoring
+### Infrastruktur
+- Dukungan Docker untuk deployment berbasis kontainer
+- Konfigurasi pipeline CI/CD
+- Manajemen konfigurasi spesifik lingkungan
+- Endpoint pengecekan kesehatan untuk pemantauan
 
-### Maintenance
-- Automated backup scripts
-- Log rotation and archival
-- Performance monitoring dashboards
-- Update deployment procedures
+### Pemeliharaan
+- Script backup otomatis
+- Rotasi dan arsip log
+- Dashboard pemantauan kinerja
+- Prosedur deployment pembaruan
 
-## 📚 Documentation
+## 📚 Dokumentasi
 
-### User Guides
-- Installation and setup procedures
-- Day-to-day operational workflows
-- Troubleshooting common issues
-- Best practices for monitoring
+### Panduan Pengguna
+- Prosedur instalasi dan penyiapan
+- Alur kerja operasional sehari-hari
+- Penyelesaian masalah umum
+- Praktik terbaik untuk pemantauan
 
-### Developer Resources
-- API documentation with examples
-- Code architecture and design patterns
-- Extension and customization guides
-- Contribution guidelines
+### Sumber Daya Pengembang
+- Dokumentasi API dengan contoh
+- Pola arsitektur dan desain kode
+- Panduan ekstensi dan kustomisasi
+- Pedoman kontribusi
 
-### Technical References
-- Database schema diagrams
-- API endpoint specifications
-- Configuration option catalogs
-- Security implementation details
+### Referensi Teknis
+- Diagram skema database
+- Spesifikasi endpoint API
+- Katalog opsi konfigurasi
+- Detail implementasi keamanan
 
-## 🔄 Future Roadmap
+## 🔄 Rencana Masa Depan
 
-### Short-term Enhancements
-1. **Enhanced Alerting:** Email/SMS notifications and escalation policies
-2. **Advanced Analytics:** Machine learning-based anomaly detection
-3. **Mobile Application:** Native iOS/Android apps for on-the-go monitoring
-4. **Protocol Expansion:** SNMP, SSH, and custom protocol support
+### Peningkatan Jangka Pendek
+1. **Pemberitahuan yang Ditingkatkan:** Notifikasi email/SMS dan kebijakan eskalasi
+2. **Analitik Lanjutan:** Deteksi anomali berbasis machine learning
+3. **Aplikasi Mobile:** Aplikasi native iOS/Android untuk pemantauan mobile
+4. **Ekspansi Protokol:** Dukungan SNMP, SSH, dan protokol kustom
 
-### Long-term Vision
-1. **Multi-tenant Architecture:** Support for multiple organizations
-2. **Predictive Maintenance:** AI-driven failure prediction
-3. **SLA Management:** Service level agreement tracking and reporting
-4. **Integration Marketplace:** Plugin system for third-party tools
+### Visi Jangka Panjang
+1. **Arsitektur Multi-penyewa:** Dukungan untuk beberapa organisasi
+2. **Pemeliharaan Prediktif:** Prediksi kegagalan berbasis AI
+3. **Manajemen SLA:** Pelacakan dan pelaporan kesepakatan tingkat layanan
+4. **Marketplace Integrasi:** Sistem plugin untuk alat pihak ketiga
 
-## 🤝 Community and Support
+## 🤝 Komunitas dan Dukungan
 
-### Open Source Benefits
-- Transparent development process
-- Community contributions and feedback
-- Shared improvement initiatives
-- Cost-effective maintenance model
+### Manfaat Open Source
+- Proses pengembangan yang transparan
+- Kontribusi komunitas dan umpan balik
+- Inisiatif perbaikan bersama
+- Model pemeliharaan yang hemat biaya
 
-### Contribution Opportunities
-- Bug fixes and security patches
-- Feature enhancements and extensions
-- Documentation improvements
-- Localization and internationalization
+### Peluang Kontribusi
+- Perbaikan bug dan patch keamanan
+- Peningkatan fitur dan ekstensi
+- Perbaikan dokumentasi
+- Lokalisasi dan internasionalisasi
 
-## 📞 Contact Information
+## 📞 Informasi Kontak
 
-For questions, support, or collaboration opportunities:
-- **Development Team:** IT Department, STT Wastukancana
-- **Documentation:** Refer to docs/ directory for comprehensive guides
-- **Issue Tracking:** GitHub Issues for bug reports and feature requests
-- **Community:** Internal discussion forums and knowledge base
+Untuk pertanyaan, dukungan, atau peluang kolaborasi:
+- **Tim Pengembang:** Departemen IT, STT Wastukancana
+- **Dokumentasi:** Lihat direktori docs/ untuk panduan lengkap
+- **Pelacakan Masalah:** GitHub Issues untuk laporan bug dan permintaan fitur
+- **Komunitas:** Forum diskusi internal dan basis pengetahuan
 
-This Network Monitoring System represents a significant investment in network infrastructure reliability and operational efficiency at STT Wastukancana.
+Sistem Monitoring Jaringan ini mewakili investasi signifikan dalam keandalan dan efisiensi operasional infrastruktur jaringan di STT Wastukancana.

@@ -1,190 +1,190 @@
-# 🔧 Troubleshooting Guide
+# 🔧 Panduan Penyelesaian Masalah
 
-Common issues and solutions for the Network Monitoring System.
+Masalah-masalah umum dan solusi untuk Sistem Monitoring Jaringan.
 
-## 🚀 Installation Issues
+## 🚀 Masalah Instalasi
 
-### Composer Dependencies Fail
-**Problem:** `composer install` fails with dependency conflicts.
+### Kegagalan Dependensi Composer
+**Masalah:** `composer install` gagal karena konflik dependensi.
 
-**Solution:**
+**Solusi:**
 ```bash
-# Clear composer cache
+# Bersihkan cache composer
 composer clear-cache
 
-# Install with ignore platform requirements
+# Instal dengan mengabaikan persyaratan platform
 composer install --ignore-platform-reqs
 
-# Or update dependencies
+# Atau perbarui dependensi
 composer update
 ```
 
-### Node.js Build Errors
-**Problem:** `npm run build` fails with webpack errors.
+### Kesalahan Build Node.js
+**Masalah:** `npm run build` gagal dengan kesalahan webpack.
 
-**Solution:**
+**Solusi:**
 ```bash
-# Clear node_modules and reinstall
+# Bersihkan node_modules dan instal ulang
 rm -rf node_modules
 npm install
 
-# Rebuild with verbose output
+# Bangun ulang dengan output verbose
 npm run build --verbose
 
-# Check Node.js version compatibility
+# Periksa kompatibilitas versi Node.js
 node --version
 npm --version
 ```
 
-### Database Connection Failed
-**Problem:** Laravel cannot connect to database during installation.
+### Koneksi Database Gagal
+**Masalah:** Laravel tidak dapat terhubung ke database selama instalasi.
 
-**Solution:**
-1. Verify database credentials in `.env` file
-2. Ensure database server is running
-3. Check firewall settings
-4. Test connection manually:
+**Solusi:**
+1. Verifikasi kredensial database di file `.env`
+2. Pastikan server database berjalan
+3. Periksa pengaturan firewall
+4. Uji koneksi secara manual:
    ```bash
    mysql -h localhost -u username -p
    ```
 
-### Migration Errors
-**Problem:** Database migrations fail during installation.
+### Kesalahan Migrasi
+**Masalah:** Migrasi database gagal selama instalasi.
 
-**Solution:**
+**Solusi:**
 ```bash
-# Check current migration status
+# Periksa status migrasi saat ini
 php artisan migrate:status
 
-# Reset and re-run migrations
+# Reset dan jalankan ulang migrasi
 php artisan migrate:fresh
 
-# Run with verbose output
+# Jalankan dengan output verbose
 php artisan migrate --verbose
 ```
 
-## 🔌 Connectivity Issues
+## 🔌 Masalah Konektivitas
 
-### Devices Show Offline When They're Online
-**Problem:** Monitored devices appear down despite being accessible.
+### Perangkat Muncul Offline Saat Mereka Online
+**Masalah:** Perangkat yang dipantau muncul down meskipun dapat diakses.
 
-**Diagnosis Steps:**
-1. **Manual Ping Test:**
+**Langkah Diagnosis:**
+1. **Uji Ping Manual:**
    ```bash
    ping DEVICE_IP_ADDRESS
    ```
 
-2. **Check Device Configuration:**
-   - Verify IP address in the system matches actual device IP
-   - Ensure device allows ICMP echo replies
-   - Check if device is behind firewall
+2. **Periksa Konfigurasi Perangkat:**
+   - Verifikasi alamat IP di sistem cocok dengan IP perangkat sebenarnya
+   - Pastikan perangkat mengizinkan balasan ICMP echo
+   - Periksa apakah perangkat berada di belakang firewall
 
-3. **Review Monitoring Logs:**
+3. **Tinjau Log Pemantauan:**
    ```bash
-   # Check Laravel logs
+   # Periksa log Laravel
    tail -f storage/logs/laravel.log
    
-   # Check monitoring script logs
+   # Periksa log script pemantauan
    tail -f logs/monitor.log
    ```
 
-4. **Test from Server:**
+4. **Uji dari Server:**
    ```bash
-   # SSH to server running Laravel
+   # SSH ke server yang menjalankan Laravel
    ping DEVICE_IP_ADDRESS
    ```
 
-**Solutions:**
-- Correct device IP address in system
-- Configure device to allow ping requests
-- Adjust firewall rules
-- Modify monitoring script timeout values
+**Solusi:**
+- Perbaiki alamat IP perangkat di sistem
+- Konfigurasikan perangkat untuk mengizinkan permintaan ping
+- Sesuaikan aturan firewall
+- Modifikasi nilai timeout script pemantauan
 
-### Python Script Cannot Communicate with API
-**Problem:** Monitoring script fails to send data to Laravel API.
+### Script Python Tidak Bisa Berkomunikasi dengan API
+**Masalah:** Script pemantauan gagal mengirimkan data ke API Laravel.
 
-**Diagnosis Steps:**
-1. **Check API Endpoint Accessibility:**
+**Langkah Diagnosis:**
+1. **Periksa Aksesibilitas Endpoint API:**
    ```bash
    curl -X GET http://your-domain.com/api/devices
    ```
 
-2. **Verify Environment Variables:**
+2. **Verifikasi Variabel Lingkungan:**
    ```bash
    echo $API_BASE_URL
    echo $API_TOKEN
    ```
 
-3. **Test Direct API Call:**
+3. **Uji Panggilan API Langsung:**
    ```bash
    curl -X POST http://your-domain.com/api/devices/1/status \
         -H "Content-Type: application/json" \
         -d '{"status":"up","response_time":15.5}'
    ```
 
-**Solutions:**
-- Verify `API_BASE_URL` environment variable
-- Check API authentication (if using tokens)
-- Ensure web server allows POST requests
-- Verify CORS configuration
+**Solusi:**
+- Verifikasi variabel lingkungan `API_BASE_URL`
+- Periksa otentikasi API (jika menggunakan token)
+- Pastikan server web mengizinkan permintaan POST
+- Verifikasi konfigurasi CORS
 
-## 🖥️ Web Interface Issues
+## 🖥️ Masalah Antarmuka Web
 
-### Dashboard Not Loading
-**Problem:** Dashboard page loads blank or with errors.
+### Dashboard Tidak Memuat
+**Masalah:** Halaman dashboard memuat kosong atau dengan kesalahan.
 
-**Diagnosis Steps:**
-1. **Check Browser Console:**
-   - Open Developer Tools (F12)
-   - Look for JavaScript errors
-   - Check network requests for failures
+**Langkah Diagnosis:**
+1. **Periksa Konsol Browser:**
+   - Buka Developer Tools (F12)
+   - Cari kesalahan JavaScript
+   - Periksa permintaan jaringan untuk kegagalan
 
-2. **Review Laravel Logs:**
+2. **Tinjau Log Laravel:**
    ```bash
    tail -f storage/logs/laravel.log
    ```
 
-3. **Clear Application Cache:**
+3. **Bersihkan Cache Aplikasi:**
    ```bash
    php artisan cache:clear
    php artisan view:clear
    php artisan config:clear
    ```
 
-**Solutions:**
-- Clear browser cache and hard refresh (Ctrl+F5)
-- Check file permissions on storage directories
-- Ensure all assets compiled successfully (`npm run build`)
-- Verify database connectivity
+**Solusi:**
+- Bersihkan cache browser dan refresh keras (Ctrl+F5)
+- Periksa izin file pada direktori penyimpanan
+- Pastikan semua aset berhasil dikompilasi (`npm run build`)
+- Verifikasi konektivitas database
 
-### Authentication Failures
-**Problem:** Unable to login or session expires unexpectedly.
+### Kegagalan Otentikasi
+**Masalah:** Tidak dapat login atau sesi kadaluarsa secara tak terduga.
 
-**Diagnosis Steps:**
-1. **Check Session Configuration:**
-   - Verify `SESSION_DRIVER` in `.env`
-   - Check session storage permissions
+**Langkah Diagnosis:**
+1. **Periksa Konfigurasi Sesi:**
+   - Verifikasi `SESSION_DRIVER` di `.env`
+   - Periksa izin penyimpanan sesi
 
-2. **Review Error Logs:**
+2. **Tinjau Log Kesalahan:**
    ```bash
-   # Laravel logs
+   # log Laravel
    tail -f storage/logs/laravel.log
    
-   # Web server logs
-   tail -f /var/log/apache2/error.log  # or nginx error log
+   # log server web
+   tail -f /var/log/apache2/error.log  # atau log error nginx
    ```
 
-3. **Test Database Connection:**
+3. **Uji Koneksi Database:**
    ```bash
    php artisan tinker
    >>> DB::connection()->getPdo();
    ```
 
-**Solutions:**
-- Ensure `storage` directory is writable
-- Verify database credentials
-- Check session lifetime configuration
-- Clear browser cookies for the domain
+**Solusi:**
+- Pastikan direktori `storage` dapat ditulis
+- Verifikasi kredensial database
+- Periksa konfigurasi masa hidup sesi
+- Bersihkan cookie browser untuk domain
 
 ### Slow Page Load Times
 **Problem:** Pages take too long to load.
@@ -241,180 +241,180 @@ php artisan migrate --verbose
    $pdf->save('/tmp/test.pdf');
    ```
 
-**Solutions:**
-- Ensure `gd` and `imagick` PHP extensions are installed
-- Check write permissions on storage directory
-- Increase PHP memory limit
-- Verify HTML template syntax
+**Solusi:**
+- Pastikan ekstensi PHP `gd` dan `imagick` terinstal
+- Periksa izin tulis pada direktori penyimpanan
+- Tingkatkan batas memori PHP
+- Verifikasi sintaks template HTML
 
-### Missing Data in Reports
-**Problem:** Reports show incomplete or missing data.
+### Data Hilang dalam Laporan
+**Masalah:** Laporan menampilkan data yang tidak lengkap atau hilang.
 
-**Diagnosis Steps:**
-1. **Check Date Filters:**
-   - Verify selected date range
-   - Ensure timezone settings match
+**Langkah Diagnosis:**
+1. **Periksa Filter Tanggal:**
+   - Verifikasi rentang tanggal yang dipilih
+   - Pastikan pengaturan zona waktu cocok
 
-2. **Review Data Availability:**
+2. **Tinjau Ketersediaan Data:**
    ```sql
    SELECT COUNT(*) FROM device_logs 
    WHERE checked_at BETWEEN 'start_date' AND 'end_date';
    ```
 
-3. **Check Device Selection:**
-   - Verify selected devices have data
-   - Check device active status
+3. **Periksa Pemilihan Perangkat:**
+   - Verifikasi perangkat yang dipilih memiliki data
+   - Periksa status aktif perangkat
 
-**Solutions:**
-- Adjust date range selection
-- Ensure devices are marked as active
-- Verify monitoring script is running regularly
-- Check for data gaps in logs
+**Solusi:**
+- Sesuaikan pemilihan rentang tanggal
+- Pastikan perangkat ditandai sebagai aktif
+- Verifikasi script pemantauan berjalan secara teratur
+- Periksa celah data dalam log
 
-## 🛡️ Security Issues
+## 🛡️ Masalah Keamanan
 
-### Unauthorized Access Attempts
-**Problem:** Suspicious login attempts or unauthorized access.
+### Upaya Akses Tidak Sah
+**Masalah:** Upaya login mencurigakan atau akses tidak sah.
 
-**Diagnosis Steps:**
-1. **Review Access Logs:**
+**Langkah Diagnosis:**
+1. **Tinjau Log Akses:**
    ```bash
-   # Web server access logs
+   # Log akses server web
    tail -f /var/log/apache2/access.log
    
-   # Laravel logs
+   # Log Laravel
    grep "unauthorized\|forbidden" storage/logs/laravel.log
    ```
 
-2. **Check Failed Login Attempts:**
+2. **Periksa Upaya Login Gagal:**
    ```sql
    SELECT * FROM failed_jobs WHERE name LIKE '%login%';
    ```
 
-3. **Monitor User Sessions:**
+3. **Monitor Sesi Pengguna:**
    ```sql
    SELECT user_id, ip_address, user_agent, last_activity 
    FROM sessions ORDER BY last_activity DESC LIMIT 10;
    ```
 
-**Solutions:**
-- Implement rate limiting
-- Enable two-factor authentication
-- Set up IP whitelisting
-- Configure firewall rules
-- Review user permissions regularly
+**Solusi:**
+- Terapkan pembatasan kecepatan
+- Aktifkan otentikasi dua faktor
+- Siapkan daftar putih IP
+- Konfigurasikan aturan firewall
+- Tinjau izin pengguna secara teratur
 
-### Vulnerability Scanning Alerts
-**Problem:** Security scanners detect potential vulnerabilities.
+### Peringatan Pemindaian Kerentanan
+**Masalah:** Pemindai keamanan mendeteksi potensi kerentanan.
 
-**Diagnosis Steps:**
-1. **Run Security Scan:**
+**Langkah Diagnosis:**
+1. **Jalankan Pemindaian Keamanan:**
    ```bash
-   # Install Enlightn security checker
+   # Instal pemeriksa keamanan Enlightn
    composer require enlightn/security-checker
    
-   # Run security check
+   # Jalankan pemeriksaan keamanan
    php artisan security:check
    ```
 
-2. **Check Package Versions:**
+2. **Periksa Versi Paket:**
    ```bash
    composer outdated
    ```
 
-3. **Review Configuration:**
-   - Check exposed debug information
-   - Verify secure headers
-   - Review CORS settings
+3. **Tinjau Konfigurasi:**
+   - Periksa informasi debug yang terpapar
+   - Verifikasi header aman
+   - Tinjau pengaturan CORS
 
-**Solutions:**
-- Update vulnerable packages
-- Apply security patches
-- Configure secure headers
-- Implement content security policy
-- Regular security audits
+**Solusi:**
+- Perbarui paket rentan
+- Terapkan patch keamanan
+- Konfigurasikan header aman
+- Terapkan kebijakan keamanan konten
+- Audit keamanan berkala
 
-## ⏰ Scheduled Task Issues
+## ⏰ Masalah Tugas Terjadwal
 
-### Monitoring Not Running Automatically
-**Problem:** Scheduled monitoring tasks not executing.
+### Pemantauan Tidak Berjalan Otomatis
+**Masalah:** Tugas pemantauan terjadwal tidak dieksekusi.
 
-**Diagnosis Steps:**
-1. **Check Cron Configuration:**
+**Langkah Diagnosis:**
+1. **Periksa Konfigurasi Cron:**
    ```bash
    crontab -l
    ```
 
-2. **Test Artisan Command Manually:**
+2. **Uji Perintah Artisan Secara Manual:**
    ```bash
    php artisan monitor:devices
    ```
 
-3. **Review Cron Logs:**
+3. **Tinjau Log Cron:**
    ```bash
-   # Check system cron logs
+   # Periksa log cron sistem
    tail -f /var/log/cron
    
-   # Check Laravel scheduled task logs
+   # Periksa log tugas terjadwal Laravel
    tail -f storage/logs/laravel.log | grep schedule
    ```
 
-4. **Verify Cron Service:**
+4. **Verifikasi Layanan Cron:**
    ```bash
-   systemctl status cron  # or crond on some systems
+   systemctl status cron  # atau crond di beberapa sistem
    ```
 
-**Solutions:**
-- Ensure cron daemon is running
-- Verify cron job syntax
-- Check file permissions on artisan command
-- Set proper PATH in crontab
-- Add logging to cron jobs for debugging
+**Solusi:**
+- Pastikan daemon cron berjalan
+- Verifikasi sintaks tugas cron
+- Periksa izin file pada perintah artisan
+- Atur PATH yang tepat di crontab
+- Tambahkan logging ke tugas cron untuk debugging
 
-### Task Execution Timeouts
-**Problem:** Monitoring tasks exceed execution time limits.
+### Pembatasan Waktu Eksekusi Tugas
+**Masalah:** Tugas pemantauan melebihi batas waktu eksekusi.
 
-**Diagnosis Steps:**
-1. **Check PHP Configuration:**
+**Langkah Diagnosis:**
+1. **Periksa Konfigurasi PHP:**
    ```bash
    php -i | grep max_execution_time
    ```
 
-2. **Review Task Performance:**
+2. **Tinjau Kinerja Tugas:**
    ```bash
-   # Time the command execution
+   # Ukur waktu eksekusi perintah
    time php artisan monitor:devices
    ```
 
-3. **Check Process Limits:**
+3. **Periksa Batas Proses:**
    ```bash
    ulimit -a
    ```
 
-**Solutions:**
-- Increase `max_execution_time` in php.ini
-- Optimize database queries
-- Implement batch processing for large device sets
-- Use queue workers for asynchronous processing
-- Add progress indicators to long-running tasks
+**Solusi:**
+- Tingkatkan `max_execution_time` di php.ini
+- Optimalkan kueri database
+- Terapkan pemrosesan batch untuk set perangkat besar
+- Gunakan worker antrian untuk pemrosesan asinkron
+- Tambahkan indikator kemajuan ke tugas berjalan lama
 
-## 🐍 Python Script Issues
+## 🐍 Masalah Script Python
 
-### Script Fails to Start
-**Problem:** Python monitoring script crashes on startup.
+### Script Gagal Dimulai
+**Masalah:** Script pemantauan Python mogok saat startup.
 
-**Diagnosis Steps:**
-1. **Check Python Version:**
+**Langkah Diagnosis:**
+1. **Periksa Versi Python:**
    ```bash
    python3 --version
    ```
 
-2. **Verify Dependencies:**
+2. **Verifikasi Dependensi:**
    ```bash
    pip list | grep requests
    ```
 
-3. **Run with Verbose Output:**
+3. **Jalankan dengan Output Verbose:**
    ```bash
    python3 scripts/monitor.py --debug
    ```
@@ -480,226 +480,226 @@ php artisan migrate --verbose
    - Different browsers
    - iOS and Android platforms
 
-**Solutions:**
-- Implement responsive design principles
-- Add mobile-specific CSS
-- Test with browser developer tools
-- Optimize touch targets for mobile
+**Solusi:**
+- Terapkan prinsip desain responsif
+- Tambahkan CSS khusus mobile
+- Uji dengan alat pengembang browser
+- Optimalkan target sentuh untuk mobile
 
-### Feature Compatibility Issues
-**Problem:** Certain features don't work in specific browsers.
+### Masalah Kompatibilitas Fitur
+**Masalah:** Beberapa fitur tidak berfungsi di browser tertentu.
 
-**Diagnosis Steps:**
-1. **Check Browser Support:**
-   - Use CanIUse.com to verify feature support
-   - Test in multiple browsers
+**Langkah Diagnosis:**
+1. **Periksa Dukungan Browser:**
+   - Gunakan CanIUse.com untuk memverifikasi dukungan fitur
+   - Uji di beberapa browser
 
-2. **Review JavaScript Compatibility:**
+2. **Tinjau Kompatibilitas JavaScript:**
    ```javascript
-   // Check for modern JavaScript features
+   // Periksa fitur JavaScript modern
    if (typeof Promise !== 'undefined') {
-     // Feature supported
+     // Fitur didukung
    }
    ```
 
-3. **Use Polyfills:**
+3. **Gunakan Polyfills:**
    ```html
    <script src="https://polyfill.io/v3/polyfill.min.js"></script>
    ```
 
-**Solutions:**
-- Add browser compatibility polyfills
-- Implement graceful degradation
-- Provide fallback implementations
-- Use progressive enhancement techniques
+**Solusi:**
+- Tambahkan polyfill kompatibilitas browser
+- Terapkan degradasi elegan
+- Sediakan implementasi fallback
+- Gunakan teknik peningkatan progresif
 
-## 🔧 Maintenance Issues
+## 🔧 Masalah Pemeliharaan
 
-### Disk Space Exhaustion
-**Problem:** System runs out of disk space.
+### Kehabisan Ruang Disk
+**Masalah:** Sistem kehabisan ruang disk.
 
-**Diagnosis Steps:**
-1. **Check Disk Usage:**
+**Langkah Diagnosis:**
+1. **Periksa Penggunaan Disk:**
    ```bash
    df -h
    ```
 
-2. **Find Large Files:**
+2. **Temukan File Besar:**
    ```bash
    du -ah /var/www | sort -rh | head -20
    ```
 
-3. **Review Log Sizes:**
+3. **Tinjau Ukuran Log:**
    ```bash
    ls -lh storage/logs/
    ```
 
-**Solutions:**
-- Implement log rotation
-- Clean up old backups
-- Archive historical data
-- Increase disk space
-- Configure log levels appropriately
+**Solusi:**
+- Terapkan rotasi log
+- Bersihkan backup lama
+- Arsipkan data historis
+- Tingkatkan ruang disk
+- Konfigurasikan tingkat log secara tepat
 
-### Database Performance Degradation
-**Problem:** Database queries become progressively slower.
+### Degradasi Kinerja Database
+**Masalah:** Kueri database menjadi semakin lambat seiring waktu.
 
-**Diagnosis Steps:**
-1. **Check Query Performance:**
+**Langkah Diagnosis:**
+1. **Periksa Kinerja Kueri:**
    ```sql
    SHOW PROCESSLIST;
    EXPLAIN SELECT * FROM devices WHERE status = 'down';
    ```
 
-2. **Review Index Usage:**
+2. **Tinjau Penggunaan Indeks:**
    ```sql
    SHOW INDEX FROM devices;
    ANALYZE TABLE devices;
    ```
 
-3. **Monitor Slow Queries:**
+3. **Monitor Kueri Lambat:**
    ```bash
-   # Enable slow query log in MySQL
-   # Check /var/log/mysql/slow.log
+   # Aktifkan log kueri lambat di MySQL
+   # Periksa /var/log/mysql/slow.log
    ```
 
-**Solutions:**
-- Add missing database indexes
-- Optimize complex queries
-- Implement query caching
-- Partition large tables
-- Regular database maintenance
+**Solusi:**
+- Tambahkan indeks database yang hilang
+- Optimalkan kueri kompleks
+- Terapkan caching kueri
+- Partisi tabel besar
+- Pemeliharaan database berkala
 
-## 🆘 Emergency Procedures
+## 🆘 Prosedur Darurat
 
-### System Completely Unresponsive
-**Problem:** Entire system is inaccessible.
+### Sistem Tidak Merespons Sama Sekali
+**Masalah:** Seluruh sistem tidak dapat diakses.
 
-**Immediate Actions:**
-1. **Check Server Status:**
+**Tindakan Segera:**
+1. **Periksa Status Server:**
    ```bash
    ping SERVER_IP
    ssh SERVER_USER@SERVER_IP
    ```
 
-2. **Restart Services:**
+2. **Restart Layanan:**
    ```bash
-   sudo systemctl restart apache2  # or nginx
+   sudo systemctl restart apache2  # atau nginx
    sudo systemctl restart mysql
    sudo systemctl restart redis
    ```
 
-3. **Check System Resources:**
+3. **Periksa Sumber Daya Sistem:**
    ```bash
    top
    free -h
    df -h
    ```
 
-4. **Review Recent Changes:**
-   - Check deployment logs
-   - Review configuration changes
-   - Identify recent updates
+4. **Tinjau Perubahan Terkini:**
+   - Periksa log deployment
+   - Tinjau perubahan konfigurasi
+   - Identifikasi pembaruan terkini
 
-**Recovery Steps:**
-- Rollback to previous working state
-- Restore from recent backup
-- Revert problematic changes
-- Implement fix in development first
+**Langkah Pemulihan:**
+- Kembalikan ke status kerja sebelumnya
+- Pulihkan dari backup terkini
+- Kembalikan perubahan bermasalah
+- Terapkan perbaikan di lingkungan pengembangan terlebih dahulu
 
-### Critical Data Loss
-**Problem:** Important monitoring data has been lost.
+### Kehilangan Data Kritis
+**Masalah:** Data pemantauan penting telah hilang.
 
-**Recovery Actions:**
-1. **Check Backups:**
+**Tindakan Pemulihan:**
+1. **Periksa Backup:**
    ```bash
-   # List available backups
+   # Daftar backup yang tersedia
    ls -la /backup/
    
-   # Check database dumps
+   # Periksa dump database
    ls -la /backup/mysql/
    ```
 
-2. **Restore from Backup:**
+2. **Pulihkan dari Backup:**
    ```bash
-   # Restore database
+   # Pulihkan database
    mysql -u username -p database_name < backup_file.sql
    ```
 
-3. **Recreate Lost Data:**
-   - Re-add devices
-   - Restore user accounts
-   - Reconfigure settings
+3. **Buat Ulang Data yang Hilang:**
+   - Tambahkan ulang perangkat
+   - Pulihkan akun pengguna
+   - Konfigurasikan ulang pengaturan
 
-**Prevention:**
-- Implement regular automated backups
-- Test backup restoration procedures
-- Store backups in multiple locations
-- Document recovery procedures
+**Pencegahan:**
+- Terapkan backup otomatis berkala
+- Uji prosedur pemulihan backup
+- Simpan backup di beberapa lokasi
+- Dokumentasikan prosedur pemulihan
 
-## 📞 Getting Help
+## 📞 Mendapatkan Bantuan
 
-### Community Resources
-- **Laravel Documentation:** https://laravel.com/docs
-- **Tailwind CSS Docs:** https://tailwindcss.com/docs
-- **Python Official Docs:** https://docs.python.org
-- **Stack Overflow:** Search for specific error messages
+### Sumber Komunitas
+- **Dokumentasi Laravel:** https://laravel.com/docs
+- **Dokumentasi Tailwind CSS:** https://tailwindcss.com/docs
+- **Dokumentasi Resmi Python:** https://docs.python.org
+- **Stack Overflow:** Cari pesan kesalahan spesifik
 
-### Professional Support
-- **Laravel Forge:** Server management
-- **Laravel Envoyer:** Deployment tool
-- **Consulting Partners:** For enterprise support
+### Dukungan Profesional
+- **Laravel Forge:** Manajemen server
+- **Laravel Envoyer:** Alat deployment
+- **Konsultan Mitra:** Untuk dukungan enterprise
 
-### Issue Reporting
-When reporting issues, include:
-1. **Detailed Description:** What happened and when
-2. **Steps to Reproduce:** Exact steps that cause the issue
-3. **Error Messages:** Complete error text
-4. **Environment Information:** 
-   - OS version
-   - PHP version
-   - Database version
-   - Browser information
-5. **Screenshots:** If applicable
-6. **Log Excerpts:** Relevant portions of log files
+### Pelaporan Masalah
+Saat melaporkan masalah, sertakan:
+1. **Deskripsi Terperinci:** Apa yang terjadi dan kapan
+2. **Langkah-langkah untuk Mereproduksi:** Langkah tepat yang menyebabkan masalah
+3. **Pesan Kesalahan:** Teks kesalahan lengkap
+4. **Informasi Lingkungan:** 
+   - Versi OS
+   - Versi PHP
+   - Versi database
+   - Informasi browser
+5. **Screenshot:** Jika relevan
+6. **Kutipan Log:** Bagian relevan dari file log
 
-## 📚 Additional Resources
+## 📚 Sumber Daya Tambahan
 
-### Useful Commands
+### Perintah Berguna
 ```bash
-# System maintenance
+# Pemeliharaan sistem
 php artisan cache:clear
 php artisan config:clear
 php artisan route:clear
 php artisan view:clear
 php artisan optimize
 
-# Database maintenance
+# Pemeliharaan database
 php artisan migrate:status
 php artisan migrate:fresh --seed
 
-# Monitoring
+# Pemantauan
 php artisan monitor:devices
 php artisan schedule:run
 
-# Logs
+# Log
 tail -f storage/logs/laravel.log
 ```
 
-### Configuration Files to Check
-- `.env` - Environment configuration
-- `config/database.php` - Database settings
-- `config/logging.php` - Logging configuration
-- `config/mail.php` - Email settings
-- `php.ini` - PHP configuration
-- Web server config (Apache/Nginx)
+### File Konfigurasi untuk Diperiksa
+- `.env` - Konfigurasi lingkungan
+- `config/database.php` - Pengaturan database
+- `config/logging.php` - Konfigurasi logging
+- `config/mail.php` - Pengaturan email
+- `php.ini` - Konfigurasi PHP
+- Konfigurasi server web (Apache/Nginx)
 
-### Monitoring Checklist
-Regular maintenance tasks:
-- [ ] Check disk space weekly
-- [ ] Review logs daily
-- [ ] Update dependencies monthly
-- [ ] Test backups quarterly
-- [ ] Review security monthly
-- [ ] Performance tuning as needed
-- [ ] Database optimization quarterly
+### Checklist Pemantauan
+Tugas pemeliharaan berkala:
+- [ ] Periksa ruang disk mingguan
+- [ ] Tinjau log harian
+- [ ] Perbarui dependensi bulanan
+- [ ] Uji backup triwulanan
+- [ ] Tinjau keamanan bulanan
+- [ ] Penyetelan kinerja sesuai kebutuhan
+- [ ] Optimalisasi database triwulanan

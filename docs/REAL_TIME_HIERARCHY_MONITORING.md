@@ -1,7 +1,7 @@
-# Real-time Device Hierarchy Monitoring System
+# Sistem Pemantauan Hirarki Perangkat Real-time
 
-## Overview
-This document describes the implementation of a true real-time monitoring system that tracks device hierarchy levels (main, sub, and regular devices) with automatic per-second updates. The system provides immediate status updates, accurate device status detection (UP, DOWN, UNKNOWN), and dynamic latency measurements with both automatic and manual refresh options.
+## Ikhtisar
+Dokumen ini menjelaskan implementasi sistem pemantauan real-time sejati yang melacak tingkat hirarki perangkat (utama, sub, dan perangkat biasa) dengan pembaruan otomatis per-detik. Sistem ini menyediakan pembaruan status segera, deteksi status perangkat akurat (UP, DOWN, UNKNOWN), dan pengukuran latensi dinamis dengan opsi penyegaran otomatis dan manual.
 
 ## Features Implemented
 
@@ -42,74 +42,74 @@ This document describes the implementation of a true real-time monitoring system
 - Bulk refresh capability for all devices simultaneously
 - Real-time updates of results with WebSocket integration
 
-## Technical Implementation
+## Implementasi Teknis
 
-### Backend Components
-1. **Per-Second Monitoring Job** - `MonitorDevicesPerSecond` job processes all devices every second
-2. **Enhanced Ping Service** - Updated `PingService` now handles UNKNOWN status for invalid IPs
-3. **New Events** - `PerSecondDeviceStatusUpdated` event for per-second UI updates
-4. **Database Updates** - `device_logs` table now supports 'unknown' status (enum: up/down/unknown)
-5. **Device Model** - Updated to handle all three status states with proper validation
-6. **API Controllers** - Enhanced `DeviceController` with bulk ping and manual refresh endpoints
-7. **Console Command** - `PerSecondMonitor` command for continuous monitoring (optional)
+### Komponen Backend
+1. **Pekerjaan Pemantauan Per-Detik** - Pekerjaan `MonitorDevicesPerSecond` memproses semua perangkat setiap detik
+2. **Layanan Ping yang Ditingkatkan** - `PingService` yang diperbarui kini menangani status UNKNOWN untuk IP tidak valid
+3. **Event Baru** - Event `PerSecondDeviceStatusUpdated` untuk pembaruan UI per-detik
+4. **Pembaruan Database** - Tabel `device_logs` kini mendukung status 'unknown' (enum: up/down/unknown)
+5. **Model Perangkat** - Diperbarui untuk menangani ketiga status dengan validasi yang tepat
+6. **Kontroler API** - `DeviceController` yang ditingkatkan dengan endpoint ping massal dan penyegaran manual
+7. **Perintah Konsol** - Perintah `PerSecondMonitor` untuk pemantauan berkelanjutan (opsional)
 
-### Frontend Components
-1. **WebSocket Integration** - Real-time updates via Pusher for per-second data
-2. **Enhanced UI Indicators** - Proper visual representation of UP/DOWN/UNKNOWN states
-3. **Manual Refresh Button** - "Scan" button triggers immediate bulk device refresh
-4. **Loading Indicators** - Visual feedback during manual refresh operations
-5. **Notification System** - Success/error messages for manual refresh actions
-6. **Optimized Updates** - Efficient DOM updates to handle per-second changes
+### Komponen Frontend
+1. **Integrasi WebSocket** - Pembaruan real-time melalui Pusher untuk data per-detik
+2. **Indikator UI yang Ditingkatkan** - Representasi visual yang tepat dari status UP/DOWN/UNKNOWN
+3. **Tombol Penyegaran Manual** - Tombol "Scan" memicu penyegaran massal perangkat segera
+4. **Indikator Pemuatan** - Umpan balik visual selama operasi penyegaran manual
+5. **Sistem Notifikasi** - Pesan sukses/kesalahan untuk tindakan penyegaran manual
+6. **Pembaruan Teroptimalkan** - Pembaruan DOM efisien untuk menangani perubahan per-detik
 
-### Event System
-- `PerSecondDeviceStatusUpdated` - Broadcasts immediate device status changes
-- `RealTimeHierarchyUpdated` - Updated to handle per-second hierarchy changes
-- `DeviceStatusUpdated` - Existing event still used for regular monitoring
+### Sistem Event
+- `PerSecondDeviceStatusUpdated` - Menyebarkan perubahan status perangkat segera
+- `RealTimeHierarchyUpdated` - Diperbarui untuk menangani perubahan hirarki per-detik
+- `DeviceStatusUpdated` - Event yang ada tetap digunakan untuk pemantauan reguler
 
-## Data Flow
+## Alur Data
 
-### Automatic Updates (Per-Second)
-1. `MonitorDevicesPerSecond` job runs to check all devices
-2. `PingService` verifies device status (UP/DOWN/UNKNOWN)
-3. `PerSecondDeviceStatusUpdated` event broadcasts changes instantly
-4. Frontend receives real-time updates and updates UI immediately
-5. Database logs all changes for historical tracking
+### Pembaruan Otomatis (Per-Detik)
+1. Pekerjaan `MonitorDevicesPerSecond` berjalan untuk memeriksa semua perangkat
+2. `PingService` memverifikasi status perangkat (UP/DOWN/UNKNOWN)
+3. Event `PerSecondDeviceStatusUpdated` menyiarkan perubahan secara instan
+4. Frontend menerima pembaruan real-time dan memperbarui UI segera
+5. Database mencatat semua perubahan untuk pelacakan historis
 
-### Manual Refresh
-1. User clicks "Scan" button on dashboard
-2. Frontend calls `/api/devices/bulk-ping` endpoint
-3. Backend pings all devices immediately
-4. `PerSecondDeviceStatusUpdated` events broadcast results
-5. Dashboard UI updates in real-time with visual feedback
+### Penyegaran Manual
+1. Pengguna mengklik tombol "Scan" di dashboard
+2. Frontend memanggil endpoint `/api/devices/bulk-ping`
+3. Backend melakukan ping ke semua perangkat segera
+4. Event `PerSecondDeviceStatusUpdated` menyiarkan hasil
+5. UI Dashboard diperbarui secara real-time dengan umpan balik visual
 
-## Benefits
-- **True Real-time Updates**: Per-second device monitoring with instant UI updates
-- **Accurate Status Detection**: Three-state system (UP/DOWN/UNKNOWN) with proper IP validation
-- **Immediate Visibility**: Network issues detected and displayed within seconds
-- **Manual Control**: "Scan" button provides on-demand refresh capability
-- **Historical Tracking**: All status changes stored for analysis and reporting
-- **Scalable Architecture**: Queue-based system handles high-frequency monitoring
+## Manfaat
+- **Pembaruan Real-time Sejati**: Pemantauan perangkat per-detik dengan pembaruan UI instan
+- **Deteksi Status Akurat**: Sistem tiga status (UP/DOWN/UNKNOWN) dengan validasi IP yang tepat
+- **Visibilitas Langsung**: Masalah jaringan terdeteksi dan ditampilkan dalam hitungan detik
+- **Kontrol Manual**: Tombol "Scan" menyediakan kemampuan penyegaran sesuai permintaan
+- **Pelacakan Historis**: Semua perubahan status disimpan untuk analisis dan pelaporan
+- **Arsitektur Dapat Diskalakan**: Sistem berbasis antrian menangani pemantauan frekuensi tinggi
 
-## Usage
-The system provides dual operation modes:
+## Penggunaan
+Sistem menyediakan dua mode operasi:
 
-### Automatic Mode
-- Device monitoring runs continuously at per-second intervals
-- Status and latency data update automatically in real-time
-- Dashboard reflects changes immediately without manual intervention
+### Mode Otomatis
+- Pemantauan perangkat berjalan terus-menerus pada interval per-detik
+- Data status dan latensi diperbarui secara otomatis dalam real-time
+- Dashboard mencerminkan perubahan segera tanpa intervensi manual
 
-### Manual Mode
-- Click the "Scan" button (refresh icon) on the dashboard
-- Triggers immediate recheck of all devices
-- Visual feedback shows refresh progress and completion status
-- Results update in real-time as devices are checked
+### Mode Manual
+- Klik tombol "Scan" (ikon segar) di dashboard
+- Memicu pemeriksaan ulang segera semua perangkat
+- Umpan balik visual menunjukkan kemajuan dan status penyelesaian penyegaran
+- Hasil diperbarui secara real-time saat perangkat diperiksa
 
-## Configuration
-The system can be configured for different environments:
-- Production: Queue-based workers handle high-frequency monitoring
-- Development: Simpler scheduling may be used based on performance requirements
+## Konfigurasi
+Sistem dapat dikonfigurasi untuk lingkungan berbeda:
+- Produksi: Worker berbasis antrian menangani pemantauan frekuensi tinggi
+- Pengembangan: Penjadwalan yang lebih sederhana dapat digunakan berdasarkan persyaratan kinerja
 
-## Performance Considerations
-- High-frequency monitoring may impact system resources with large device counts
-- Queue workers should be configured appropriately for expected device loads
-- Database performance should be monitored with frequent write operations
+## Pertimbangan Kinerja
+- Pemantauan frekuensi tinggi dapat mempengaruhi sumber daya sistem dengan jumlah perangkat besar
+- Worker antrian harus dikonfigurasi secara tepat untuk beban perangkat yang diharapkan
+- Kinerja database harus dipantau dengan operasi tulis yang sering

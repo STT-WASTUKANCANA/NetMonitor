@@ -1,36 +1,36 @@
-# 📡 API Documentation
+# 📡 Dokumentasi API
 
-## Overview
+## Ikhtisar
 
-The Monitoring System API provides endpoints for device monitoring, status reporting, and data retrieval. The API follows REST principles and returns JSON responses.
+API Sistem Monitoring menyediakan endpoint untuk pemantauan perangkat, pelaporan status, dan pengambilan data. API mengikuti prinsip REST dan mengembalikan respons JSON.
 
-## Authentication
+## Autentikasi
 
-Most endpoints require authentication via Laravel session. For external integrations, API tokens can be used.
+Sebagian besar endpoint memerlukan autentikasi melalui sesi Laravel. Untuk integrasi eksternal, token API dapat digunakan.
 
-### Headers
+### Header
 
 ```
 Content-Type: application/json
 Accept: application/json
 ```
 
-## Base URL
+## URL Dasar
 
 ```
 http://localhost:8000/api
 ```
 
-## Endpoints
+## Endpoint
 
-### Devices
+### Perangkat
 
-#### Get All Active Devices
+#### Mendapatkan Semua Perangkat Aktif
 ```http
 GET /devices
 ```
 
-**Response:**
+**Respons:**
 ```json
 [
   {
@@ -51,12 +51,12 @@ GET /devices
 ]
 ```
 
-#### Get Device Details
+#### Mendapatkan Detail Perangkat
 ```http
 GET /devices/{id}
 ```
 
-**Response:**
+**Respons:**
 ```json
 {
   "id": 1,
@@ -75,12 +75,12 @@ GET /devices/{id}
 }
 ```
 
-#### Record Device Status
+#### Mencatat Status Perangkat
 ```http
 POST /devices/{id}/status
 ```
 
-**Request Body:**
+**Body Permintaan:**
 ```json
 {
   "status": "up",
@@ -88,16 +88,16 @@ POST /devices/{id}/status
 }
 ```
 
-**Parameters:**
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| status | string | Yes | Device status: "up" or "down" |
-| response_time | float | No | Response time in milliseconds |
+**Parameter:**
+| Nama | Tipe | Diperlukan | Deskripsi |
+|------|------|------------|-----------|
+| status | string | Ya | Status perangkat: "up" atau "down" |
+| response_time | float | Tidak | Waktu respons dalam milidetik |
 
-**Response:**
+**Respons:**
 ```json
 {
-  "message": "Device status recorded successfully",
+  "message": "Status perangkat berhasil dicatat",
   "log_id": 123
 }
 ```
@@ -165,19 +165,19 @@ for device in devices:
     )
 ```
 
-## Rate Limiting
+## Pembatasan Laju
 
-API endpoints are rate-limited to prevent abuse:
+Endpoint API memiliki pembatasan laju untuk mencegah penyalahgunaan:
 
-- 60 requests per minute per IP address
-- Excessive requests will receive a 429 Too Many Requests response
+- 60 permintaan per menit per alamat IP
+- Permintaan berlebihan akan menerima respons 429 Terlalu Banyak Permintaan
 
-## Webhooks (Future Feature)
+## Webhook (Fitur Masa Depan)
 
-Planned webhook support for real-time notifications:
+Dukungan webhook yang direncanakan untuk notifikasi real-time:
 
-- Device status changes
-- Alert triggers
-- System events
+- Perubahan status perangkat
+- Pemicu peringatan
+- Event sistem
 
-Webhook endpoints will need to be configured in the admin panel.
+Endpoint webhook harus dikonfigurasi di panel admin.

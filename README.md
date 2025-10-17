@@ -188,5 +188,3 @@ MIT License - lihat file [LICENSE](LICENSE) untuk detail lebih lanjut.
 ## 📞 Dukungan
 
 Untuk dukungan, buka issue di repository ini atau hubungi tim pengembang. -->
-
-# Nothing is written here yet

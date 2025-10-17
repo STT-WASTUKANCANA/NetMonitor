@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title>{{ config('app.name', 'Monitoring Konektivitas') }}</title>
+        <link rel="stylesheet" href="/css/app.css">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
