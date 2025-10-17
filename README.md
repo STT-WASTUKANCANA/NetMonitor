@@ -1,4 +1,4 @@
-# Sistem Monitoring Konektivitas Internet
+<!-- # Sistem Monitoring Konektivitas Internet
 
 Sistem monitoring jaringan berbasis web untuk memantau kesehatan dan performa perangkat jaringan secara real-time.
 
@@ -187,4 +187,6 @@ MIT License - lihat file [LICENSE](LICENSE) untuk detail lebih lanjut.
 
 ## 📞 Dukungan
 
-Untuk dukungan, buka issue di repository ini atau hubungi tim pengembang.
+Untuk dukungan, buka issue di repository ini atau hubungi tim pengembang. -->
+
+# Nothing is written here yet
