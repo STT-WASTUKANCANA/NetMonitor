@@ -40,6 +40,19 @@ Route::middleware('auth')->group(function () {
     // Alert routes
     Route::resource('alerts', AlertController::class)->only(['index', 'update']);
     Route::put('/alerts/{alert}/resolve', [AlertController::class, 'resolve'])->name('alerts.resolve');
+
+    // Dashboard API routes (web authentication, CSRF protection)
+    Route::middleware(['auth'])->prefix('api')->group(function () {
+        Route::post('/devices/bulk-ping', [App\Http\Controllers\Api\DeviceController::class, 'bulkPing'])->name('api.devices.bulk-ping');
+        Route::get('/metrics/realtime', [App\Http\Controllers\Api\NetworkMetricsController::class, 'getRealTimeResponseTimeData'])->name('api.metrics.realtime');
+        Route::get('/devices/hierarchy', [App\Http\Controllers\Api\DeviceController::class, 'getHierarchy'])->name('api.devices.hierarchy');
+        Route::get('/devices/hierarchy/realtime', [App\Http\Controllers\Api\DeviceController::class, 'getRealTimeHierarchy'])->name('api.devices.hierarchy.realtime');
+        Route::get('/devices/{id}/children', [App\Http\Controllers\Api\DeviceController::class, 'getChildren'])->name('api.devices.children');
+        Route::get('/devices/{id}/family', [App\Http\Controllers\Api\DeviceController::class, 'getFamily'])->name('api.devices.family');
+        Route::get('/metrics/network', [App\Http\Controllers\Api\NetworkMetricsController::class, 'getNetworkMetrics'])->name('api.metrics.network');
+        Route::get('/alerts', [App\Http\Controllers\Api\AlertController::class, 'index'])->name('api.alerts.index');
+        Route::get('/devices', [App\Http\Controllers\Api\DeviceController::class, 'index'])->name('api.devices.index');
+    });
     
     // Report routes
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
@@ -48,10 +61,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/reports/pdf', [ReportController::class, 'generatePdf'])->name('reports.pdf');
     
     // User management routes (Admin only)
-    Route::resource('users', UserController::class);
-    // Separate routes for user photo management
-    Route::post('/users/{user}/photo', [UserController::class, 'updatePhoto'])->name('users.photo.update');
-    Route::delete('/users/{user}/photo', [UserController::class, 'removePhoto'])->name('users.photo.remove');
+    Route::middleware('role:admin')->group(function () {
+        Route::resource('users', UserController::class);
+        // Separate routes for user photo management
+        Route::post('/users/{user}/photo', [UserController::class, 'updatePhoto'])->name('users.photo.update');
+        Route::delete('/users/{user}/photo', [UserController::class, 'removePhoto'])->name('users.photo.remove');
+    });
     
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -66,7 +81,7 @@ Route::middleware('auth')->group(function () {
             Route::delete('/profile/photo', [App\Http\Controllers\Api\ProfilePhotoController::class, 'destroy'])->name('api.profile.photo.destroy');
             
             // User photo management for admin
-            Route::prefix('users')->middleware('can:edit users')->group(function () {
+            Route::prefix('users')->middleware('role:admin')->group(function () {
                 Route::post('/{user}/photo', [App\Http\Controllers\Api\UserController::class, 'updatePhoto'])->name('api.users.photo.update');
                 Route::delete('/{user}/photo', [App\Http\Controllers\Api\UserController::class, 'removePhoto'])->name('api.users.photo.remove');
             });

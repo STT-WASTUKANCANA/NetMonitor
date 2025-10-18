@@ -40,11 +40,11 @@
                         </x-nav-link>
                     @endcan
                     
-                    @can('view users')
+                    @if(auth()->user()?->role === 'admin')
                         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                             {{ __('Users') }}
                         </x-nav-link>
-                    @endcan
+                    @endif
                 </div>
             </div>
 
@@ -133,11 +133,11 @@
                 </x-responsive-nav-link>
             @endcan
             
-            @can('view users')
+            @if(auth()->user()?->role === 'admin')
                 <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                     {{ __('Users') }}
                 </x-responsive-nav-link>
-            @endcan
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

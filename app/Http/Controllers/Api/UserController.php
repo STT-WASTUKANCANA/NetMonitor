@@ -9,7 +9,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -18,8 +17,7 @@ class UserController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $request->user()->can('view users');
-
+        // Access is already restricted by middleware to admin users only
         $query = User::with('roles');
 
         // Apply search filter
@@ -34,9 +32,7 @@ class UserController extends Controller
         // Apply role filter
         if ($request->filled('role')) {
             $role = $request->role;
-            $query->whereHas('roles', function ($q) use ($role) {
-                $q->where('name', $role);
-            });
+            $query->where('role', $role);
         }
 
         $users = $query->paginate($request->get('per_page', 15));
@@ -57,13 +53,12 @@ class UserController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $request->user()->can('create users');
-
+        // Access is already restricted by middleware to admin users only
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|exists:roles,name',
+            'role' => 'required|in:admin,petugas',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
@@ -84,7 +79,8 @@ class UserController extends Controller
             $user = User::create($userData);
 
             // Assign role
-            $user->assignRole($validated['role']);
+            $user->role = $validated['role'];
+            $user->save();
 
             return response()->json([
                 'message' => 'User created successfully.',
@@ -103,10 +99,9 @@ class UserController extends Controller
      */
     public function show(Request $request, User $user): JsonResponse
     {
-        $request->user()->can('view users');
-
+        // Access is already restricted by middleware to admin users only
         return response()->json([
-            'user' => $user->load('roles')
+            'user' => $user
         ]);
     }
 
@@ -115,13 +110,12 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user): JsonResponse
     {
-        $request->user()->can('edit users');
-
+        // Access is already restricted by middleware to admin users only
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'email' => ['sometimes', 'required', 'email', Rule::unique('users')->ignore($user->id)],
             'password' => 'sometimes|string|min:8|confirmed',
-            'role' => 'sometimes|required|exists:roles,name',
+            'role' => 'sometimes|required|in:admin,petugas',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
@@ -159,7 +153,8 @@ class UserController extends Controller
 
             // Update role if provided
             if (isset($validated['role'])) {
-                $user->syncRoles([$validated['role']]);
+                $user->role = $validated['role'];
+                $user->save();
             }
 
             return response()->json([
@@ -179,9 +174,9 @@ class UserController extends Controller
      */
     public function destroy(Request $request, User $user): JsonResponse
     {
-        $request->user()->can('delete users');
-
-        // Don't allow deletion of the current user or the last admin
+        // Access is already restricted by middleware to admin users only
+        
+        // Don't allow deletion of the current user
         if ($user->id === $request->user()->id) {
             return response()->json([
                 'message' => 'You cannot delete your own account.'
@@ -189,10 +184,9 @@ class UserController extends Controller
         }
 
         // Check if this is the last admin
-        $adminRole = Role::findByName('Admin');
-        $admins = $adminRole->users()->count();
-
-        if ($user->hasRole('Admin') && $admins <= 1) {
+        $adminUsersCount = User::where('role', 'admin')->count();
+        
+        if ($user->role === 'admin' && $adminUsersCount <= 1) {
             return response()->json([
                 'message' => 'Cannot delete the last admin user.'
             ], 400);
@@ -222,8 +216,8 @@ class UserController extends Controller
      */
     public function updatePhoto(Request $request, User $user): JsonResponse
     {
-        $request->user()->can('edit users');
-
+        // Access is already restricted by middleware to admin users only
+        
         $request->validate([
             'profile_photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -257,7 +251,7 @@ class UserController extends Controller
      */
     public function removePhoto(Request $request, User $user): JsonResponse
     {
-        $request->user()->can('edit users');
+        // Access is already restricted by middleware to admin users only
 
         try {
             // Delete old profile photo if exists

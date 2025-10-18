@@ -19,10 +19,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $this->authorize('view users');
-
-        $users = User::with('roles')->paginate(15);
-
+        $users = \App\Models\User::paginate(10);
         return view('users.index', compact('users'));
     }
 
@@ -31,8 +28,6 @@ class UserController extends Controller
      */
     public function create()
     {
-        $this->authorize('create users');
-
         return view('users.create');
     }
 
@@ -41,20 +36,19 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('create users');
-
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:Admin,Petugas',
+            'role' => 'required|in:admin,petugas',
         ]);
 
-        $userData = [
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-        ];
+            'role' => $request->role,
+        ]);
 
         // Handle profile photo upload if provided
         if ($request->hasFile('profile_photo')) {
@@ -63,12 +57,9 @@ class UserController extends Controller
             ]);
 
             $path = $request->file('profile_photo')->store('profile-photos', 'public');
-            $userData['profile_photo_path'] = $path;
+            $user->profile_photo_path = $path;
+            $user->save();
         }
-
-        $user = User::create($userData);
-
-        $user->assignRole($request->role);
 
         return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
@@ -78,10 +69,6 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        $this->authorize('view users');
-
-        $user->load('roles');
-
         return view('users.show', compact('user'));
     }
 
@@ -90,8 +77,6 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        $this->authorize('edit users');
-
         return view('users.edit', compact('user'));
     }
 
@@ -100,13 +85,11 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        $this->authorize('edit users');
-
         // Don't validate password if not provided (for editing existing user)
         $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'role' => 'required|in:Admin,Petugas',
+            'role' => 'required|in:admin,petugas',
         ];
 
         if ($request->filled('password')) {
@@ -118,6 +101,7 @@ class UserController extends Controller
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
+            'role' => $request->role,
         ]);
 
         if ($request->filled('password')) {
@@ -142,9 +126,6 @@ class UserController extends Controller
             $user->profile_photo_path = $path;
         }
 
-        // Sync the user's role (remove old and assign new)
-        $user->syncRoles([$request->role]);
-
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
 
@@ -153,19 +134,9 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        $this->authorize('delete users');
-
-        // Don't allow deletion of the current user or the last admin
+        // Don't allow deletion of the current user
         if ($user->id === Auth::id()) {
             return redirect()->route('users.index')->with('error', 'You cannot delete your own account.');
-        }
-
-        // Check if this is the last admin
-        $adminRole = \Spatie\Permission\Models\Role::findByName('Admin');
-        $admins = $adminRole->users()->count();
-
-        if ($user->hasRole('Admin') && $admins <= 1) {
-            return redirect()->route('users.index')->with('error', 'Cannot delete the last admin user.');
         }
 
         $user->delete();
@@ -178,8 +149,6 @@ class UserController extends Controller
      */
     public function updatePhoto(Request $request, User $user)
     {
-        $this->authorize('edit users');
-        
         $request->validate([
             'profile_photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -202,8 +171,6 @@ class UserController extends Controller
      */
     public function removePhoto(Request $request, User $user)
     {
-        $this->authorize('edit users');
-        
         // Delete old profile photo if exists
         if ($user->profile_photo_path) {
             \Illuminate\Support\Facades\Storage::delete($user->profile_photo_path);

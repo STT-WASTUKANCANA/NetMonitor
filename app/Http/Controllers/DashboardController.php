@@ -16,8 +16,6 @@ class DashboardController extends Controller
 
     public function index()
     {
-        $this->authorize('view dashboard');
-        
         // Debug: Check if current user can view users
         $canViewUsers = auth()->user()?->can('view users');
         
@@ -77,8 +75,6 @@ class DashboardController extends Controller
      */
     public function getRealTimeData()
     {
-        $this->authorize('view dashboard');
-        
         // Get current date and time information
         $currentDateTime = now();
         $currentDate = $currentDateTime->format('l, d F Y'); // Day, date Month Year format

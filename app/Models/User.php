@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
         'profile_photo_path',
     ];
 
@@ -53,7 +54,7 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->hasRole('Admin');
+        return $this->role === 'admin';
     }
     
     /**
@@ -61,7 +62,7 @@ class User extends Authenticatable
      */
     public function isPetugas(): bool
     {
-        return $this->hasRole('Petugas');
+        return $this->role === 'petugas';
     }
     
     /**
@@ -69,7 +70,7 @@ class User extends Authenticatable
      */
     public function getRoleNameAttribute(): string
     {
-        return $this->roles->first()->name ?? 'User';
+        return ucfirst($this->role ?? 'user');
     }
     
     /**
