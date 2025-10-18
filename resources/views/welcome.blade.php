@@ -3,25 +3,37 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-
         <title>{{ config('app.name', 'Monitoring Konektivitas') }}</title>
-        <link rel="stylesheet" href="/css/app.css">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
         <!-- Styles / Scripts -->
-        @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @php
+            $hasBuild = file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot'));
+        @endphp
+
+        @if ($hasBuild)
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else
             <style>
-                /*! tailwindcss v4.0.7 | MIT License | https://tailwindcss.com */@layer theme{:root,:host{--font-sans:'Instrument Sans',ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";--font-serif:ui-serif,Georgia,Cambria,"Times New Roman",Times,serif;--font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;--color-red-50:oklch(.971 .013 17.38);--color-red-100:oklch(.936 .032 17.717);--color-red-200:oklch(.885 .062 18.334);--color-red-300:oklch(.808 .114 19.571);--color-red-400:oklch(.704 .191 22.216);--color-red-500:oklch(.637 .237 25.331);--color-red-600:oklch(.577 .245 27.325);--color-red-700:oklch(.505 .213 27.518);--color-red-800:oklch(.444 .177 26.899);--color-red-900:oklch(.396 .141 25.723);--color-red-950:oklch(.258 .092 26.042);--color-orange-50:oklch(.98 .016 73.684);--color-orange-100:oklch(.954 .038 75.164);--color-orange-200:oklch(.901 .076 70.697);--color-orange-300:oklch(.837 .128 66.29);--color-orange-400:oklch(.75 .183 55.934);--color-orange-500:oklch(.705 .213 47.604);--color-orange-600:oklch(.646 .222 41.116);--color-orange-700:oklch(.553 .195 38.402);--color-orange-800:oklch(.47 .157 37.304);--color-orange-900:oklch(.408 .123 38.172);--color-orange-950:oklch(.266 .079 36.259);--color-amber-50:oklch(.987 .022 95.277);--color-amber-100:oklch(.962 .059 95.617);--color-amber-200:oklch(.924 .12 95.746);--color-amber-300:oklch(.879 .169 91.605);--color-amber-400:oklch(.828 .189 84.429);--color-amber-500:oklch(.769 .188 70.08);--color-amber-600:oklch(.666 .179 58.318);--color-amber-700:oklch(.555 .163 48.998);--color-amber-800:oklch(.473 .137 46.201);--color-amber-900:oklch(.414 .112 45.904);--color-amber-950:oklch(.279 .077 45.635);--color-yellow-50:oklch(.987 .026 102.212);--color-yellow-100:oklch(.973 .071 103.193);--color-yellow-200:oklch(.945 .129 101.54);--color-yellow-300:oklch(.905 .182 98.111);--color-yellow-400:oklch(.852 .199 91.936);--... [truncated]
+                /* Fallback minimal style */
+                body {
+                    font-family: 'Instrument Sans', sans-serif;
+                    background-color: #f9fafb;
+                    color: #111827;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                }
             </style>
         @endif
     </head>
+
     <body class="bg-gray-50 text-black flex p-6 lg:p-8 items-center lg:justify-center min-h-screen flex-col">
-        <header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6 not-has-[nav]:hidden">
+        <header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6">
             @if (Route::has('login'))
                 <nav class="flex items-center justify-end gap-4">
                     @auth
@@ -34,30 +46,35 @@
                     @else
                         <a
                             href="{{ route('login') }}"
-                            class="inline-block px-5 py-1.5 text-black border border-transparent hover:border-gray-300 rounded-sm text-sm leading-normal"
+                            class="relative inline-flex items-center justify-center px-6 py-2 overflow-hidden font-medium text-gray-800 border border-gray-300 rounded-md shadow-sm transition-all duration-300 ease-out group hover:shadow-lg hover:border-gray-400"
                         >
-                            Log in
+                            <span
+                                class="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500 ease-in-out"
+                            ></span>
+                            <span
+                                class="relative z-10 flex items-center gap-2 font-semibold tracking-wide"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-9A2.25 2.25 0 002.25 5.25v13.5A2.25 2.25 0 004.5 21h9a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                                </svg>
+                                Log in
+                            </span>
                         </a>
-
-                        @if (Route::has('register'))
-                            <a
-                                href="{{ route('register') }}"
-                                class="inline-block px-5 py-1.5 border border-gray-300 hover:border-gray-400 border text-black rounded-sm text-sm leading-normal">
-                                Register
-                            </a>
-                        @endif
                     @endauth
                 </nav>
             @endif
         </header>
-        <div class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
+
+        <div class="flex items-center justify-center w-full transition-opacity opacity-100 duration-700 lg:grow">
             <main class="flex max-w-[335px] w-full flex-col-reverse lg:max-w-4xl lg:flex-row">
+                <!-- Left Panel -->
                 <div class="text-[13px] leading-[20px] flex-1 p-6 pb-12 lg:p-20 bg-white text-black border border-gray-200 rounded-bl-lg rounded-br-lg lg:rounded-tl-lg lg:rounded-br-none">
                     <h1 class="mb-1 font-medium">Monitoring Konektivitas Jaringan</h1>
                     <p class="mb-4 text-gray-600">
                         Sistem monitoring jaringan real-time untuk memantau kesehatan dan performa perangkat jaringan secara real-time.
                     </p>
-                    
+
                     <div class="mb-6 p-4 bg-blue-50 rounded-lg">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-sm font-medium">Status Jaringan</span>
@@ -92,19 +109,8 @@
                             <span>
                                 <a href="{{ route('dashboard') }}" class="inline-flex items-center space-x-1 font-medium underline underline-offset-4 text-red-600">
                                     <span>Dashboard</span>
-                                    <svg
-                                        width="10"
-                                        height="11"
-                                        viewBox="0 0 10 11"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="w-2.5 h-2.5"
-                                    >
-                                        <path
-                                            d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001"
-                                            stroke="currentColor"
-                                            stroke-linecap="square"
-                                        />
+                                    <svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5">
+                                        <path d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001" stroke="currentColor" stroke-linecap="square" />
                                     </svg>
                                 </a>
                                 <span class="text-gray-600"> - Pantau status perangkat jaringan</span>
@@ -119,19 +125,8 @@
                             <span>
                                 <a href="{{ route('devices.index') }}" class="inline-flex items-center space-x-1 font-medium underline underline-offset-4 text-red-600">
                                     <span>Manajemen Perangkat</span>
-                                    <svg
-                                        width="10"
-                                        height="11"
-                                        viewBox="0 0 10 11"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="w-2.5 h-2.5"
-                                    >
-                                        <path
-                                            d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001"
-                                            stroke="currentColor"
-                                            stroke-linecap="square"
-                                        />
+                                    <svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5">
+                                        <path d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001" stroke="currentColor" stroke-linecap="square" />
                                     </svg>
                                 </a>
                                 <span class="text-gray-600"> - Kelola perangkat jaringan</span>
@@ -146,25 +141,15 @@
                             <span>
                                 <a href="{{ route('reports.index') }}" class="inline-flex items-center space-x-1 font-medium underline underline-offset-4 text-red-600">
                                     <span>Laporan</span>
-                                    <svg
-                                        width="10"
-                                        height="11"
-                                        viewBox="0 0 10 11"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="w-2.5 h-2.5"
-                                    >
-                                        <path
-                                            d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001"
-                                            stroke="currentColor"
-                                            stroke-linecap="square"
-                                        />
+                                    <svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5">
+                                        <path d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001" stroke="currentColor" stroke-linecap="square" />
                                     </svg>
                                 </a>
                                 <span class="text-gray-600"> - Lihat laporan performa jaringan</span>
                             </span>
                         </li>
                     </ul>
+
                     <ul class="flex gap-3 text-sm leading-normal">
                         <li>
                             <a href="{{ route('dashboard') }}" class="inline-block hover:bg-black hover:border-black px-5 py-1.5 bg-black rounded-sm border border-black text-white text-sm leading-normal">
@@ -173,6 +158,8 @@
                         </li>
                     </ul>
                 </div>
+
+                <!-- Right Panel -->
                 <div class="bg-gradient-to-br from-green-50 to-blue-50 relative lg:-ml-px -mb-px lg:mb-0 rounded-t-lg lg:rounded-t-none lg:rounded-r-lg aspect-[335/376] lg:aspect-auto w-full lg:w-[438px] shrink-0 overflow-hidden">
                     <div class="absolute inset-0 flex items-center justify-center p-6">
                         <div class="text-center">
@@ -191,53 +178,49 @@
         </div>
 
         @if (Route::has('login'))
-            <div class="h-14.5 hidden lg:block"></div>
+            <div class="h-14 hidden lg:block"></div>
         @endif
-        
+
         <script>
-            // Function to fetch monitoring data from API
             async function fetchMonitorData() {
                 try {
                     const response = await fetch('/api/devices/stats');
                     const data = await response.json();
-                    
-                    // Update statistics
-                    document.getElementById('totalDevices').textContent = data.total_devices || 0;
-                    document.getElementById('activeDevices').textContent = data.active_devices || 0;
-                    document.getElementById('downDevices').textContent = data.down_devices || 0;
-                    
-                    // Update status bar and label
+
                     const totalDevices = data.total_devices || 0;
                     const activeDevices = data.active_devices || 0;
                     const downDevices = data.down_devices || 0;
+
+                    document.getElementById('totalDevices').textContent = totalDevices;
+                    document.getElementById('activeDevices').textContent = activeDevices;
+                    document.getElementById('downDevices').textContent = downDevices;
+
                     const statusPercentage = totalDevices > 0 ? (activeDevices / totalDevices * 100) : 0;
                     document.getElementById('statusBar').style.width = statusPercentage + '%';
-                    
+
                     const statusLabel = document.getElementById('networkStatus');
                     if (totalDevices === 0) {
                         statusLabel.textContent = 'Tidak Ada Perangkat';
-                        statusLabel.className = 'text-sm font-medium text-gray-500 dark:text-gray-400';
+                        statusLabel.className = 'text-sm font-medium text-gray-500';
                     } else if (downDevices === 0) {
                         statusLabel.textContent = 'Semua Aktif';
-                        statusLabel.className = 'text-sm font-medium text-green-600 dark:text-green-400';
+                        statusLabel.className = 'text-sm font-medium text-green-600';
                     } else if (activeDevices === 0) {
                         statusLabel.textContent = 'Semua Tidak Aktif';
-                        statusLabel.className = 'text-sm font-medium text-red-600 dark:text-red-400';
+                        statusLabel.className = 'text-sm font-medium text-red-600';
                     } else {
                         statusLabel.textContent = 'Sebagian Aktif';
-                        statusLabel.className = 'text-sm font-medium text-yellow-600 dark:text-yellow-400';
+                        statusLabel.className = 'text-sm font-medium text-yellow-600';
                     }
                 } catch (error) {
                     console.error('Error fetching monitoring data:', error);
-                    document.getElementById('networkStatus').textContent = 'Error Koneksi';
-                    document.getElementById('networkStatus').className = 'text-sm font-medium text-red-600 dark:text-red-400';
+                    const statusLabel = document.getElementById('networkStatus');
+                    statusLabel.textContent = 'Error Koneksi';
+                    statusLabel.className = 'text-sm font-medium text-red-600';
                 }
             }
-            
-            // Initial load
+
             fetchMonitorData();
-            
-            // Refresh data every 30 seconds
             setInterval(fetchMonitorData, 30000);
         </script>
     </body>

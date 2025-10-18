@@ -34,6 +34,7 @@ class RolePermissionSeeder extends Seeder
             'create users',
             'edit users',
             'delete users',
+            'manage users', // General permission to access user management
             
             // Report permissions
             'view reports',
@@ -49,17 +50,18 @@ class RolePermissionSeeder extends Seeder
             'update password',
         ];
 
+        // Create permissions if they don't exist
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
 
-        // Create Admin role and assign all permissions
-        $adminRole = Role::create(['name' => 'Admin']);
+        // Create or get Admin role and assign all permissions
+        $adminRole = Role::firstOrCreate(['name' => 'Admin', 'guard_name' => 'web']);
         $adminRole->givePermissionTo(Permission::all());
 
-        // Create Petugas role and assign limited permissions
-        $petugasRole = Role::create(['name' => 'Petugas']);
-        $petugasRole->givePermissionTo([
+        // Create or get Petugas role and assign limited permissions
+        $petugasRole = Role::firstOrCreate(['name' => 'Petugas', 'guard_name' => 'web']);
+        $petugasPermissions = [
             'view dashboard',
             'view devices', // View only
             'view alerts',
@@ -68,24 +70,31 @@ class RolePermissionSeeder extends Seeder
             'view profile',
             'update profile',
             'update password',
-        ]);
+        ];
+        $petugasRole->syncPermissions($petugasPermissions);
 
-        // Create a default admin user
-        $adminUser = \App\Models\User::create([
-            'name' => 'Admin User',
+        // Create a default admin user (only if not exists)
+        $adminUser = \App\Models\User::firstOrCreate([
             'email' => 'admin@sttwastukancana.ac.id',
+        ], [
+            'name' => 'Admin User',
             'password' => bcrypt('password'),
             'email_verified_at' => now(),
         ]);
-        $adminUser->assignRole('Admin');
+        if (!$adminUser->hasRole('Admin')) {
+            $adminUser->assignRole('Admin');
+        }
 
-        // Create a default petugas user
-        $petugasUser = \App\Models\User::create([
-            'name' => 'Petugas User',
+        // Create a default petugas user (only if not exists)
+        $petugasUser = \App\Models\User::firstOrCreate([
             'email' => 'petugas@sttwastukancana.ac.id',
+        ], [
+            'name' => 'Petugas User',
             'password' => bcrypt('password'),
             'email_verified_at' => now(),
         ]);
-        $petugasUser->assignRole('Petugas');
+        if (!$petugasUser->hasRole('Petugas')) {
+            $petugasUser->assignRole('Petugas');
+        }
     }
 }

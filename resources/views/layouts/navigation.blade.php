@@ -40,7 +40,7 @@
                         </x-nav-link>
                     @endcan
                     
-                    @can('manage users')
+                    @can('view users')
                         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                             {{ __('Users') }}
                         </x-nav-link>
@@ -133,7 +133,7 @@
                 </x-responsive-nav-link>
             @endcan
             
-            @can('manage users')
+            @can('view users')
                 <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                     {{ __('Users') }}
                 </x-responsive-nav-link>

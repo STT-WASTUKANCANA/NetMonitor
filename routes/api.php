@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\NetworkMetricsController;
 use App\Http\Controllers\Api\AlertController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,5 +47,16 @@ Route::get('/devices/hierarchy', [DeviceController::class, 'getHierarchy']);
 Route::get('/devices/hierarchy/realtime', [DeviceController::class, 'getRealTimeHierarchy']);
 Route::get('/devices/{id}/children', [DeviceController::class, 'getChildren']);
 Route::get('/devices/{id}/family', [DeviceController::class, 'getFamily']);
+
+// User management API routes (Admin only)
+Route::middleware(['auth'])->group(function () {
+    Route::apiResource('users', UserController::class)->names('api.users');
+    
+    // User photo management routes
+    Route::prefix('users')->group(function () {
+        Route::post('/{user}/photo', [UserController::class, 'updatePhoto'])->name('api.users.photo.update');
+        Route::delete('/{user}/photo', [UserController::class, 'removePhoto'])->name('api.users.photo.remove');
+    });
+});
 
 // Note: Profile photo routes moved to web.php to support session authentication
