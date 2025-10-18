@@ -7,6 +7,24 @@ use App\Http\Controllers\AlertController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\File;
+
+// Route for Laravel live reload timestamp checker
+Route::get('/_livereload_timestamp', function () {
+    $appEnv = config('app.env', 'production');
+    
+    if (!in_array($appEnv, ['local', 'development'])) {
+        abort(404);
+    }
+    
+    $timestampFile = storage_path('framework/cache/laravel-livereload-timestamp');
+    
+    if (File::exists($timestampFile)) {
+        return response(File::get($timestampFile))->header('Content-Type', 'text/plain');
+    } else {
+        return response(time())->header('Content-Type', 'text/plain');
+    }
+})->middleware('web');
 
 Route::get('/', function () {
     return view('welcome');

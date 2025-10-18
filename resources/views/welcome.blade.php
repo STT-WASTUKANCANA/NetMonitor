@@ -30,6 +30,7 @@
                 }
             </style>
         @endif
+        <!-- Live reload test: page modified at 2025-10-19 02:05:30 -->
     </head>
 
     <body class="bg-gray-50 text-black flex p-6 lg:p-8 items-center lg:justify-center min-h-screen flex-col">
@@ -225,3 +226,4 @@
         </script>
     </body>
 </html>
+{{-- Test comment added --}}

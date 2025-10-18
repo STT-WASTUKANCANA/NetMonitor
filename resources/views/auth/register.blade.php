@@ -1,28 +1,28 @@
 <x-guest-layout>
-    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
+    <div class=" flex items-center justify-center bg-gradient-to-br from-cyan-50 via-white to-blue-50 p-4">
         <div class="w-full max-w-md">
             <div class="text-center mb-10 animate-fade-in">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-teal-600 mb-4 shadow-lg">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 mb-4 shadow-lg">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
                     </svg>
                 </div>
-                <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-teal-600 dark:from-green-400 dark:to-teal-400">
+                <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-600 to-blue-600">
                     NetMonitor
                 </h1>
-                <h2 class="mt-4 text-2xl font-semibold text-gray-800 dark:text-gray-200">Create your account</h2>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">
+                <h2 class="mt-4 text-2xl font-semibold text-gray-800">Create your account</h2>
+                <p class="mt-2 text-gray-600">
                     Join us today to start monitoring
                 </p>
             </div>
 
-            <div class="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50 p-8 transition-all duration-300 hover:shadow-2xl animate-slide-up">
+            <div class="relative bg-white/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/30 p-8 transition-all duration-300 hover:shadow-2xl animate-slide-up">
                 <form method="POST" action="{{ route('register') }}">
                     @csrf
 
                     <!-- Name -->
                     <div class="mb-6 animate-fade-in-delay-100">
-                        <x-input-label for="name" :value="__('Full Name')" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" />
+                        <x-input-label for="name" :value="__('Full Name')" class="block text-sm font-medium text-gray-700 mb-2" />
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -30,7 +30,7 @@
                                 </svg>
                             </div>
                             <x-text-input id="name" 
-                                         class="block w-full pl-10 pr-3 py-3 rounded-lg border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 focus:border-green-500 focus:ring-green-500 dark:focus:border-green-400 transition-all duration-200" 
+                                         class="block w-full pl-10 pr-3 py-3 rounded-lg border-gray-300 bg-white/50 focus:border-cyan-500 focus:ring-cyan-500 transition-all duration-200" 
                                          type="text" 
                                          name="name" 
                                          :value="old('name')" 
@@ -39,12 +39,12 @@
                                          autocomplete="name"
                                          placeholder="John Doe" />
                         </div>
-                        <x-input-error :messages="$errors->get('name')" class="mt-2 text-sm text-red-600 dark:text-red-400" />
+                        <x-input-error :messages="$errors->get('name')" class="mt-2 text-sm text-red-500" />
                     </div>
 
                     <!-- Email Address -->
                     <div class="mb-6 animate-fade-in-delay-200">
-                        <x-input-label for="email" :value="__('Email')" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" />
+                        <x-input-label for="email" :value="__('Email')" class="block text-sm font-medium text-gray-700 mb-2" />
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -52,7 +52,7 @@
                                 </svg>
                             </div>
                             <x-text-input id="email" 
-                                         class="block w-full pl-10 pr-3 py-3 rounded-lg border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 focus:border-green-500 focus:ring-green-500 dark:focus:border-green-400 transition-all duration-200" 
+                                         class="block w-full pl-10 pr-3 py-3 rounded-lg border-gray-300 bg-white/50 focus:border-cyan-500 focus:ring-cyan-500 transition-all duration-200" 
                                          type="email" 
                                          name="email" 
                                          :value="old('email')" 
@@ -60,12 +60,12 @@
                                          autocomplete="username"
                                          placeholder="name@company.com" />
                         </div>
-                        <x-input-error :messages="$errors->get('email')" class="mt-2 text-sm text-red-600 dark:text-red-400" />
+                        <x-input-error :messages="$errors->get('email')" class="mt-2 text-sm text-red-500" />
                     </div>
 
                     <!-- Password -->
                     <div class="mb-6 animate-fade-in-delay-300">
-                        <x-input-label for="password" :value="__('Password')" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" />
+                        <x-input-label for="password" :value="__('Password')" class="block text-sm font-medium text-gray-700 mb-2" />
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -73,19 +73,19 @@
                                 </svg>
                             </div>
                             <x-text-input id="password" 
-                                         class="block w-full pl-10 pr-3 py-3 rounded-lg border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 focus:border-green-500 focus:ring-green-500 dark:focus:border-green-400 transition-all duration-200" 
+                                         class="block w-full pl-10 pr-3 py-3 rounded-lg border-gray-300 bg-white/50 focus:border-cyan-500 focus:ring-cyan-500 transition-all duration-200" 
                                          type="password" 
                                          name="password" 
                                          required 
                                          autocomplete="new-password"
                                          placeholder="••••••••" />
                         </div>
-                        <x-input-error :messages="$errors->get('password')" class="mt-2 text-sm text-red-600 dark:text-red-400" />
+                        <x-input-error :messages="$errors->get('password')" class="mt-2 text-sm text-red-500" />
                     </div>
 
                     <!-- Confirm Password -->
                     <div class="mb-8 animate-fade-in-delay-400">
-                        <x-input-label for="password_confirmation" :value="__('Confirm Password')" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" />
+                        <x-input-label for="password_confirmation" :value="__('Confirm Password')" class="block text-sm font-medium text-gray-700 mb-2" />
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -93,18 +93,18 @@
                                 </svg>
                             </div>
                             <x-text-input id="password_confirmation" 
-                                         class="block w-full pl-10 pr-3 py-3 rounded-lg border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 focus:border-green-500 focus:ring-green-500 dark:focus:border-green-400 transition-all duration-200" 
+                                         class="block w-full pl-10 pr-3 py-3 rounded-lg border-gray-300 bg-white/50 focus:border-cyan-500 focus:ring-cyan-500 transition-all duration-200" 
                                          type="password" 
                                          name="password_confirmation" 
                                          required 
                                          autocomplete="new-password"
                                          placeholder="••••••••" />
                         </div>
-                        <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2 text-sm text-red-600 dark:text-red-400" />
+                        <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2 text-sm text-red-500" />
                     </div>
 
                     <div class="animate-fade-in-delay-500">
-                        <x-primary-button class="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-medium rounded-lg shadow-lg transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                        <x-primary-button class="w-full py-3 px-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-medium rounded-lg shadow-lg transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2">
                             {{ __('Create Account') }}
                         </x-primary-button>
                     </div>
@@ -112,10 +112,10 @@
             </div>
 
             <div class="mt-6 text-center animate-fade-in-delay-600">
-                <p class="text-gray-600 dark:text-gray-400">
+                <p class="text-gray-600">
                     Already have an account? 
                     @if (Route::has('login'))
-                        <a href="{{ route('login') }}" class="font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300 transition-colors duration-200">
+                        <a href="{{ route('login') }}" class="font-medium text-cyan-600 hover:text-cyan-700 transition-colors duration-200">
                             Sign in
                         </a>
                     @endif
