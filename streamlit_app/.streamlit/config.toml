@@ -1,0 +1,25 @@
+[theme]
+base="light"
+primaryColor="#4F46E5"
+backgroundColor="#F8FAFC"
+secondaryBackgroundColor="#F1F5F9"
+textColor="#1A1A1A"
+font="sans serif"
+
+[server]
+# Hot Reload Configuration
+runOnSave = true
+fileWatcherType = "watchdog"
+
+# Server Configuration
+headless = true
+enableCORS = false
+enableXsrfProtection = false
+port = 8501
+
+# Performance Optimization
+maxUploadSize = 200
+
+# Development Settings
+# Fast reload without browser refresh
+allowRunOnSave = true

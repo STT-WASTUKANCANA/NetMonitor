@@ -1,0 +1,43 @@
+# Production Configuration Template
+# Copy this to .streamlit/config.toml when deploying to production
+
+[theme]
+base="light"
+primaryColor="#4F46E5"
+backgroundColor="#F8FAFC"
+secondaryBackgroundColor="#F1F5F9"
+textColor="#1A1A1A"
+font="sans serif"
+
+[server]
+# Production Settings - No Hot Reload
+runOnSave = false
+fileWatcherType = "none"
+
+# Server Configuration
+headless = true
+enableCORS = false
+enableXsrfProtection = true  # Enable in production
+port = 8501
+
+# Performance Optimization
+maxUploadSize = 200
+maxMessageSize = 200
+
+# Security
+enableWebsocketCompression = true
+
+[browser]
+# Production Browser Settings
+gatherUsageStats = false
+serverAddress = "0.0.0.0"
+serverPort = 8501
+
+[runner]
+# Performance Settings
+magicEnabled = true
+fastReruns = true
+
+[logger]
+# Production Logging
+level = "info"  # Use "warning" or "error" in production
