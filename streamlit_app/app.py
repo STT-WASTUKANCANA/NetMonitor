@@ -11,6 +11,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from streamlit_app.config import config
 from streamlit_app.utils import init_session_state, is_authenticated, require_auth, logout, get_current_user
 from streamlit_app.utils.api_client import api_client
+from streamlit_app.utils.websocket import inject_websocket_listener
+from streamlit_app.utils.autorefresh import auto_refresh
 
 
 from streamlit_app.utils.ui import setup_page_config
@@ -76,6 +78,12 @@ def main():
     
     # Main content - Welcome page
     st.title(f"{config.PAGE_ICON} Welcome to {config.PAGE_TITLE}")
+    
+    # Inject WebSocket for real-time alerts
+    inject_websocket_listener()
+    
+    # Auto-refresh dashboard data every 10 seconds
+    auto_refresh(interval_seconds=10, key="dashboard_refresh")
     
     user = get_current_user()
     st.markdown(f"### Hello, {user.get('first_name', 'User')}! 👋")

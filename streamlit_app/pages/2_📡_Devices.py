@@ -15,6 +15,7 @@ from streamlit_app.config import config
 from streamlit_app.utils import init_session_state, is_authenticated, require_auth, get_current_user, is_admin, logout
 from streamlit_app.utils.api_client import api_client
 from streamlit_app.components import status_badge
+from streamlit_app.utils.autorefresh import auto_refresh
 
 
 def setup_page():
@@ -165,13 +166,16 @@ def main():
     # Page title
     st.title("📡 Devices Management")
     
+    # Auto-refresh devices list every 10 seconds
+    auto_refresh(interval_seconds=10, key="devices_refresh")
+    
     # Auto Discovery Section (for admins only)
     if is_admin():
         st.markdown("### 🔍 Auto Discovery Network Devices")
         
         col1, col2 = st.columns([3, 1])
         with col1:
-            st.info("📡 Automatically scan network for Utama (Router/Gateway) and Sub (Switch) devices")
+            st.info("Auto Discovery Network Devices")
         with col2:
             if st.button("🚀 Scan Network", use_container_width=True, type="primary"):
                 # Start discovery
@@ -182,7 +186,17 @@ def main():
                         st.session_state.discovery_started = True
                         st.rerun()
                     else:
-                        st.error(result.get("message", "Failed to start discovery"))
+                        msg = result.get("message", "Failed to start discovery")
+                        # If already running, sync state
+                        if "already running" in msg.lower():
+                            st.warning("Discovery is already running in background. Attaching...")
+                            st.session_state.discovery_running = True
+                            st.session_state.discovery_started = True
+                            import time
+                            time.sleep(1)
+                            st.rerun()
+                        else:
+                            st.error(msg)
         
         # Show scanning animation and auto-process
         if st.session_state.get("discovery_running") or st.session_state.get("discovery_started"):

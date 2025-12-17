@@ -233,12 +233,38 @@ def create_cover_page(data: dict, styles) -> List:
     
     story.append(Spacer(1, 0.5*inch))
     
-    # Period info box
+    # Period info box - ensure Jakarta timezone formatting
+    from app.utils.time_manager import TimeManager
+    period = data.get('period', 'N/A')
+    period_start = data.get('period_start', 'N/A')
+    period_end = data.get('period_end', 'N/A')
+    generated_at = data.get('generated_at', 'N/A')
+
+    # If these are datetime strings, format them in Jakarta timezone
+    try:
+        from datetime import datetime
+        if period_start and period_start != 'N/A':
+            if isinstance(period_start, str):
+                # Parse the datetime string and format in Jakarta timezone
+                dt = datetime.fromisoformat(period_start.replace('Z', '+00:00'))
+                period_start = TimeManager.format_timestamp(dt, '%Y-%m-%d %H:%M:%S WIB')
+        if period_end and period_end != 'N/A':
+            if isinstance(period_end, str):
+                dt = datetime.fromisoformat(period_end.replace('Z', '+00:00'))
+                period_end = TimeManager.format_timestamp(dt, '%Y-%m-%d %H:%M:%S WIB')
+        if generated_at and generated_at != 'N/A':
+            if isinstance(generated_at, str):
+                dt = datetime.fromisoformat(generated_at.replace('Z', '+00:00'))
+                generated_at = TimeManager.format_timestamp(dt, '%Y-%m-%d %H:%M:%S WIB')
+    except Exception:
+        # If parsing fails, use as is
+        pass
+
     period_data = [
-        ['Periode Monitoring', data.get('period', 'N/A')],
-        ['Tanggal Mulai', data.get('period_start', 'N/A')],
-        ['Tanggal Akhir', data.get('period_end', 'N/A')],
-        ['Tanggal Generate', data.get('generated_at', 'N/A')]
+        ['Periode Monitoring', period],
+        ['Tanggal Mulai', period_start],
+        ['Tanggal Akhir', period_end],
+        ['Tanggal Generate', generated_at]
     ]
     
     t = Table(period_data, colWidths=[2.5*inch, 2.5*inch])
@@ -770,8 +796,22 @@ def generate_pdf_report(data: dict) -> bytes:
     if recent_alerts:
         alert_data = [['Waktu', 'Severity', 'Pesan', 'Status']]
         for alert in recent_alerts[:15]:
+            # Format timestamp in Jakarta timezone
+            created_at = alert.get('created_at', '')
+            if created_at:
+                try:
+                    from datetime import datetime
+                    from app.utils.time_manager import TimeManager
+                    dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                    jakarta_time_str = TimeManager.format_timestamp(dt, '%Y-%m-%d %H:%M:%S')
+                    alert_time = jakarta_time_str
+                except:
+                    alert_time = created_at[:16].replace('T', ' ')
+            else:
+                alert_time = '-'
+
             alert_data.append([
-                alert.get('created_at', '')[:16].replace('T', ' '),
+                alert_time,
                 alert.get('severity', '').upper(),
                 Paragraph(alert.get('message', ''), styles['BodyText']),
                 alert.get('status', '').title()
@@ -1049,13 +1089,43 @@ def generate_excel_report(data: dict) -> bytes:
                 d_name = a.get('device', {}).get('name', 'Unknown') if isinstance(a.get('device'), dict) else 'Unknown'
                 d_ip = a.get('device', {}).get('ip_address', '') if isinstance(a.get('device'), dict) else ''
                 
+                # Format timestamps in Jakarta timezone
+                created_at = a.get('created_at', '')
+                resolved_at = a.get('resolved_at', '')
+
+                # Format created_at
+                if created_at:
+                    try:
+                        from datetime import datetime
+                        from app.utils.time_manager import TimeManager
+                        dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                        jakarta_time_str = TimeManager.format_timestamp(dt, '%Y-%m-%d %H:%M:%S')
+                        created_at_str = jakarta_time_str
+                    except:
+                        created_at_str = created_at.replace('T', ' ')[:19]
+                else:
+                    created_at_str = '-'
+
+                # Format resolved_at
+                if resolved_at:
+                    try:
+                        from datetime import datetime
+                        from app.utils.time_manager import TimeManager
+                        dt = datetime.fromisoformat(resolved_at.replace('Z', '+00:00'))
+                        jakarta_time_str = TimeManager.format_timestamp(dt, '%Y-%m-%d %H:%M:%S')
+                        resolved_at_str = jakarta_time_str
+                    except:
+                        resolved_at_str = resolved_at.replace('T', ' ')[:19]
+                else:
+                    resolved_at_str = '-'
+
                 alert_rows.append({
-                    'Timestamp': a.get('created_at', '').replace('T', ' ')[:19],
+                    'Timestamp': created_at_str,
                     'Device': f"{d_name} ({d_ip})",
                     'Severity': a.get('severity', '').upper(),
                     'Message': a.get('message'),
                     'Status': a.get('status', '').upper(),
-                    'Resolved At': a.get('resolved_at', '').replace('T', ' ')[:19] if a.get('resolved_at') else '-'
+                    'Resolved At': resolved_at_str
                 })
             
             df_alerts = pd.DataFrame(alert_rows)
@@ -1121,13 +1191,27 @@ def generate_excel_report(data: dict) -> bytes:
             # DeviceLogResponse has id, device_id, status, response_time, packet_loss, checked_at
             raw_rows = []
             for r in raw_data:
+                # Format timestamp in Jakarta timezone
+                checked_at = r.get('checked_at', '')
+                if checked_at:
+                    try:
+                        from datetime import datetime
+                        from app.utils.time_manager import TimeManager
+                        dt = datetime.fromisoformat(checked_at.replace('Z', '+00:00'))
+                        jakarta_time_str = TimeManager.format_timestamp(dt, '%Y-%m-%d %H:%M:%S')
+                        checked_at_str = jakarta_time_str
+                    except:
+                        checked_at_str = checked_at.replace('T', ' ')[:19]
+                else:
+                    checked_at_str = '-'
+
                 raw_rows.append({
                     'Log ID': r.get('id'),
                     'Device ID': r.get('device_id'),
                     'Status': r.get('status'),
                     'Response Time (ms)': r.get('response_time'),
                     'Packet Loss (%)': r.get('packet_loss'),
-                    'Timestamp': r.get('checked_at', '').replace('T', ' ')[:19]
+                    'Timestamp': checked_at_str
                 })
                 
             df_raw = pd.DataFrame(raw_rows)

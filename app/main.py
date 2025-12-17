@@ -2,11 +2,12 @@
 NetMonitor FastAPI Application
 Main entry point for the API server.
 """
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import time
+from typing import List
 
 from app.config import settings
 from app.database import engine, Base
@@ -114,6 +115,44 @@ async def api_health():
         "timestamp": time.time()
     }
 
+
+# WebSocket Connection Manager
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: dict):
+        for connection in self.active_connections:
+            try:
+                await connection.send_json(message)
+            except Exception:
+                # Remove dead connections
+                # We can't safely modify list while iterating, so handle errors gracefully
+                # proper cleanup handled on disconnect usually
+                pass
+
+manager = ConnectionManager()
+
+@app.websocket("/ws/alerts")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            # Keep alive / listen for client messages if needed
+            data = await websocket.receive_text()
+            # Echo or handle commands
+            # await websocket.send_text(f"Message text was: {data}")
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception:
+        manager.disconnect(websocket)
 
 if __name__ == "__main__":
     import uvicorn

@@ -16,27 +16,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Optional, Tuple
 
 
-# Demo user database (for testing purposes)
 # In production, users are authenticated via the backend API
-DEMO_USERS = {
-    "admin@netmonitor.local": {
-        "password_hash": None,  # Will be set on first use
-        "first_name": "Admin",
-        "last_name": "User",
-        "role": "admin",
-        "email": "admin@netmonitor.local"
-    },
-    "user@netmonitor.local": {
-        "password_hash": None,
-        "first_name": "Regular",
-        "last_name": "User",
-        "role": "user",
-        "email": "user@netmonitor.local"
-    }
-}
-
-# Default password for demo users (only used if backend API is unavailable)
-DEFAULT_DEMO_PASSWORD = "password123"
 
 
 def hash_password(password: str) -> str:
@@ -71,49 +51,6 @@ def verify_password(password: str, password_hash: str) -> bool:
         return False
 
 
-def initialize_demo_passwords():
-    """Initialize demo user passwords if not already set."""
-    for email in DEMO_USERS:
-        if DEMO_USERS[email]["password_hash"] is None:
-            DEMO_USERS[email]["password_hash"] = hash_password(DEFAULT_DEMO_PASSWORD)
-
-
-def get_demo_user(email: str) -> Optional[Dict]:
-    """
-    Get demo user by email.
-    
-    Args:
-        email: User email address
-        
-    Returns:
-        User dict if found, None otherwise
-    """
-    initialize_demo_passwords()
-    return DEMO_USERS.get(email)
-
-
-def verify_demo_credentials(email: str, password: str) -> Tuple[bool, Optional[Dict]]:
-    """
-    Verify demo user credentials.
-    
-    Args:
-        email: User email address
-        password: Plain text password
-        
-    Returns:
-        Tuple of (success: bool, user_data: Optional[Dict])
-    """
-    user = get_demo_user(email)
-    
-    if not user:
-        return False, None
-    
-    if verify_password(password, user["password_hash"]):
-        # Return user data without password hash
-        user_data = {k: v for k, v in user.items() if k != "password_hash"}
-        return True, user_data
-    
-    return False, None
 
 
 def check_login_attempts(email: str, max_attempts: int = 5, lockout_minutes: int = 15) -> Tuple[bool, Optional[str]]:

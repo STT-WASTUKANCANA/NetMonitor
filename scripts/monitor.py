@@ -441,7 +441,7 @@ class NetworkMonitor:
             "status": result.status,
             "response_time": result.response_time,
             "packet_loss": result.packet_loss,
-            "checked_at": now_jakarta().isoformat(),
+            "checked_at": now_jakarta().isoformat(),  # This will send as local Jakarta time
             # Enhanced metrics
             "response_time_min": result.response_time_min,
             "response_time_max": result.response_time_max,

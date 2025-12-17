@@ -21,10 +21,13 @@ class TimeManager:
         """Format datetime ke string"""
         if dt is None:
             return ""
-        # Ensure dt is in correct timezone if naive?
-        # Assuming dt is already aware or we want to format it as is.
-        # But dashboard used format_jakarta which converted to Jakarta.
-        # We should ensure we handle timezone conversion if needed.
+        # If the datetime is naive, we assume it's in Jakarta timezone
+        if dt.tzinfo is None:
+            jakarta_tz = pytz.timezone('Asia/Jakarta')
+            dt = jakarta_tz.localize(dt)
+        else:
+            # Convert to Jakarta timezone if it's in a different timezone
+            dt = dt.astimezone(pytz.timezone('Asia/Jakarta'))
         return dt.strftime(format)
 
     @staticmethod
@@ -59,7 +62,7 @@ class TimeManager:
     def to_utc(dt):
         """Convert to UTC Timezone"""
         if dt.tzinfo is None:
-             tz = pytz.timezone('Asia/Jakarta') # Assume Jakarta if naive? or UTC?
-             # Existing code usage implies we get Jakarta time from monitor and want to save as UTC.
+             # If naive datetime, assume it's in Jakarta timezone as the monitor sends Jakarta time
+             tz = pytz.timezone('Asia/Jakarta')
              dt = tz.localize(dt)
         return dt.astimezone(timezone.utc)

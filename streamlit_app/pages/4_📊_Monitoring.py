@@ -17,6 +17,7 @@ from streamlit_app.utils import init_session_state, is_authenticated, require_au
 from streamlit_app.utils.api_client import api_client
 from streamlit_app.components import create_uptime_gauge, create_response_time_chart
 from streamlit_app.components.monitoring import monitoring_dashboard, api_metrics_panel
+from streamlit_app.utils.autorefresh import auto_refresh
 
 
 def setup_page():
@@ -79,7 +80,14 @@ def main():
     if st.session_state.token:
         api_client.set_token(st.session_state.token)
     
-    auto_refresh, refresh_interval = render_sidebar()
+    if st.session_state.token:
+        api_client.set_token(st.session_state.token)
+    
+    is_auto_refresh, refresh_interval = render_sidebar()
+    
+    # Auto-refresh
+    if is_auto_refresh:
+        auto_refresh(interval_seconds=refresh_interval, key="monitoring_refresh")
     
     # Page title
     st.title("📈 Real-time System Monitoring")
@@ -171,12 +179,10 @@ def main():
     
     # Last updated timestamp
     st.markdown("---")
-    st.markdown(f"*Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*")
-    
-    # Auto-refresh
-    if auto_refresh:
-        time.sleep(refresh_interval)
-        st.rerun()
+    from app.utils.time_manager import TimeManager
+    jakarta_time = TimeManager.get_current_time()
+    current_time = TimeManager.format_timestamp(jakarta_time, '%Y-%m-%d %H:%M:%S WIB')
+    st.markdown(f"*Last updated: {current_time}*")
 
 
 if __name__ == "__main__":

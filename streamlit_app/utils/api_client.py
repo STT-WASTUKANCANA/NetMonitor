@@ -4,6 +4,8 @@ API Client for Streamlit to communicate with FastAPI backend.
 import requests
 from typing import Optional, Dict, Any
 from streamlit_app.config import config
+import streamlit as st
+
 
 
 class APIClient:
@@ -53,7 +55,10 @@ class APIClient:
             if response.status_code == 404:
                 return {"success": False, "message": "Not found", "status_code": 404}
             
-            return response.json()
+            if response.status_code == 404:
+                return {"success": False, "message": "Not found", "status_code": 404}
+            
+            return self._parse_response(response)
         
         except requests.exceptions.ConnectionError:
             return {"success": False, "message": "Could not connect to API server"}
@@ -61,6 +66,22 @@ class APIClient:
             return {"success": False, "message": "Request timed out"}
         except Exception as e:
             return {"success": False, "message": str(e)}
+            
+    def _parse_response(self, response) -> Dict[str, Any]:
+        """Parse response and ensure message field exists."""
+        try:
+            data = response.json()
+            if not isinstance(data, dict):
+                return {"success": response.ok, "message": str(data) if not response.ok else "Success", "data": data}
+            
+            # Ensure message exists if success is False (or even if True)
+            if "message" not in data and "detail" in data:
+                data["message"] = data["detail"]
+                
+            return data
+        except Exception:
+            return {"success": False, "message": response.text or str(response.status_code)}
+
     
     def get(self, endpoint: str, params: Optional[Dict] = None) -> Dict:
         """GET request."""

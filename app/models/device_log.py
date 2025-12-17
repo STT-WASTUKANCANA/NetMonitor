@@ -18,7 +18,7 @@ class DeviceLog(Base):
     status = Column(Enum('up', 'down', name='log_status'), nullable=False)
     response_time = Column(DECIMAL(8, 2), nullable=True, comment='Response time in milliseconds')
     packet_loss = Column(DECIMAL(5, 2), nullable=True, comment='Packet loss percentage')
-    checked_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    checked_at = Column(DateTime, nullable=False, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships

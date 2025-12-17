@@ -9,6 +9,9 @@ from sqlalchemy import func
 
 from app.database import get_db
 from app.models import Device, DeviceLog, Alert
+# Import manager from main (circular import is tricky, but main imports routers, not vice versa usually.
+# However, here manager is in main. Simple solution: put manager in separate file or import inside function)
+
 from app.models.user import User
 from app.schemas.device import (
     DeviceCreate, DeviceUpdate, DeviceResponse, DeviceStatusUpdate,
@@ -271,7 +274,6 @@ async def update_device_status(
     
     # Ensure timestamp is stored in UTC to prevent double-shifting
     # Monitor sends Jakarta time, but DB implies UTC storage for metric queries
-    # from app.utils.timezone import jakarta_to_utc # Repalced
     from app.utils.time_manager import TimeManager
     checked_at_utc = TimeManager.to_utc(status_data.checked_at)
     
@@ -287,34 +289,88 @@ async def update_device_status(
     )
     db.add(log)
     
-    # Create alert if status changed to down
+    # Create alert if status is down
+    # Logic:
+    # 1. If status CHANGED to down -> Alert
+    # 2. If status IS down (persisting) AND no active alert exists (meaning it was resolved) -> Re-Alert
+    
     alert_created = False
     alert_data = None
-    if old_status != 'down' and new_status == 'down':
-        # Determine severity based on hierarchy
-        if device.hierarchy_level == 'utama':
-            severity = 'critical'
-        elif device.hierarchy_level == 'sub':
-            severity = 'high'
-        else:
-            severity = 'medium'
+    
+    if new_status == 'down':
+        # Check for existing active/acknowledged alert
+        existing_alert = db.query(Alert).filter(
+            Alert.device_id == device.id,
+            Alert.status.in_(['active', 'acknowledged'])
+        ).first()
         
-        alert = Alert(
-            device_id=device.id,
-            message=f"{device.name} tidak merespon (down)",
-            severity=severity,
-            status='active'
-        )
-        db.add(alert)
-        alert_created = True
-        db.flush()
-        alert_data = {
-            "id": alert.id,
-            "message": alert.message,
-            "severity": alert.severity
-        }
+        should_alert = False
+        
+        if old_status != 'down':
+            # New failure
+            should_alert = True
+        elif not existing_alert:
+            # Persisting failure but no active alert (was resolved?)
+            should_alert = True
+            
+        if should_alert and not existing_alert:
+            # Determine severity based on hierarchy
+            if device.hierarchy_level == 'utama':
+                severity = 'critical'
+            elif device.hierarchy_level == 'sub':
+                severity = 'high'
+            else:
+                severity = 'medium'
+            
+            alert_msg = f"{device.name} tidak merespon (down)"
+            if old_status == 'down':
+                alert_msg += " - Issue Persisting (Re-Triggered)"
+            
+            alert = Alert(
+                device_id=device.id,
+                message=alert_msg,
+                severity=severity,
+                status='active'
+            )
+            db.add(alert)
+            alert_created = True
+            db.flush()
+            alert_data = {
+                "id": alert.id,
+                "message": alert.message,
+                "severity": alert.severity
+            }
     
     db.commit()
+
+    # Broadcast update via WebSocket
+    try:
+        from app.main import manager
+        pass # manager imported
+        
+        # Prepare broadcast message
+        import asyncio
+        from datetime import datetime
+        
+        # Need to reconstruct alert_data if not present but strictly needed? 
+        # Actually frontend handles optional alert.
+        
+        message = {
+            "type": "device_status_update",
+            "data": {
+                "device_id": device.id,
+                "device_name": device.name,
+                "status": new_status,
+                "old_status": old_status,
+                "alert": alert_data,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        }
+        
+        await manager.broadcast(message)
+        
+    except Exception as e:
+        print(f"WebSocket broadcast error: {e}")
     
     return {
         "success": True,

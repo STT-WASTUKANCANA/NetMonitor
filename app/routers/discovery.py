@@ -98,8 +98,14 @@ def run_discovery_scan(network: str = None):
         print(f"DEBUG: Exception: {e}", flush=True)
         import traceback
         traceback.print_exc()
+    except BaseException as e:
+        # Catch strict crashes like KeyboardInterrupt or SystemExit during dev, 
+        # though unsafe, it ensures flag reset
+        discovery_state["error"] = f"Critical error: {str(e)}"
+        print(f"DEBUG: Critical Exception: {e}", flush=True)
     finally:
         discovery_state["running"] = False
+        print("DEBUG: Discovery state reset to False", flush=True)
 
 
 @router.post("/discover", response_model=dict)
@@ -248,7 +254,7 @@ async def save_discovered_devices(
             errors.append(f"{device_data.get('ip_address')} (Utama): {str(e)}")
             # No need to manual rollback as begin_nested handle it or we continue
 
-    # Second pass: Save all other devices (sub and device)
+    # Second pass: Save 'sub' devices (ignore 'device' level as per requirements)
     for device_data in devices:
         try:
             hierarchy = device_data.get("hierarchy_level", "device")
@@ -256,9 +262,14 @@ async def save_discovered_devices(
             # Skip utama (already processed)
             if hierarchy == "utama":
                 continue
+
+            # Skip 'device' level (end user devices) - STRICT REQUIREMENT
+            if hierarchy == "device":
+                filtered_count += 1
+                continue
             
             # Determine parent
-            # If sub, parent is utama. If device, parent is also utama (flat hierarchy for now)
+            # If sub, parent is utama.
             parent_id = utama_device_id
             
             ip_address = device_data.get("ip_address")
@@ -315,12 +326,15 @@ async def save_discovered_devices(
 
 
 @router.post("/discover/clear", response_model=dict)
-async def clear_discovery_results(current_user: User = Depends(get_current_user)):
+async def clear_discovery_results(
+    current_user: User = Depends(get_current_user),
+    force: bool = False
+):
     """Clear discovery results."""
     global discovery_state
     
-    if discovery_state["running"]:
-        raise HTTPException(status_code=409, detail="Cannot clear while discovery is running")
+    if discovery_state["running"] and not force:
+        raise HTTPException(status_code=409, detail="Cannot clear while discovery is running. Use force=True to reset.")
     
     discovery_state["devices"] = []
     discovery_state["progress"] = 0

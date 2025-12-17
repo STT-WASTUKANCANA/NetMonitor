@@ -240,9 +240,17 @@ def alert_row(alert: Dict):
 
 def format_time_ago(dt: datetime) -> str:
     """Format datetime as relative time."""
-    now = datetime.now(dt.tzinfo) if dt.tzinfo else datetime.now()
-    diff = now - dt
-    
+    # Convert incoming datetime to Jakarta time if needed
+    if dt.tzinfo is None:
+        jakarta_tz = pytz.timezone('Asia/Jakarta')
+        dt = jakarta_tz.localize(dt)
+    else:
+        dt = dt.astimezone(pytz.timezone('Asia/Jakarta'))
+
+    # Also convert 'now' to Jakarta time
+    jakarta_now = datetime.now(pytz.timezone('Asia/Jakarta'))
+    diff = jakarta_now - dt
+
     if diff.days > 0:
         return f"{diff.days}d ago"
     elif diff.seconds >= 3600:

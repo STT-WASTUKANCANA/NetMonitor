@@ -580,11 +580,18 @@ class IPDetector:
 
     def save_results_to_db(self, devices: List[Dict]) -> bool:
         """Save discovered devices to database via API."""
-        if not devices:
-            self.log("[!] No devices to save.")
+        """Save discovered devices to database via API."""
+        # FILTER: Only save 'utama' and 'sub' devices. Ignore 'device' level (end user devices).
+        filtered_devices = [
+            d for d in devices 
+            if d.get('hierarchy_level') in ['utama', 'sub']
+        ]
+        
+        if not filtered_devices:
+            self.log(f"[!] No infrastructure devices (utama/sub) found to save. (Ignored {len(devices)} end-user devices)")
             return False
             
-        self.log(f"[+] Attempting to save {len(devices)} devices to database...")
+        self.log(f"[+] Attempting to save {len(filtered_devices)} infrastructure devices to database (filtered from {len(devices)} total)...")
         
         try:
             # 1. Login to get token
@@ -608,7 +615,7 @@ class IPDetector:
             
             save_response = requests.post(
                 f"{API_BASE_URL}/api/devices/discover/save",
-                json=devices,
+                json=filtered_devices,
                 headers=headers,
                 timeout=30
             )

@@ -204,16 +204,16 @@ def main():
     # Last updated timestamp with real-time indicator
     st.markdown("---")
     col_time1, col_time2, col_time3 = st.columns([2, 1, 1])
-    
+
     with col_time1:
         # Use standardized timezone utility
         jakarta_now = TimeManager.get_current_time()
-        current_time = TimeManager.format_timestamp(jakarta_now, '%Y-%m-%d %H:%M:%S %Z')
+        current_time = TimeManager.format_timestamp(jakarta_now, '%Y-%m-%d %H:%M:%S WIB')
         st.markdown(f"🕒 **Current Time (WIB):** {current_time}")
-    
+
     with col_time2:
         st.markdown(f"📡 **Monitoring:** <span style='color: #10B981;'>●</span> Active (30s interval)", unsafe_allow_html=True)
-    
+
     with col_time3:
         st.markdown(f"🔄 **Auto-refresh:** <span style='color: #3B82F6;'>●</span> {config.DASHBOARD_REFRESH}s", unsafe_allow_html=True)
     

@@ -15,6 +15,7 @@ from streamlit_app.utils.ui import setup_page_config
 from streamlit_app.config import config
 from streamlit_app.utils import init_session_state, is_authenticated, require_auth, get_current_user, logout
 from streamlit_app.utils.api_client import api_client
+from streamlit_app.utils.autorefresh import auto_refresh
 
 
 def setup_page():
@@ -125,6 +126,9 @@ def main():
     # Page title
     st.title("🔔 Alerts Management")
     st.markdown("View and manage network alerts")
+    
+    # Auto-refresh alerts every 10 seconds
+    auto_refresh(interval_seconds=10, key="alerts_refresh")
     
     # Check for new alerts (Toast notifications)
     check_new_alerts()

@@ -35,7 +35,7 @@ def login(email: str, password: str) -> Dict:
     Attempt to login user with brute force protection.
     Returns API response.
     """
-    from streamlit_app.auth import check_login_attempts, record_login_attempt, verify_demo_credentials
+    from streamlit_app.auth import check_login_attempts, record_login_attempt
     
     # Check if user is locked out
     allowed, message = check_login_attempts(
@@ -51,16 +51,6 @@ def login(email: str, password: str) -> Dict:
     response = api_client.login(email, password)
     
     # Fallback to demo users if API fails
-    if not response.get("success"):
-        success, user_data = verify_demo_credentials(email, password)
-        if success:
-            response = {
-                "success": True,
-                "data": {
-                    "user": user_data,
-                    "token": "demo_token_" + email  # Demo token for testing
-                }
-            }
     
     if response.get("success"):
         data = response.get("data", {})
@@ -284,7 +274,7 @@ def show_login_page():
             
             email = st.text_input(
                 "Email Address",
-                placeholder="admin@netmonitor.local",
+                placeholder="your-email@example.com",
                 help="Enter your email address"
             )
             password = st.text_input(
@@ -315,17 +305,6 @@ def show_login_page():
                             # Show remaining attempts if locked out
                             if "try again" in error_msg.lower():
                                 st.warning("⏳ Your account has been temporarily locked due to multiple failed login attempts.")
-        
-        # Demo credentials info
-        st.markdown("""
-        <div class="demo-info">
-            <strong>🧪 Demo Credentials:</strong><br>
-            <code>admin@netmonitor.local</code> / <code>password123</code><br>
-            <code>user@netmonitor.local</code> / <code>password123</code>
-            <br><br>
-            <small>⏰ Sessions auto-logout after 15 minutes of inactivity</small>
-        </div>
-        """, unsafe_allow_html=True)
         
         # Footer
         st.markdown("""

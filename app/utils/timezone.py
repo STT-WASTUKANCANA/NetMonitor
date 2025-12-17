@@ -22,7 +22,7 @@ def to_jakarta(dt: datetime) -> datetime:
     return dt.astimezone(TZ)
 
 
-def format_jakarta(dt: datetime, fmt: str = "%Y-%m-%d %H:%M:%S %Z") -> str:
+def format_jakarta(dt: datetime, fmt: str = "%Y-%m-%d %H:%M:%S WIB") -> str:
     """Format datetime in Jakarta timezone."""
     jakarta_dt = to_jakarta(dt)
     return jakarta_dt.strftime(fmt)

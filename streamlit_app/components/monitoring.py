@@ -74,9 +74,10 @@ def monitoring_dashboard(api_client):
     
     # Last updated
     from app.utils.time_manager import TimeManager
-    
-    current_time = TimeManager.format_timestamp(TimeManager.get_current_time(), '%H:%M:%S')
-    
+
+    jakarta_time = TimeManager.get_current_time()
+    current_time = TimeManager.format_timestamp(jakarta_time, '%H:%M:%S WIB')
+
     st.markdown(f"""
     <p style="text-align: right; color: #64748B; font-size: 0.75rem; margin-top: 1rem;">
         Last updated: {current_time}

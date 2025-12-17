@@ -1,0 +1,20 @@
+[Unit]
+Description=NetMonitor Persistent Monitoring Service
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/media/boba/DATA/Project/Streamlit/NetMonitor/scripts
+ExecStart=/usr/bin/python3 /media/boba/DATA/Project/Streamlit/NetMonitor/scripts/monitor.py
+Restart=always
+RestartSec=10
+Environment="PYTHONUNBUFFERED=1"
+# Environment variables can also be loaded from the .env file if needed, 
+# but the script loads them internally.
+# StandardOutput=append:/var/log/netmonitor.log
+# StandardError=append:/var/log/netmonitor.error.log
+
+[Install]
+WantedBy=multi-user.target
