@@ -4,13 +4,170 @@ Session management utilities for Streamlit.
 import streamlit as st
 from datetime import datetime, timedelta
 from typing import Optional, Dict
+import json
 
 from streamlit_app.utils.api_client import api_client
 from streamlit_app.config import config
 
 
+def _get_stored_session() -> Optional[Dict]:
+    """Get stored session data from localStorage via JavaScript with iframe return."""
+    import streamlit.components.v1 as components
+    
+    # Use a component that can return data via iframe communication
+    html = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <script>
+        window.onload = function() {
+            try {
+                const token = localStorage.getItem('netmonitor_token');
+                const user = localStorage.getItem('netmonitor_user');
+                const tokenExpiry = localStorage.getItem('netmonitor_token_expiry');
+                const lastActivity = localStorage.getItem('netmonitor_last_activity');
+                
+                if (token && user) {
+                    const data = {
+                        token: JSON.parse(token),
+                        user: JSON.parse(user),
+                        token_expiry: tokenExpiry ? JSON.parse(tokenExpiry) : null,
+                        last_activity: lastActivity ? JSON.parse(lastActivity) : null
+                    };
+                    
+                    // Store globally for debugging
+                    window.netmonitorSession = data;
+                    
+                    // Send back to Streamlit via component communication
+                    window.parent.postMessage({
+                        type: 'streamlit:setComponentValue',
+                        data: data
+                    }, '*');
+                } else {
+                    // No session found
+                    window.parent.postMessage({
+                        type: 'streamlit:setComponentValue',
+                        data: null
+                    }, '*');
+                }
+            } catch (e) {
+                console.error('Error reading session from localStorage:', e);
+                window.parent.postMessage({
+                    type: 'streamlit:setComponentValue',
+                    data: null
+                }, '*');
+            }
+        };
+        </script>
+    </head>
+    <body style="margin: 0; padding: 0; background: transparent;">
+    </body>
+    </html>
+    """
+    
+    # Try to get data from component
+    result = components.html(html, height=0)
+    
+    return result if result else None
+
+
+def _save_session_to_storage(token: str, user: Dict, token_expiry: str, last_activity: str) -> None:
+    """Save session data to localStorage via JavaScript."""
+    import streamlit.components.v1 as components
+    
+    # Prepare data
+    token_json = json.dumps(token)
+    user_json = json.dumps(user)
+    token_expiry_json = json.dumps(token_expiry)
+    last_activity_json = json.dumps(last_activity)
+    
+    # Inject JavaScript to save to localStorage
+    html = f"""
+    <script>
+    (function() {{
+        try {{
+            localStorage.setItem('netmonitor_token', {token_json});
+            localStorage.setItem('netmonitor_user', {user_json});
+            localStorage.setItem('netmonitor_token_expiry', {token_expiry_json});
+            localStorage.setItem('netmonitor_last_activity', {last_activity_json});
+        }} catch (e) {{
+            console.error('Error saving session to localStorage:', e);
+        }}
+    }})();
+    </script>
+    """
+    
+    components.html(html, height=0)
+
+
+def _clear_storage() -> None:
+    """Clear session data from localStorage via JavaScript."""
+    import streamlit.components.v1 as components
+    
+    html = """
+    <script>
+    (function() {
+        try {
+            localStorage.removeItem('netmonitor_token');
+            localStorage.removeItem('netmonitor_user');
+            localStorage.removeItem('netmonitor_token_expiry');
+            localStorage.removeItem('netmonitor_last_activity');
+        } catch (e) {
+            console.error('Error clearing localStorage:', e);
+        }
+    })();
+    </script>
+    """
+    
+    components.html(html, height=0)
+
+
+def _restore_session_from_storage() -> None:
+    """Attempt to restore session from localStorage."""
+    stored_data = _get_stored_session()
+    
+    # Check if stored_data is a dictionary and has token
+    if stored_data and isinstance(stored_data, dict) and stored_data.get("token"):
+        try:
+            # Parse timestamps
+            token_expiry_str = stored_data.get("token_expiry")
+            last_activity_str = stored_data.get("last_activity")
+            
+            token_expiry = datetime.fromisoformat(token_expiry_str) if token_expiry_str else None
+            last_activity = datetime.fromisoformat(last_activity_str) if last_activity_str else None
+            
+            # Check if token is still valid
+            if token_expiry and datetime.now() < token_expiry:
+                # Check if session hasn't timed out
+                if last_activity:
+                    time_since_activity = datetime.now() - last_activity
+                    timeout_delta = timedelta(minutes=config.SESSION_TIMEOUT_MINUTES)
+                    
+                    if time_since_activity <= timeout_delta:
+                        # Restore session
+                        st.session_state.authenticated = True
+                        st.session_state.token = stored_data.get("token")
+                        st.session_state.user = stored_data.get("user")
+                        st.session_state.token_expiry = token_expiry
+                        st.session_state.last_activity = datetime.now()  # Update to now
+                        st.session_state.session_created_at = last_activity
+                        
+                        # Set token in API client
+                        api_client.set_token(st.session_state.token)
+                        
+                        return
+            
+            # If we reach here, session is expired - clear storage
+            _clear_storage()
+            
+        except Exception as e:
+            # If there's any error parsing, just clear the storage
+            _clear_storage()
+
+
 def init_session_state():
-    """Initialize session state variables."""
+    """Initialize session state variables and restore from localStorage if available."""
+    # Initialize default session state
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
     if "user" not in st.session_state:
@@ -27,6 +184,11 @@ def init_session_state():
         st.session_state.session_timeout_warning_shown = False
     if "session_created_at" not in st.session_state:
         st.session_state.session_created_at = None
+    
+    # Try to restore session from localStorage (only once per session)
+    if "_session_restored" not in st.session_state:
+        st.session_state._session_restored = True
+        _restore_session_from_storage()
 
 
 
@@ -67,6 +229,17 @@ def login(email: str, password: str) -> Dict:
         
         # Set token in API client
         api_client.set_token(st.session_state.token)
+        
+        # Save session to browser localStorage for persistence across refreshes
+        _save_session_to_storage(
+            token=st.session_state.token,
+            user=st.session_state.user,
+            token_expiry=st.session_state.token_expiry.isoformat(),
+            last_activity=st.session_state.last_activity.isoformat()
+        )
+        
+        # Add persistent session indicator
+        st.session_state._session_persistent = True
     else:
         # Record failed login
         record_login_attempt(email, success=False)
@@ -86,22 +259,25 @@ def logout():
     st.session_state.session_created_at = None
     st.session_state.session_timeout_warning_shown = False
     api_client.set_token(None)
+    
+    # Clear session from browser localStorage
+    _clear_storage()
 
 
 def is_authenticated() -> bool:
     """
-    Check if user is authenticated with strict timeout enforcement.
-    Implements 15-minute idle timeout with warnings.
+    Check if user is authenticated with optional timeout enforcement.
+    Session timeout can be disabled via config.ENABLE_SESSION_TIMEOUT.
     """
     if not st.session_state.authenticated:
         return False
     
-    # Check session inactivity (strict 15-minute timeout)
-    if st.session_state.last_activity:
+    # Check session inactivity timeout (optional)
+    if config.ENABLE_SESSION_TIMEOUT and st.session_state.last_activity:
         time_since_activity = datetime.now() - st.session_state.last_activity
         timeout_delta = timedelta(minutes=config.SESSION_TIMEOUT_MINUTES)
         
-        # Session expired
+        # Session expired due to inactivity
         if time_since_activity > timeout_delta:
             st.toast("⏰ Session expired due to inactivity", icon="⚠️")
             st.warning("Your session has expired. Please login again.")
@@ -123,13 +299,24 @@ def is_authenticated() -> bool:
         else:
             # Reset warning flag if user becomes active again
             st.session_state.session_timeout_warning_shown = False
-        
-        # Update activity timestamp (user is active by being on the page)
+    
+    # Always update activity timestamp (user is active by being on the page)
+    if st.session_state.last_activity:
         st.session_state.last_activity = datetime.now()
+        
+        # Periodically sync activity to localStorage for cross-tab/refresh persistence
+        if st.session_state.token and st.session_state.user and st.session_state.token_expiry:
+            _save_session_to_storage(
+                token=st.session_state.token,
+                user=st.session_state.user,
+                token_expiry=st.session_state.token_expiry.isoformat(),
+                last_activity=st.session_state.last_activity.isoformat()
+            )
 
-    # Check token expiry (failsafe for backend token)
+    # Check token expiry (failsafe for backend JWT token)
     if st.session_state.token_expiry:
         if datetime.now() > st.session_state.token_expiry:
+            st.warning("Your login session has expired. Please login again.")
             logout()
             return False
     

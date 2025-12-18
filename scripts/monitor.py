@@ -40,6 +40,9 @@ except ImportError:
 env_path = os.path.join(script_dir, '.env')
 load_dotenv(env_path)
 
+# Cached devices path for offline start
+DEVICES_CACHE_PATH = os.path.join(script_dir, 'devices_cache.json')
+
 # Configuration - API Settings
 API_BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:8001')
 API_EMAIL = os.getenv('API_EMAIL', 'admin@wastukancana.ac.id')
@@ -143,6 +146,7 @@ class NetworkMonitor:
         
         # Load buffered data from disk if exists
         self._load_queues()
+        self._load_cached_devices()
     
     def _load_queues(self):
         """Load buffered alerts and status updates from disk."""
@@ -166,6 +170,18 @@ class NetworkMonitor:
                 logger.info(f"📥 Loaded state for {len(self.device_states)} devices")
         except Exception as e:
             logger.warning(f"Could not load queues: {e}")
+
+    def _load_cached_devices(self) -> bool:
+        """Load cached devices for offline start."""
+        try:
+            if os.path.exists(DEVICES_CACHE_PATH):
+                with open(DEVICES_CACHE_PATH, 'r') as f:
+                    self.devices = json.load(f)
+                logger.info(f"📥 Loaded {len(self.devices)} cached devices")
+                return True
+        except Exception as e:
+            logger.warning(f"Could not load cached devices: {e}")
+        return False
     
     def _save_queues(self):
         """Save buffered data to disk for persistence."""
@@ -181,6 +197,14 @@ class NetworkMonitor:
                 json.dump(self.device_states, f)
         except Exception as e:
             logger.warning(f"Could not save queues: {e}")
+
+    def _save_cached_devices(self):
+        """Persist last fetched devices for offline mode."""
+        try:
+            with open(DEVICES_CACHE_PATH, 'w') as f:
+                json.dump(self.devices, f)
+        except Exception as e:
+            logger.warning(f"Could not cache devices: {e}")
     
     def _check_api_health(self) -> bool:
         """Check if API is reachable."""
@@ -245,13 +269,24 @@ class NetworkMonitor:
     
     def fetch_devices(self) -> bool:
         """Fetch all devices from API. Continue with cached devices if offline."""
-        # Try to flush buffered updates first
-        self._flush_status_queue()
+        # Try to flush buffered updates first if we have auth
+        if self.token:
+            self._flush_status_queue()
         
         if not self.ensure_authenticated():
+            # Try to use existing devices in memory
             if self.devices:
-                logger.warning("⚠️ Using cached device list (offline mode)")
+                logger.warning("⚠️ Using cached device list (authentication unavailable)")
+                self.offline_mode = True
                 return True
+            # Try to load from disk cache
+            if self._load_cached_devices():
+                logger.warning("⚠️ Using cached device list from disk (authentication unavailable)")
+                self.offline_mode = True
+                return True
+            # No devices available - cannot monitor yet
+            logger.warning("⚠️ No cached devices available - will retry on next cycle")
+            self.offline_mode = True
             return False
         
         try:
@@ -267,6 +302,7 @@ class NetworkMonitor:
                 if data.get("success"):
                     self.devices = data["data"]["data"]
                     logger.info(f"📡 Fetched {len(self.devices)} devices")
+                    self._save_cached_devices()
                     
                     # Mark API as available
                     if self.offline_mode:
@@ -399,15 +435,17 @@ class NetworkMonitor:
         if not self.status_queue:
             return
         
+        # Only try to flush if we have authentication
+        if not self.token:
+            logger.debug(f"📦 {len(self.status_queue)} updates buffered (no auth token)")
+            return
+        
         logger.info(f"🔄 Attempting to flush {len(self.status_queue)} buffered status updates...")
         
         failed_updates = []
         for payload in self.status_queue:
             try:
-                if not self.ensure_authenticated():
-                    failed_updates.append(payload)
-                    continue
-                
+                # Use existing token, don't retry auth here
                 response = requests.post(
                     f"{self.api_base_url}/api/devices/status",
                     headers=self._headers(),
@@ -740,29 +778,7 @@ class NetworkMonitor:
         # Update API with current status
         self.update_device_status(device_id, result, reliability_score)
     
-    def run_check_cycle(self) -> None:
-        """Run a single monitoring cycle for all devices."""
-        logger.info("=" * 50)
-        logger.info(f"🔄 Starting monitoring cycle at {datetime.now()}")
-        logger.info("=" * 50)
-        
-        # Refresh device list
-        if not self.fetch_devices():
-            logger.error("Failed to fetch devices, skipping cycle")
-            return
-        
-        # Sort devices by hierarchy (utama first, then sub, then device)
-        hierarchy_order = {"utama": 0, "sub": 1, "device": 2}
-        sorted_devices = sorted(
-            self.devices,
-            key=lambda d: hierarchy_order.get(d.get("hierarchy_level", "device"), 2)
-        )
-        
-        # Check each device
-        for device in sorted_devices:
-            self.check_device(device)
-        
-        logger.info(f"✅ Monitoring cycle completed - checked {len(self.devices)} devices")
+
     
 def main():
     """Main monitoring loop - Real-time (30 seconds interval)."""
@@ -773,10 +789,10 @@ def main():
     
     monitor = NetworkMonitor()
     
-    # Initial login
+    # Initial login attempt (don't exit if fails)
     if not monitor.login():
-        logger.error("Unable to login. Exiting...")
-        sys.exit(1)
+        logger.warning("⚠️ Initial login failed - will continue in offline mode")
+        logger.info("🔄 Script will attempt to reconnect and fetch devices on each cycle")
     
     try:
         while True:
@@ -785,14 +801,17 @@ def main():
             logger.info(f"🔄 Starting monitoring cycle at {jakarta_time}")
             logger.info("=" * 50)
             
-            # Fetch devices
-            if not monitor.fetch_devices():
-                logger.error("Failed to fetch devices, skipping cycle")
-                logger.info(f"💤 Sleeping for {MONITOR_INTERVAL} seconds...")
+            # Attempt to fetch devices (will retry auth if needed)
+            devices_available = monitor.fetch_devices()
+            
+            if not devices_available:
+                logger.warning("⚠️ No devices available to monitor - waiting for API/cache")
+                logger.info(f"💤 Retrying in {MONITOR_INTERVAL} seconds...")
                 time.sleep(MONITOR_INTERVAL)
                 continue
             
             # Check each device
+            logger.info(f"📊 Monitoring {len(monitor.devices)} devices...")
             checked_count = 0
             for device in monitor.devices:
                 monitor.check_device(device)
@@ -806,8 +825,11 @@ def main():
         logger.info("👋 Received interrupt signal. Shutting down...")
         sys.exit(0)
     except Exception as e:
-        logger.error(f"Fatal error: {e}", exc_info=True)
-        sys.exit(1)
+        logger.error(f"💥 Fatal error: {e}", exc_info=True)
+        logger.info(f"🔄 Attempting to restart in {MONITOR_INTERVAL} seconds...")
+        time.sleep(MONITOR_INTERVAL)
+        # Recursive restart (could also be a while loop)
+        main()
 
 
 if __name__ == "__main__":

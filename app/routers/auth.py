@@ -4,6 +4,7 @@ Authentication router.
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import OperationalError
 
 from app.database import get_db
 from app.models.user import User
@@ -20,38 +21,55 @@ async def login(user_data: UserLogin, db: Session = Depends(get_db)):
     """
     Authenticate user and return JWT token.
     """
-    # Find user by email
-    user = db.query(User).filter(User.email == user_data.email).first()
-    
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
+    try:
+        # Find user by email
+        user = db.query(User).filter(User.email == user_data.email).first()
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials"
+            )
+        
+        # Verify password
+        if not user.verify_password(user_data.password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials"
+            )
+        
+        # Create access token
+        access_token_expires = timedelta(minutes=settings.jwt_access_token_expire_minutes)
+        access_token = create_access_token(
+            data={"sub": str(user.id), "email": user.email},
+            expires_delta=access_token_expires
         )
-    
-    # Verify password
-    if not user.verify_password(user_data.password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
-        )
-    
-    # Create access token
-    access_token_expires = timedelta(minutes=settings.jwt_access_token_expire_minutes)
-    access_token = create_access_token(
-        data={"sub": str(user.id), "email": user.email},
-        expires_delta=access_token_expires
-    )
-    
-    return {
-        "success": True,
-        "message": "Login successful",
-        "data": {
-            "token": access_token,
-            "token_type": "Bearer",
-            "user": user.to_dict()
+        
+        return {
+            "success": True,
+            "message": "Login successful",
+            "data": {
+                "token": access_token,
+                "token_type": "Bearer",
+                "user": user.to_dict()
+            }
         }
-    }
+    
+    except OperationalError as e:
+        # Database connection error - return graceful error
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database service is currently unavailable. Please try again later."
+        )
+    except HTTPException:
+        # Re-raise HTTP exceptions (auth errors)
+        raise
+    except Exception as e:
+        # Catch any other unexpected errors
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred during authentication"
+        )
 
 
 @router.post("/logout", response_model=dict)

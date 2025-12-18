@@ -77,11 +77,8 @@ def test_timezone_conversions():
     print(f"Converted back to Jakarta: {jakarta_time}")
     
     # In Jakarta, time should be 7 hours ahead of UTC
-    time_diff = jakarta_time.hour - naive_dt.hour
-    # Check if time difference is 7 hours (Jakarta is UTC+7)
-    if time_diff < 0:
-        time_diff += 24  # Handle day wrap
-    assert time_diff == 7, f"Jakarta time should be 7 hours ahead, actual diff: {time_diff}"
+    offset_hours = int(jakarta_time.utcoffset().total_seconds() // 3600)
+    assert offset_hours == 7, f"Jakarta time should be 7 hours ahead, actual offset: {offset_hours}"
     
     print("✅ Timezone conversion tests passed!\n")
 

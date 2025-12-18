@@ -15,8 +15,9 @@ class StreamlitConfig:
     
     # Session Configuration
     SESSION_EXPIRY_HOURS = 24
-    SESSION_TIMEOUT_MINUTES = 15  # Auto-logout after 15 minutes of inactivity
-    SESSION_WARNING_MINUTES = 5   # Show warning when this much time remains
+    SESSION_TIMEOUT_MINUTES = 120  # Auto-logout after 2 hours of inactivity (was 15 minutes)
+    SESSION_WARNING_MINUTES = 10   # Show warning when this much time remains
+    ENABLE_SESSION_TIMEOUT = False  # Set to False to disable inactivity timeout
     
     # Authentication Configuration
     MAX_LOGIN_ATTEMPTS = 5        # Maximum failed login attempts before lockout

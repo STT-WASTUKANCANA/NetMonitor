@@ -88,6 +88,12 @@ def main():
     user = get_current_user()
     st.markdown(f"### Hello, {user.get('first_name', 'User')}! 👋")
     
+    # Show session status info
+    if st.session_state.get('_session_persistent'):
+        st.info("🔐 Your session is active and will remain logged in even after refresh. Session expires in 24 hours or when you click Logout.")
+        # Only show once per session
+        del st.session_state._session_persistent
+    
     st.markdown("""
     **NetMonitor** is your network monitoring solution. Use the sidebar to navigate to:
     
