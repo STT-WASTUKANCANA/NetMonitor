@@ -28,12 +28,18 @@ sys.path.append(script_dir)  # Scripts directory
 from app.utils.time_manager import TimeManager
 from utils.statistics import NetworkStatistics
 
-# Try to import ping3, fallback to subprocess ping
+# Try to import ping3, but only use it if running as root (it needs raw socket)
+import subprocess
 try:
     from ping3 import ping
-    USE_PING3 = True
+    # ping3 requires root for raw ICMP sockets
+    if os.geteuid() == 0:
+        USE_PING3 = True
+        logging.getLogger(__name__).info("🏓 Using ping3 (running as root)")
+    else:
+        USE_PING3 = False
+        logging.getLogger(__name__).info("🏓 Using subprocess ping (non-root mode)")
 except ImportError:
-    import subprocess
     USE_PING3 = False
 
 # Load environment variables from .env file in scripts directory
@@ -346,22 +352,26 @@ class NetworkMonitor:
         successful_pings = 0
         total_pings = PING_VERIFICATION_COUNT
         
+        logger.debug(f"🏓 Starting ping to {ip_address} (USE_PING3={USE_PING3}, count={total_pings})")
+        
         # Use ping3 if available
         if USE_PING3:
-            for _ in range(total_pings):
+            for i in range(total_pings):
                 try:
                     rtt = ping(ip_address, timeout=PING_TIMEOUT)
                     if rtt is not None:
                         successful_pings += 1
                         response_times.append(rtt * 1000)  # Convert to ms
-                except Exception:
-                    pass
+                        logger.debug(f"  Ping {i+1}: {rtt*1000:.2f}ms")
+                    else:
+                        logger.debug(f"  Ping {i+1}: No response (rtt=None)")
+                except Exception as e:
+                    logger.debug(f"  Ping {i+1}: Exception - {e}")
                 time.sleep(0.1)  # Brief pause between pings
         else:
             # Fallback to subprocess
             # We run ping command multiple times manually to get individual RTTs
-            # instead of relying on ping command summary which varies by OS
-            for _ in range(total_pings):
+            for i in range(total_pings):
                 try:
                     cmd = ["ping", "-c", "1", "-W", str(PING_TIMEOUT), ip_address]
                     result = subprocess.run(cmd, capture_output=True, text=True, timeout=PING_TIMEOUT + 1)
@@ -374,12 +384,22 @@ class NetworkMonitor:
                             if len(parts) > 1:
                                 ms_part = parts[1].split(" ")[0].replace("ms", "")
                                 try:
-                                    response_times.append(float(ms_part))
+                                    rt = float(ms_part)
+                                    response_times.append(rt)
                                     successful_pings += 1
-                                except ValueError:
-                                    pass
-                except Exception:
-                    pass
+                                    logger.debug(f"  Ping {i+1}: {rt:.2f}ms")
+                                except ValueError as e:
+                                    logger.debug(f"  Ping {i+1}: Parse error - {e}")
+                            else:
+                                logger.debug(f"  Ping {i+1}: No time= in output")
+                        else:
+                            logger.debug(f"  Ping {i+1}: No time pattern found in: {output[:50]}...")
+                    else:
+                        logger.debug(f"  Ping {i+1}: returncode={result.returncode}, stderr={result.stderr[:50] if result.stderr else 'none'}")
+                except subprocess.TimeoutExpired:
+                    logger.debug(f"  Ping {i+1}: Timeout expired")
+                except Exception as e:
+                    logger.debug(f"  Ping {i+1}: Exception - {type(e).__name__}: {e}")
                 time.sleep(0.1)
         
         # Calculate statistics
@@ -387,8 +407,9 @@ class NetworkMonitor:
         status = "up" if successful_pings > 0 else "down"
         
         # Determine strict status based on packet loss
-        # If packet loss > 50%, consider it unreliable/down
-        if packet_loss > 50:
+        # If packet loss is 100%, then it is definitely down
+        # If packet loss is > 50% but < 100%, it's unstable but technically UP
+        if packet_loss == 100:
             status = "down"
         
         # Calculate metrics
@@ -794,42 +815,39 @@ def main():
         logger.warning("⚠️ Initial login failed - will continue in offline mode")
         logger.info("🔄 Script will attempt to reconnect and fetch devices on each cycle")
     
-    try:
-        while True:
+    while True:
+        try:
             logger.info("=" * 50)
             jakarta_time = TimeManager.format_timestamp(TimeManager.get_current_time(), '%Y-%m-%d %H:%M:%S %Z')
-            logger.info(f"🔄 Starting monitoring cycle at {jakarta_time}")
-            logger.info("=" * 50)
+            logger.info(f"⏰ Cycle Start: {jakarta_time}")
             
-            # Attempt to fetch devices (will retry auth if needed)
-            devices_available = monitor.fetch_devices()
+            # 1. Fetch/Refresh Devices
+            monitor.fetch_devices()
             
-            if not devices_available:
-                logger.warning("⚠️ No devices available to monitor - waiting for API/cache")
-                logger.info(f"💤 Retrying in {MONITOR_INTERVAL} seconds...")
-                time.sleep(MONITOR_INTERVAL)
-                continue
-            
-            # Check each device
-            logger.info(f"📊 Monitoring {len(monitor.devices)} devices...")
-            checked_count = 0
-            for device in monitor.devices:
-                monitor.check_device(device)
-                checked_count += 1
-            
-            logger.info(f"✅ Monitoring cycle completed - checked {checked_count} devices")
-            logger.info(f"💤 Next check in {MONITOR_INTERVAL} seconds...")
+            # 2. Check each device
+            if monitor.devices:
+                # Use ThreadPoolExecutor for concurrent pings if many devices
+                # For now, sequential is safer for reliability logic
+                for device in monitor.devices:
+                    try:
+                        monitor.check_device(device)
+                    except Exception as e:
+                        logger.error(f"❌ Error checking device {device.get('name', 'Unknown')}: {e}")
+                        continue
+            else:
+                logger.warning("⚠️ No devices to monitor")
+                
+            # 3. Wait for next cycle
             time.sleep(MONITOR_INTERVAL)
             
-    except KeyboardInterrupt:
-        logger.info("👋 Received interrupt signal. Shutting down...")
-        sys.exit(0)
-    except Exception as e:
-        logger.error(f"💥 Fatal error: {e}", exc_info=True)
-        logger.info(f"🔄 Attempting to restart in {MONITOR_INTERVAL} seconds...")
-        time.sleep(MONITOR_INTERVAL)
-        # Recursive restart (could also be a while loop)
-        main()
+        except KeyboardInterrupt:
+            logger.info("👋 Stopping NetMonitor...")
+            break
+        except Exception as e:
+            logger.critical(f"🔥 CRITICAL MONITOR LOOP ERROR: {e}", exc_info=True)
+            logger.info("🔄 Restarting loop in 10 seconds...")
+            time.sleep(10)
+
 
 
 if __name__ == "__main__":

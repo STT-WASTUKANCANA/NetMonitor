@@ -5,9 +5,9 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=root
+User=boba
 WorkingDirectory=/media/boba/DATA/Project/Streamlit/NetMonitor/scripts
-ExecStart=/usr/bin/python3 /media/boba/DATA/Project/Streamlit/NetMonitor/scripts/monitor.py
+ExecStart=/media/boba/DATA/Project/Streamlit/NetMonitor/venv/bin/python3 /media/boba/DATA/Project/Streamlit/NetMonitor/scripts/monitor.py
 Restart=always
 RestartSec=10
 Environment="PYTHONUNBUFFERED=1"

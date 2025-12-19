@@ -28,8 +28,9 @@ class AlertBase(BaseModel):
 
 
 class AlertCreate(AlertBase):
-    """Schema for creating an alert."""
-    pass
+    """Schema for creating an alert via API."""
+    status: Optional[AlertStatus] = AlertStatus.active
+    metadata: Optional[str] = None
 
 
 class AlertUpdate(BaseModel):

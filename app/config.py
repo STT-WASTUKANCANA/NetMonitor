@@ -58,9 +58,8 @@ class Settings(BaseSettings):
     )
 
 
-@lru_cache()
 def get_settings() -> Settings:
-    """Get cached settings instance."""
+    """Get settings instance (no caching for fresh .env reload)."""
     return Settings()
 
 

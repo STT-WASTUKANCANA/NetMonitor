@@ -6,6 +6,11 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
 
+# Force reload environment to get latest .env values
+import os
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
 from app.config import settings
 
 
@@ -58,8 +63,10 @@ def get_db_context():
 def check_database_connection() -> bool:
     """Check if database connection is working."""
     try:
+        from sqlalchemy import text
         with engine.connect() as conn:
-            conn.execute("SELECT 1")
+            conn.execute(text("SELECT 1"))
         return True
-    except Exception:
+    except Exception as e:
+        print(f"Database connection error: {e}")
         return False

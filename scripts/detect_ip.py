@@ -23,6 +23,7 @@ sys.path.append(script_dir)  # Scripts directory
 
 from utils.mac_vendor import MACVendorLookup
 from utils.device_classifier import DeviceClassifier
+from app.utils.time_manager import TimeManager  # Use unified TimeManager
 from dotenv import load_dotenv
 import requests
 
@@ -450,7 +451,7 @@ class IPDetector:
 
     def generate_description(self, device: Dict, response_time: Optional[float]) -> str:
         """Generate detailed description for the device."""
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M')
+        timestamp = TimeManager.format_timestamp(TimeManager.get_current_time(), '%Y-%m-%d %H:%M')
         parts = [f"Auto-detected on {timestamp}"]
         
         if device.get('vendor'):
@@ -490,8 +491,9 @@ class IPDetector:
                 'mac_address': info.get('mac_address'),
                 'vendor': info.get('vendor'),
                 'open_ports': info['ports'],
+                'open_ports': info['ports'],
                 'description': self.generate_description(info, status['response_time']),
-                'detected_at': datetime.now().isoformat()
+                'detected_at': TimeManager.get_current_time().isoformat()
             }
             return device
         return None
@@ -527,7 +529,7 @@ class IPDetector:
                 "network_range": self.network_range,
                 "total_hosts": self.total_hosts,
                 "gateway": self.gateway_ip,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": TimeManager.get_current_time().isoformat()
             }), flush=True)
 
         active_devices = []
@@ -557,7 +559,7 @@ class IPDetector:
         """Output final results as JSON."""
         output = {
             "success": True,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": TimeManager.get_current_time().isoformat(),
             "network_range": self.network_range,
             "gateway": self.gateway_ip,
             "total_scanned": self.total_hosts,
@@ -571,7 +573,7 @@ class IPDetector:
                 "type": "complete",
                 "total_scanned": self.total_hosts,
                 "devices_found": len(devices),
-                "timestamp": datetime.now().isoformat()
+                "timestamp": TimeManager.get_current_time().isoformat()
             }
             print(json.dumps(completion), flush=True)
         else:
@@ -581,17 +583,23 @@ class IPDetector:
     def save_results_to_db(self, devices: List[Dict]) -> bool:
         """Save discovered devices to database via API."""
         """Save discovered devices to database via API."""
+        # FILTER: Removed filter to save ALL devices
         # FILTER: Only save 'utama' and 'sub' devices. Ignore 'device' level (end user devices).
-        filtered_devices = [
-            d for d in devices 
-            if d.get('hierarchy_level') in ['utama', 'sub']
-        ]
+        # filtered_devices = [
+        #     d for d in devices 
+        #     if d.get('hierarchy_level') in ['utama', 'sub']
+        # ]
         
+        # if not filtered_devices:
+        
+        # Save ALL devices
+        filtered_devices = devices
+
         if not filtered_devices:
-            self.log(f"[!] No infrastructure devices (utama/sub) found to save. (Ignored {len(devices)} end-user devices)")
+            self.log(f"[!] No devices found to save.")
             return False
             
-        self.log(f"[+] Attempting to save {len(filtered_devices)} infrastructure devices to database (filtered from {len(devices)} total)...")
+        self.log(f"[+] Attempting to save {len(filtered_devices)} devices to database...")
         
         try:
             # 1. Login to get token

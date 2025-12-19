@@ -9,11 +9,78 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Alert, Device
 from app.models.user import User
-from app.schemas.alert import AlertUpdate, AlertBulkUpdate, AlertResponse
+
+from app.schemas.alert import AlertUpdate, AlertBulkUpdate, AlertResponse, AlertCreate
 from app.middleware.auth import get_current_user
 
 
 router = APIRouter(prefix="/api/alerts", tags=["Alerts"])
+
+
+@router.post("", response_model=dict, status_code=status.HTTP_201_CREATED)
+async def create_alert(
+    alert_data: AlertCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Create a new alert manually (e.g. from monitor script).
+    Prevents duplicates if an active alert already exists for the device.
+    """
+    # Check if active alert exists
+    existing_alert = db.query(Alert).filter(
+        Alert.device_id == alert_data.device_id,
+        Alert.status == 'active'
+    ).first()
+    
+    if existing_alert:
+        # Update existing alert message/timestamp instead of creating new one
+        existing_alert.message = alert_data.message
+        existing_alert.updated_at = datetime.utcnow()
+        # Does not broadcast to avoid noise, or maybe just log
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": "Alert updated (existing active alert found)",
+            "data": existing_alert.to_dict()
+        }
+        
+    # Create new alert
+    new_alert = Alert(
+        device_id=alert_data.device_id,
+        message=alert_data.message,
+        severity=alert_data.severity.value, # Enum to str
+        status='active'
+    )
+    
+    db.add(new_alert)
+    db.commit()
+    db.refresh(new_alert)
+    
+    # Broadcast via WebSocket
+    try:
+        from app.main import manager
+        
+        message = {
+            "type": "new_alert",
+            "data": {
+                "alert": new_alert.to_dict(include_device=True)
+            }
+        }
+        
+        # We need to run async broadcast from sync context? No, this is async def
+        await manager.broadcast(message)
+        
+    except Exception as e:
+        print(f"WebSocket broadcast error: {e}")
+    
+    return {
+        "success": True,
+        "message": "Alert created successfully",
+        "data": new_alert.to_dict()
+    }
+
 
 
 @router.get("", response_model=dict)

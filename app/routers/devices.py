@@ -24,6 +24,159 @@ from app.middleware.auth import get_current_user, get_current_admin_user
 router = APIRouter(prefix="/api/devices", tags=["Devices"])
 
 
+# NOTE: The /status endpoint MUST be defined before /{device_id} routes
+# because FastAPI matches routes in order, and "status" would match as a device_id otherwise
+@router.post("/status", response_model=dict)
+async def update_device_status(
+    status_data: DeviceStatusUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update device status from monitoring script.
+    Creates a log entry and alert if status changes.
+    """
+    try:
+        device = db.query(Device).filter(Device.id == status_data.device_id).first()
+        
+        if not device:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Device not found"
+            )
+        
+        old_status = device.status
+        new_status = status_data.status.value
+    
+        # Update device status
+        device.status = new_status
+        
+        # Ensure timestamp is stored in UTC to prevent double-shifting
+        # Monitor sends Jakarta time, but DB implies UTC storage for metric queries
+        from app.utils.time_manager import TimeManager
+        checked_at_utc = TimeManager.to_utc(status_data.checked_at)
+        
+        device.last_checked_at = checked_at_utc
+        
+        # Create log entry
+        log = DeviceLog(
+            device_id=device.id,
+            status=new_status,
+            response_time=status_data.response_time,
+            packet_loss=status_data.packet_loss,
+            checked_at=checked_at_utc
+        )
+        db.add(log)
+        
+        # Create alert if status is down
+        # Logic:
+        # 1. If status CHANGED to down -> Alert
+        # 2. If status IS down (persisting) AND no active alert exists (meaning it was resolved) -> Re-Alert
+        
+        alert_created = False
+        alert_data = None
+        
+        if new_status == 'down':
+            # Check for existing active/acknowledged alert
+            existing_alert = db.query(Alert).filter(
+                Alert.device_id == device.id,
+                Alert.status.in_(['active', 'acknowledged'])
+            ).first()
+            
+            should_alert = False
+            
+            if old_status != 'down':
+                # New failure
+                should_alert = True
+            elif not existing_alert:
+                # Persisting failure but no active alert (was resolved?)
+                should_alert = True
+                
+            if should_alert and not existing_alert:
+                # Determine severity based on hierarchy
+                if device.hierarchy_level == 'utama':
+                    severity = 'critical'
+                elif device.hierarchy_level == 'sub':
+                    severity = 'high'
+                else:
+                    severity = 'medium'
+                
+                alert_msg = f"{device.name} tidak merespon (down)"
+                if old_status == 'down':
+                    alert_msg += " - Issue Persisting (Re-Triggered)"
+                
+                alert = Alert(
+                    device_id=device.id,
+                    message=alert_msg,
+                    severity=severity,
+                    status='active'
+                )
+                db.add(alert)
+                alert_created = True
+                db.flush()
+                alert_data = {
+                    "id": alert.id,
+                    "message": alert.message,
+                    "severity": alert.severity
+                }
+        
+        db.commit()
+
+        # Broadcast update via WebSocket
+        try:
+            from app.main import manager
+            pass # manager imported
+            
+            # Prepare broadcast message
+            import asyncio
+            from datetime import datetime
+            
+            # Need to reconstruct alert_data if not present but strictly needed? 
+            # Actually frontend handles optional alert.
+            
+            message = {
+                "type": "device_status_update",
+                "data": {
+                    "device_id": device.id,
+                    "device_name": device.name,
+                    "status": new_status,
+                    "old_status": old_status,
+                    "alert": alert_data,
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+            }
+            
+            await manager.broadcast(message)
+            
+        except Exception as e:
+            print(f"WebSocket broadcast error: {e}")
+        
+        return {
+            "success": True,
+            "message": "Device status updated successfully",
+            "data": {
+                "device_id": device.id,
+                "old_status": old_status,
+                "new_status": new_status,
+                "alert_created": alert_created,
+                "alert": alert_data
+            }
+        }
+    
+    except OperationalError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database service is currently unavailable"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred"
+        )
+
+
 @router.get("", response_model=dict)
 async def list_devices(
     status: Optional[str] = Query(None, description="Filter by status (up, down, unknown)"),
@@ -260,156 +413,6 @@ async def delete_device(
         "message": "Device deleted successfully"
     }
 
-
-@router.post("/status", response_model=dict)
-async def update_device_status(
-    status_data: DeviceStatusUpdate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Update device status from monitoring script.
-    Creates a log entry and alert if status changes.
-    """
-    try:
-        device = db.query(Device).filter(Device.id == status_data.device_id).first()
-        
-        if not device:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Device not found"
-            )
-        
-        old_status = device.status
-        new_status = status_data.status.value
-    
-        # Update device status
-        device.status = new_status
-        
-        # Ensure timestamp is stored in UTC to prevent double-shifting
-        # Monitor sends Jakarta time, but DB implies UTC storage for metric queries
-        from app.utils.time_manager import TimeManager
-        checked_at_utc = TimeManager.to_utc(status_data.checked_at)
-        
-        device.last_checked_at = checked_at_utc
-        
-        # Create log entry
-        log = DeviceLog(
-            device_id=device.id,
-            status=new_status,
-            response_time=status_data.response_time,
-            packet_loss=status_data.packet_loss,
-            checked_at=checked_at_utc
-        )
-        db.add(log)
-        
-        # Create alert if status is down
-        # Logic:
-        # 1. If status CHANGED to down -> Alert
-        # 2. If status IS down (persisting) AND no active alert exists (meaning it was resolved) -> Re-Alert
-        
-        alert_created = False
-        alert_data = None
-        
-        if new_status == 'down':
-            # Check for existing active/acknowledged alert
-            existing_alert = db.query(Alert).filter(
-                Alert.device_id == device.id,
-                Alert.status.in_(['active', 'acknowledged'])
-            ).first()
-            
-            should_alert = False
-            
-            if old_status != 'down':
-                # New failure
-                should_alert = True
-            elif not existing_alert:
-                # Persisting failure but no active alert (was resolved?)
-                should_alert = True
-                
-            if should_alert and not existing_alert:
-                # Determine severity based on hierarchy
-                if device.hierarchy_level == 'utama':
-                    severity = 'critical'
-                elif device.hierarchy_level == 'sub':
-                    severity = 'high'
-                else:
-                    severity = 'medium'
-                
-                alert_msg = f"{device.name} tidak merespon (down)"
-                if old_status == 'down':
-                    alert_msg += " - Issue Persisting (Re-Triggered)"
-                
-                alert = Alert(
-                    device_id=device.id,
-                    message=alert_msg,
-                    severity=severity,
-                    status='active'
-                )
-                db.add(alert)
-                alert_created = True
-                db.flush()
-                alert_data = {
-                    "id": alert.id,
-                    "message": alert.message,
-                    "severity": alert.severity
-                }
-        
-        db.commit()
-
-        # Broadcast update via WebSocket
-        try:
-            from app.main import manager
-            pass # manager imported
-            
-            # Prepare broadcast message
-            import asyncio
-            from datetime import datetime
-            
-            # Need to reconstruct alert_data if not present but strictly needed? 
-            # Actually frontend handles optional alert.
-            
-            message = {
-                "type": "device_status_update",
-                "data": {
-                    "device_id": device.id,
-                    "device_name": device.name,
-                    "status": new_status,
-                    "old_status": old_status,
-                    "alert": alert_data,
-                    "timestamp": datetime.utcnow().isoformat()
-                }
-            }
-            
-            await manager.broadcast(message)
-            
-        except Exception as e:
-            print(f"WebSocket broadcast error: {e}")
-        
-        return {
-            "success": True,
-            "message": "Device status updated successfully",
-            "data": {
-                "device_id": device.id,
-                "old_status": old_status,
-                "new_status": new_status,
-                "alert_created": alert_created,
-                "alert": alert_data
-            }
-        }
-    
-    except OperationalError:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Database service is currently unavailable"
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An unexpected error occurred"
-        )
 
 
 @router.get("/{device_id}/logs", response_model=dict)
