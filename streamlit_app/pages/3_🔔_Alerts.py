@@ -11,7 +11,7 @@ from datetime import datetime
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from streamlit_app.utils.ui import setup_page_config
+from streamlit_app.utils.ui import setup_page_config, sidebar_user_card
 from streamlit_app.config import config
 from streamlit_app.utils import init_session_state, is_authenticated, require_auth, get_current_user, logout
 from streamlit_app.utils.api_client import api_client
@@ -28,29 +28,14 @@ def setup_page():
 
 
 def render_sidebar():
-    """Render sidebar."""
+    """Render responsive sidebar."""
     with st.sidebar:
         st.markdown(f"# {config.PAGE_ICON} {config.PAGE_TITLE}")
         st.markdown("---")
         
         user = get_current_user()
         if user:
-            st.markdown(f"""
-            <div style="
-                background: #F1F5F9;
-                border-radius: 8px;
-                padding: 1rem;
-                margin-bottom: 1rem;
-                border: 1px solid #E2E8F0;
-            ">
-                <p style="color: #1A1A1A; font-weight: bold; margin: 0;">
-                    {user.get('first_name', '')} {user.get('last_name', '')}
-                </p>
-                <p style="color: #64748B; font-size: 0.875rem; margin: 0;">
-                    {user.get('role', '').capitalize()}
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
+            sidebar_user_card(user)
         
         st.markdown("---")
         
@@ -248,49 +233,41 @@ def main():
                     "resolved": "✅"
                 }
                 
-                border_color = severity_colors.get(alert.get("severity"), "#334155")
+                border_color = severity_colors.get(alert.get("severity"), "var(--neutral-500)")
                 time_ago = format_time_ago(alert.get("created_at", ""))
                 
                 with st.container():
                     st.markdown(f"""
-                    <div style="
-                        background: #F1F5F9;
-                        border-radius: 12px;
-                        padding: 1rem;
-                        margin: 0.5rem 0;
+                    <div class="alert-card" style="
                         border-left: 4px solid {border_color};
-                        border-top: 1px solid #E2E8F0;
-                        border-right: 1px solid #E2E8F0;
-                        border-bottom: 1px solid #E2E8F0;
-                        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
                     ">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <span style="font-size: 1.25rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-xs);">
+                            <div style="display: flex; align-items: center; gap: var(--space-xs); flex-wrap: wrap;">
+                                <span style="font-size: var(--text-lg);">
                                     {severity_icons.get(alert.get('severity'), '🔔')}
                                     {status_icons.get(alert.get('status'), '🔔')}
                                 </span>
-                                <strong style="color: #1A1A1A; margin-left: 0.5rem;">
+                                <strong style="color: var(--neutral-900); font-size: var(--text-base);">
                                     {device.get('name', 'Unknown Device')}
                                 </strong>
-                                <span style="color: #64748B; margin-left: 0.5rem;">
+                                <span class="hide-mobile" style="color: var(--neutral-500); font-size: var(--text-sm);">
                                     ({device.get('ip_address', 'N/A')})
                                 </span>
                             </div>
-                            <div>
+                            <div style="display: flex; align-items: center; gap: var(--space-xs); flex-wrap: wrap;">
                                 <span style="
-                                    background: {border_color}30;
+                                    background: {border_color}20;
                                     color: {border_color};
-                                    padding: 0.25rem 0.75rem;
-                                    border-radius: 9999px;
-                                    font-size: 0.75rem;
-                                    font-weight: 500;
-                                    margin-right: 0.5rem;
+                                    padding: var(--space-xs) var(--space-sm);
+                                    border-radius: var(--radius-full);
+                                    font-size: var(--text-xs);
+                                    font-weight: 600;
+                                    white-space: nowrap;
                                 ">{alert.get('severity', '').upper()}</span>
-                                <span style="color: #64748B; font-size: 0.875rem;">{time_ago}</span>
+                                <span style="color: var(--neutral-500); font-size: var(--text-xs); white-space: nowrap;">{time_ago}</span>
                             </div>
                         </div>
-                        <p style="color: #475569; margin: 0.5rem 0 0 2rem;">{alert.get('message', '')}</p>
+                        <p style="color: var(--neutral-600); margin: var(--space-xs) 0 0 var(--space-xl); font-size: var(--text-sm); line-height: 1.5;">{alert.get('message', '')}</p>
                     </div>
                     """, unsafe_allow_html=True)
                     

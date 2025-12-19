@@ -15,7 +15,7 @@ from streamlit_app.utils.websocket import inject_websocket_listener
 from streamlit_app.utils.autorefresh import auto_refresh
 
 
-from streamlit_app.utils.ui import setup_page_config
+from streamlit_app.utils.ui import setup_page_config, sidebar_user_card
 
 
 def setup_page():
@@ -24,35 +24,19 @@ def setup_page():
 
 
 def render_sidebar():
-    """Render sidebar."""
+    """Render responsive sidebar."""
     with st.sidebar:
         st.markdown(f"# {config.PAGE_ICON} {config.PAGE_TITLE}")
         st.markdown("---")
         
         user = get_current_user()
         if user:
-            st.markdown(f"""
-            <div style="
-                background: #F1F5F9;
-                border-radius: 8px;
-                padding: 1rem;
-                margin-bottom: 1rem;
-                border: 1px solid #E2E8F0;
-            ">
-                <p style="color: #1A1A1A; font-weight: bold; margin: 0;">
-                    {user.get('first_name', '')} {user.get('last_name', '')}
-                </p>
-                <p style="color: #64748B; font-size: 0.875rem; margin: 0;">
-                    {user.get('role', '').capitalize()}
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
+            sidebar_user_card(user)
         
         st.markdown("---")
         
         if st.button("🚪 Logout", use_container_width=True):
             logout()
-            st.rerun()
             st.rerun()
 
 

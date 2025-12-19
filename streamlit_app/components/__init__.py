@@ -9,58 +9,57 @@ from datetime import datetime
 
 
 def metric_card(title: str, value: str, subtitle: str = None, icon: str = None, color: str = None):
-    """Display a metric card."""
-    bg_color = color if color and color.startswith('#FFFFFF') else "#FFFFFF"
-    border_color = color if color and not color.startswith('#FFFFFF') else "#E2E8F0"
+    """Display a responsive metric card with glassmorphism effect."""
+    # Determine accent color for border
+    accent_color = color if color and not color.startswith('#FFFFFF') else "var(--primary-500)"
     
     st.markdown(f"""
-    <div style="
-        background-color: {bg_color};
-        border-radius: 12px;
-        padding: 1.5rem;
-        border: 1px solid {border_color};
-        height: 100%;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    <div class="metric-card" style="
+        border-left: 4px solid {accent_color};
     ">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div>
-                <p style="color: #64748B; font-size: 0.875rem; margin: 0;">{title}</p>
-                <p style="color: #1A1A1A; font-size: 2rem; font-weight: bold; margin: 0.5rem 0;">{value}</p>
-                {f'<p style="color: #475569; font-size: 0.75rem; margin: 0;">{subtitle}</p>' if subtitle else ''}
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-sm);">
+            <div style="flex: 1; min-width: 120px;">
+                <p style="color: var(--neutral-500); font-size: var(--text-sm); margin: 0; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500;">{title}</p>
+                <p style="color: var(--neutral-900); font-size: var(--text-3xl); font-weight: 800; margin: var(--space-xs) 0; line-height: 1.2;">{value}</p>
+                {f'<p style="color: var(--neutral-600); font-size: var(--text-xs); margin: 0;">{subtitle}</p>' if subtitle else ''}
             </div>
-            {f'<span style="font-size: 2rem;">{icon}</span>' if icon else ''}
+            {f'<span style="font-size: var(--text-3xl); opacity: 0.8;">{icon}</span>' if icon else ''}
         </div>
     </div>
     """, unsafe_allow_html=True)
 
 
 def status_badge(status: str, size: str = "normal") -> str:
-    """Generate HTML for status badge."""
+    """Generate HTML for responsive status badge."""
     colors = {
-        "up": ("#10B981", "✅ UP"),
-        "down": ("#EF4444", "❌ DOWN"),
-        "unknown": ("#6B7280", "❓ Unknown"),
-        "active": ("#F59E0B", "🔔 Active"),
-        "acknowledged": ("#3B82F6", "👁️ Acknowledged"),
-        "resolved": ("#10B981", "✅ Resolved"),
-        "critical": ("#EF4444", "🔴 Critical"),
+        "up": ("var(--success-500)", "✅ UP"),
+        "down": ("var(--danger-500)", "❌ DOWN"),
+        "unknown": ("var(--neutral-500)", "❓ Unknown"),
+        "active": ("var(--warning-500)", "🔔 Active"),
+        "acknowledged": ("var(--primary-500)", "👁️ Acknowledged"),
+        "resolved": ("var(--success-500)", "✅ Resolved"),
+        "critical": ("var(--danger-500)", "🔴 Critical"),
         "high": ("#F97316", "🟠 High"),
-        "medium": ("#F59E0B", "🟡 Medium"),
-        "low": ("#10B981", "🟢 Low")
+        "medium": ("var(--warning-500)", "🟡 Medium"),
+        "low": ("var(--success-500)", "🟢 Low")
     }
-    color, label = colors.get(status.lower(), ("#6B7280", status))
+    color, label = colors.get(status.lower(), ("var(--neutral-500)", status))
     
-    padding = "0.25rem 0.75rem" if size == "normal" else "0.15rem 0.5rem"
-    font_size = "0.875rem" if size == "normal" else "0.75rem"
+    padding = "var(--space-xs) var(--space-sm)" if size == "normal" else "2px var(--space-xs)"
+    font_size = "var(--text-sm)" if size == "normal" else "var(--text-xs)"
     
     return f"""
     <span style="
         background: {color}20;
         color: {color};
         padding: {padding};
-        border-radius: 9999px;
+        border-radius: var(--radius-full);
         font-size: {font_size};
-        font-weight: 500;
+        font-weight: 600;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
     ">{label}</span>
     """
 
@@ -87,14 +86,22 @@ def create_response_time_chart(labels: List[str], data: List[float], full_labels
         xaxis_title=None,
         yaxis_title="Response Time (ms)",
         template="plotly_white",
-        height=300,
-        margin=dict(l=0, r=0, t=20, b=0),
+        height=280,
+        autosize=True,
+        margin=dict(l=10, r=10, t=20, b=40),
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
-        xaxis=dict(showgrid=False, tickfont=dict(color='#64748B')),
-        yaxis=dict(gridcolor='#E2E8F0', tickfont=dict(color='#64748B')),
+        xaxis=dict(
+            showgrid=False,
+            tickfont=dict(color='#64748B', size=10),
+            tickangle=-45
+        ),
+        yaxis=dict(
+            gridcolor='#E2E8F0',
+            tickfont=dict(color='#64748B', size=10)
+        ),
         hovermode="x unified",
-        font=dict(color='#1A1A1A')
+        font=dict(color='#1A1A1A', size=12)
     )
     
     return fig
@@ -131,15 +138,30 @@ def create_device_status_chart(labels: List[str], up_data: List[int], down_data:
         xaxis_title=None,
         yaxis_title="Count",
         template="plotly_white",
-        height=300,
-        margin=dict(l=0, r=0, t=20, b=0),
+        height=280,
+        autosize=True,
+        margin=dict(l=10, r=10, t=30, b=40),
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
-        xaxis=dict(showgrid=False, tickfont=dict(color='#64748B')),
-        yaxis=dict(gridcolor='#E2E8F0', tickfont=dict(color='#64748B')),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(color='#1A1A1A')),
+        xaxis=dict(
+            showgrid=False,
+            tickfont=dict(color='#64748B', size=10),
+            tickangle=-45
+        ),
+        yaxis=dict(
+            gridcolor='#E2E8F0',
+            tickfont=dict(color='#64748B', size=10)
+        ),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1,
+            font=dict(color='#1A1A1A', size=11)
+        ),
         hovermode="x unified",
-        font=dict(color='#1A1A1A')
+        font=dict(color='#1A1A1A', size=12)
     )
     
     return fig
@@ -194,7 +216,7 @@ def device_tree_item(device: Dict, level: int = 0):
 
 
 def alert_row(alert: Dict):
-    """Render alert row."""
+    """Render responsive alert row with glassmorphism."""
     device = alert.get("device", {})
     created_at = alert.get("created_at", "")
     
@@ -214,26 +236,27 @@ def alert_row(alert: Dict):
         "low": "🟢"
     }
     
+    severity_colors = {
+        "critical": "var(--danger-500)",
+        "high": "#F97316",
+        "medium": "var(--warning-500)",
+        "low": "var(--success-500)"
+    }
+    
+    border_color = severity_colors.get(alert.get('severity'), 'var(--warning-500)')
+    
     st.markdown(f"""
-    <div style="
-        background: #F1F5F9;
-        border-radius: 8px;
-        padding: 1rem;
-        margin: 0.5rem 0;
-        border-left: 4px solid {'#EF4444' if alert.get('severity') == 'critical' else '#F97316' if alert.get('severity') == 'high' else '#F59E0B'};
-        border-top: 1px solid #E2E8F0;
-        border-right: 1px solid #E2E8F0;
-        border-bottom: 1px solid #E2E8F0;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    <div class="alert-card" style="
+        border-left: 4px solid {border_color};
     ">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <span style="font-size: 1.25rem;">{severity_icons.get(alert.get('severity'), '🟡')}</span>
-                <strong style="color: #1A1A1A; margin-left: 0.5rem;">{device.get('name', 'Unknown')}</strong>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-xs);">
+            <div style="display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap;">
+                <span style="font-size: var(--text-xl);">{severity_icons.get(alert.get('severity'), '🟡')}</span>
+                <strong style="color: var(--neutral-900); font-size: var(--text-base);">{device.get('name', 'Unknown')}</strong>
             </div>
-            <span style="color: #64748B; font-size: 0.875rem;">{time_ago}</span>
+            <span style="color: var(--neutral-500); font-size: var(--text-xs); white-space: nowrap;">{time_ago}</span>
         </div>
-        <p style="color: #475569; margin: 0.5rem 0 0 2rem;">{alert.get('message', '')}</p>
+        <p style="color: var(--neutral-600); margin: var(--space-xs) 0 0 var(--space-xl); font-size: var(--text-sm); line-height: 1.5;">{alert.get('message', '')}</p>
     </div>
     """, unsafe_allow_html=True)
 

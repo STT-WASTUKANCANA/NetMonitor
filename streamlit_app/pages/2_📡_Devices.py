@@ -10,7 +10,7 @@ import pandas as pd
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from streamlit_app.utils.ui import setup_page_config
+from streamlit_app.utils.ui import setup_page_config, sidebar_user_card
 from streamlit_app.config import config
 from streamlit_app.utils import init_session_state, is_authenticated, require_auth, get_current_user, is_admin, logout
 from streamlit_app.utils.api_client import api_client
@@ -28,29 +28,14 @@ def setup_page():
 
 
 def render_sidebar():
-    """Render sidebar."""
+    """Render responsive sidebar."""
     with st.sidebar:
         st.markdown(f"# {config.PAGE_ICON} {config.PAGE_TITLE}")
         st.markdown("---")
         
         user = get_current_user()
         if user:
-            st.markdown(f"""
-            <div style="
-                background: #F1F5F9;
-                border-radius: 8px;
-                padding: 1rem;
-                margin-bottom: 1rem;
-                border: 1px solid #E2E8F0;
-            ">
-                <p style="color: #1A1A1A; font-weight: bold; margin: 0;">
-                    {user.get('first_name', '')} {user.get('last_name', '')}
-                </p>
-                <p style="color: #64748B; font-size: 0.875rem; margin: 0;">
-                    {user.get('role', '').capitalize()}
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
+            sidebar_user_card(user)
         
         st.markdown("---")
         
