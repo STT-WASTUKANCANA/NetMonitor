@@ -1,1 +1,1 @@
-{"8": {"status": "down", "last_response_time": null, "consecutive_failures": 1}}
+{"8": {"status": "down", "last_response_time": null, "consecutive_failures": 1}, "1": {"status": "up", "last_response_time": 39.24, "response_time_history": [39.24], "consecutive_failures": 0, "consecutive_successes": 1, "baseline_response_time": null, "response_time_std_dev": null, "reliability_score": 81.0}}

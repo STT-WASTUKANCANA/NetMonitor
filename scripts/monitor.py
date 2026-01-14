@@ -44,7 +44,7 @@ except ImportError:
 
 # Load environment variables from .env file in scripts directory
 env_path = os.path.join(script_dir, '.env')
-load_dotenv(env_path)
+load_dotenv(env_path, override=True)
 
 # Cached devices path for offline start
 DEVICES_CACHE_PATH = os.path.join(script_dir, 'devices_cache.json')
@@ -80,8 +80,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler('monitor.log')
+        logging.StreamHandler()
     ]
 )
 logger = logging.getLogger(__name__)

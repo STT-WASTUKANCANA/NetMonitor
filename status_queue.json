@@ -1,1 +1,1 @@
-[]
+[{"device_id": 1, "status": "up", "response_time": 39.24, "packet_loss": 20.0, "checked_at": "2026-01-15T00:14:35.741832+07:00", "response_time_min": 5.94, "response_time_max": 138.52, "response_time_median": 6.26, "response_time_std_dev": 66.18, "jitter": 44.24, "reliability_score": 81.0, "confidence_score": 80}]

@@ -32,6 +32,7 @@ source "$PROJECT_ROOT/venv/bin/activate"
 
 # Function to cleanup on exit
 cleanup() {
+    trap - SIGINT SIGTERM # Prevent infinite recursion
     echo -e "\n${YELLOW}🛑 Shutting down all services...${NC}"
     kill 0  # Kill all background processes in this process group
     exit
@@ -107,4 +108,5 @@ echo -e "\n${YELLOW}Press Ctrl+C to stop all services${NC}\n"
 # Show live monitor logs
 echo -e "${BLUE}📡 Monitor Output (live):${NC}"
 echo -e "${BLUE}─────────────────────────────────────────────────────────────────${NC}"
-tail -f logs/monitor.log
+touch "$PROJECT_ROOT/logs/monitor.log"
+tail -f "$PROJECT_ROOT/logs/monitor.log"
